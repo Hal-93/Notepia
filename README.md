@@ -2,24 +2,38 @@
 
 - 📖 [Remix docs](https://remix.run/docs)
 
+## 初期設定
+
+```sh
+cp .env.example .env
+npm run setup
+```
+
 ## 開発サーバーの起動
 
 Run the dev server:
 
-```shellscript
+```sh
+docker compose up -d
 npm run dev
 ```
 
 ## Prisma
 マイグレーションの実行
 
-```shellscript
-npx prisma migrate dev --name init
+```sh
+npx prisma migrate dev
+```
+
+マイグレーションの適用
+
+```sh
+npx prisma migrate deploy
 ```
 
 Prisma Clientの生成
 
-```shellscript
+```sh
 npx prisma generate
 ```
 
@@ -35,6 +49,7 @@ npm run build
 Then run the app in production mode:
 
 ```sh
+docker compose up -d
 npm start
 ```
 
