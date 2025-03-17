@@ -88,6 +88,7 @@ export default function LoginPage() {
               type="email"
               autoComplete="email"
               required
+              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
               ref={emailRef}
               className="w-full"
