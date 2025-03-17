@@ -2,13 +2,27 @@
 
 - 📖 [Remix docs](https://remix.run/docs)
 
-## Development
+## 開発サーバーの起動
 
 Run the dev server:
 
 ```shellscript
 npm run dev
 ```
+
+## Prisma
+マイグレーションの実行
+
+```shellscript
+npx prisma migrate dev --name init
+```
+
+Prisma Clientの生成
+
+```shellscript
+npx prisma generate
+```
+
 
 ## Deployment
 
