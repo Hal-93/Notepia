@@ -1,21 +1,22 @@
 import type { MetaFunction } from "@remix-run/node";
+import { Link } from "@remix-run/react"
 import { Button } from "~/components/ui/button";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
+    { title: "Notepia" },
+    { name: "description", content: "Welcome to Notepia" },
   ];
 };
 
 export default function Index() {
   return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="flex flex-col items-center gap-16">
-        <header className="flex flex-col items-center gap-9">
-          <h1 className="leading text-2xl font-bold text-gray-800 dark:text-gray-100">
-            Welcome to <span className="sr-only">Remix</span>
-          </h1>
+<div
+      className="flex h-screen items-center justify-center bg-cover bg-center"
+      style={{ backgroundImage: "url('https://moocs.cyberhub.jp/images/chub.png')" }}
+    >
+      <div className="flex flex-col items-center gap-12 bg-white/60 dark:bg-black/40 p-8 rounded-xl shadow-lg max-w-md">
+        <header className="flex flex-col items-center gap-6">
           <div className="h-[144px] w-[434px]">
             <img
               src="/notepia.png"
@@ -24,14 +25,21 @@ export default function Index() {
             />
           </div>
         </header>
-        <nav className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-gray-200 p-6 dark:border-gray-700">
-          <p className="leading-6 text-gray-700 dark:text-gray-200">
-            What&apos;s next?
+
+        <nav className="flex flex-col items-center gap-4">
+          <Link to="/login">
+            <Button variant="default" className="w-64 py-4 text-lg">
+              はじめる
+            </Button>
+          </Link>
+
+          <p className="text-gray-700 dark:text-gray-200 text-center">
+            すでに Notepia アカウントをお持ちですか？
           </p>
-          <ul>
-          <a href="/join"><Button variant="default">会員登録</Button></a><br/><br/>
-          <a href="/login"><Button variant="default">ログイン</Button></a>
-          </ul>
+
+          <p className="text-indigo-700 font-semibold">
+            <Link to="/login">ログイン</Link>
+          </p>
         </nav>
       </div>
     </div>
