@@ -23,9 +23,64 @@ export default function MapPage() {
       style: "mapbox://styles/mapbox/dark-v10",
       center: [139.6917, 35.6895],
       zoom: 12,
+      minZoom: 5,
+      pitch: 45,
+      antialias: true,
     });
 
     map.addControl(new MapboxLanguage({ defaultLanguage: "ja" }));
+
+    map.on("load", () => {
+        map.addSource("mapbox-dem", {
+          type: "raster-dem",
+          url: "mapbox://mapbox.terrain-rgb",
+          tileSize: 512,
+          maxzoom: 14,
+          minzoom: 50
+        });
+  
+        map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
+  
+        map.addLayer({
+          id: "3d-buildings",
+          source: "composite",
+          "source-layer": "building",
+          type: "fill-extrusion",
+          minzoom: 15,
+          paint: {
+            "fill-extrusion-color": "#aaa",
+            "fill-extrusion-height": ["get", "height"],
+            "fill-extrusion-base": ["get", "min_height"],
+            "fill-extrusion-opacity": 0.6,
+          },
+        });
+      });
+    
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+  
+            // 現在地用のカスタムマーカー
+            const customMarker = document.createElement("div");
+            customMarker.style.width = "20px";
+            customMarker.style.height = "20px";
+            customMarker.style.backgroundColor = "#007BFF"; // 青色
+            customMarker.style.borderRadius = "50%";
+            customMarker.style.border = "3px solid white";
+            customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
+  
+            new mapboxgl.Marker(customMarker)
+              .setLngLat([longitude, latitude])
+              .addTo(map);
+  
+  
+            map.flyTo({ center: [longitude, latitude], zoom: 14 });
+          },
+          (error) => console.error("位置情報の取得に失敗:", error),
+          { enableHighAccuracy: true }
+        );
+      }
 
     return () => map.remove();
   }, [mapboxToken]);
