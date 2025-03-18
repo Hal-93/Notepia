@@ -8,13 +8,68 @@ generator client {
 }
 
 model User {
-  id    String @id @default(cuid())
-  email String @unique
+  id         String     @id @default(cuid())
+  email      String     @unique
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  password   Password?
+  avatar String
+  memos      Memo[]
+  groups     Group[]    @relation("UserGroups")
+  following  Follow[]   @relation("UserFollowing")
+  followers  Follow[]   @relation("UserFollowers")
+}
+
+model Memo {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  content     String
+  completed   Boolean  @default(false)
+  latitude    Float?
+  longitude   Float?
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdById String
+  group       Group?   @relation(fields: [groupId], references: [id])
+  groupId     String?
+}
+
+model Group {
+  id         String   @id @default(cuid())
+  name       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  memos      Memo[]
+  users      User[]   @relation("UserGroups")
+}
+
+model Follow {
+  id           String   @id @default(cuid())
+  followerId   String
+  followingId  String
+  follower     User     @relation("UserFollowing", fields: [followerId], references: [id])
+  following    User     @relation("UserFollowers", fields: [followingId], references: [id])
+
+  // "PENDING", "ACCEPTED", "REJECTED"でフォロリク状態を管理
+  status       String   @default("PENDING")
+
+  createdAt    DateTime @default(now())
+}
+
+model File {
+  id           String @id @default(cuid())
+  fileName     String
+  objectName   String @unique
+  downloadLink String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  password Password?
+  answerFieldId String
+  answerField   AnswerField @relation(fields: [answerFieldId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Password {

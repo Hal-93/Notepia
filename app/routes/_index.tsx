@@ -1,6 +1,8 @@
-import type { MetaFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
+import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { Link, useLoaderData } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
+import { getUserId } from "~/session.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -9,7 +11,14 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const userId = await getUserId(request);
+  return json({ isLoggedIn: Boolean(userId)})
+}
+
 export default function Index() {
+  const { isLoggedIn } = useLoaderData<{ isLoggedIn: boolean}>();
+  
   return (
     <div className="relative w-screen h-screen overflow-hidden">
       <img
@@ -24,8 +33,8 @@ export default function Index() {
         <img src="/notepia.png" alt="Notepia"/><br/>
 
         <nav className="flex flex-col items-center gap-4">
-          <Link to="/login">
-            <Button variant="default" className="w-64 py-4 text-lg">
+          <Link to={isLoggedIn ? "/map" : "/login"}>
+            <Button variant="ghost" className="w-96 py-4 text-md bg-white text-black">
               はじめる
             </Button>
           </Link>
@@ -33,7 +42,7 @@ export default function Index() {
           <p className="text-white text-center">
             すでに Notepia アカウントをお持ちですか？
           </p>
-          <p className="text-indigo-300 font-semibold">
+          <p className="text-indigo-700 font-semibold">
             <Link to="/login">ログイン</Link>
           </p>
         </nav>
