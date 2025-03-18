@@ -1,7 +1,3 @@
-# Welcome to Remix!
-
-- 📖 [Remix docs](https://remix.run/docs)
-
 ## 初期設定
 
 ```sh
