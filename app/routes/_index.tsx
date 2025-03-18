@@ -1,5 +1,5 @@
 import type { MetaFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react"
+import { Link } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 
 export const meta: MetaFunction = () => {
@@ -11,20 +11,17 @@ export const meta: MetaFunction = () => {
 
 export default function Index() {
   return (
-<div
-      className="flex h-screen items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: "url('https://moocs.cyberhub.jp/images/chub.png')" }}
-    >
-      <div className="flex flex-col items-center gap-12 bg-white/60 dark:bg-black/40 p-8 rounded-xl shadow-lg max-w-md">
-        <header className="flex flex-col items-center gap-6">
-          <div className="h-[144px] w-[434px]">
-            <img
-              src="/notepia.png"
-              alt="notepia"
-              className="block w-full dark:hidden"
-            />
-          </div>
-        </header>
+    <div className="relative w-screen h-screen overflow-hidden">
+      <img
+        src="/background.jpeg"
+        alt="background"
+        className="absolute inset-0 w-full h-full object-cover blur-sm"
+      />
+      <div className="absolute inset-0 bg-black/30" />
+
+      <div className="relative z-10 flex flex-col items-center justify-center w-full h-full">
+
+        <img src="/notepia.png" alt="Notepia"/><br/>
 
         <nav className="flex flex-col items-center gap-4">
           <Link to="/login">
@@ -33,11 +30,10 @@ export default function Index() {
             </Button>
           </Link>
 
-          <p className="text-gray-700 dark:text-gray-200 text-center">
+          <p className="text-white text-center">
             すでに Notepia アカウントをお持ちですか？
           </p>
-
-          <p className="text-indigo-700 font-semibold">
+          <p className="text-indigo-300 font-semibold">
             <Link to="/login">ログイン</Link>
           </p>
         </nav>
