@@ -1,9 +1,15 @@
+# Notepia
+
 ## 初期設定
 
 ```sh
 cp .env.example .env
+docker compose up -d
+npm i
 npm run setup
 ```
+
+localhost:9001 にアクセスし、アクセスキー、シークレットキーを発行して .env に入力する。
 
 ## 開発サーバーの起動
 
@@ -15,6 +21,7 @@ npm run dev
 ```
 
 ## Prisma
+
 マイグレーションの実行
 
 ```sh
