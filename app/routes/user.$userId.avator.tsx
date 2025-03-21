@@ -1,9 +1,8 @@
 import { LoaderFunction } from "@remix-run/node";
-import { getFile } from "~/minio.server";
+import { getFile } from "~/utils/minio.server";
 
 export const loader: LoaderFunction = async ({ params }) => {
   const { userId } = params;
-
   try {
     const fileBuffer = await getFile(`${userId}.png`);
 
