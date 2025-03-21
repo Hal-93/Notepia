@@ -26,6 +26,7 @@ model User {
 model Memo {
   id          String   @id @default(cuid())
   title       String
+  color       String   @default("white")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   content     String
