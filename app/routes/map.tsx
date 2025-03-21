@@ -1,70 +1,29 @@
-import type { ActionFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData, useFetcher, Form } from "@remix-run/react";
-import { useEffect, useRef, useState } from "react";
+import { useLoaderData } from "@remix-run/react";
+import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
-import MemoCreateModal from "~/components/memo/create";
-import { getUserId } from "~/session.server";
-import { Button } from "~/components/ui/button";
-import { handleSubscribe } from "~/utils/pushNotification";
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const userId = await getUserId(request);
-  const { getUsersMemo } = await import("~/models/memo.server");
-  const memos = userId ? await getUsersMemo(userId) : [];
-  return json({
-    mapboxToken: process.env.MAPBOX_TOKEN,
-    vapidPublicKey: process.env.VAPID_PUBLIC_KEY!,
-    memos,
-    userId,
-  });
-};
-
-export const action: ActionFunction = async ({ request }) => {
-  const formData = await request.formData();
-  const title = formData.get("title") as string;
-  const content = formData.get("content") as string;
-  const lat = parseFloat(formData.get("lat") as string);
-  const lng = parseFloat(formData.get("lng") as string);
-  const createdById = formData.get("createdById") as string;
-  const color = formData.get("color") as string;
-
-  const { createMemo } = await import("~/models/memo.server");
-  const memo = await createMemo({
-    title,
-    content,
-    createdById,
-    latitude: lat,
-    longitude: lng,
-    color,
-  });
-
-  return json({ memo });
+export const loader = async () => {
+  return json({ mapboxToken: process.env.MAPBOX_TOKEN });
 };
 
 export default function MapPage() {
-  const { mapboxToken, memos, userId, vapidPublicKey } =
-    useLoaderData<typeof loader>();
+  const { mapboxToken } = useLoaderData<{ mapboxToken: string }>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  const tempMarkerRef = useRef<mapboxgl.Marker | null>(null);
-  const fetcher = useFetcher();
-
-  const [showModal, setShowModal] = useState(false);
-  const [modalLat, setModalLat] = useState(0);
-  const [modalLng, setModalLng] = useState(0);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
+    
     mapboxgl.accessToken = mapboxToken;
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/dark-v10",
+      style: "mapbox://styles/mapbox/standard",
       center: [139.6917, 35.6895],
-      zoom: 12,
+      zoom: 16,
       minZoom: 5,
       pitch: 45,
       antialias: true,
@@ -77,9 +36,12 @@ export default function MapPage() {
         type: "raster-dem",
         url: "mapbox://mapbox.terrain-rgb",
         tileSize: 512,
-        maxzoom: 14,
+        maxzoom: 16,
+        minzoom: 45,
       });
+
       map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
+
       map.addLayer({
         id: "3d-buildings",
         source: "composite",
@@ -93,111 +55,49 @@ export default function MapPage() {
           "fill-extrusion-opacity": 0.6,
         },
       });
+    });
 
-      memos.forEach((memo) => {
-        if (memo.latitude != null && memo.longitude != null) {
-          const markerEl = document.createElement("div");
-          markerEl.style.width = "20px";
-          markerEl.style.height = "20px";
-          markerEl.style.backgroundColor = memo.color || "#ffffff";
-          markerEl.style.borderRadius = "50%";
-          markerEl.style.border = "3px solid white";
-          markerEl.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
 
-          new mapboxgl.Marker(markerEl)
-            .setLngLat([memo.longitude, memo.latitude])
-            .setPopup(
-              new mapboxgl.Popup({ offset: 25 }).setHTML(
-                `<p>${memo.title}</p><p>${memo.content}</p>`
-              )
-            )
+          // 現在地用のカスタムマーカー
+          const customMarker = document.createElement("div");
+          customMarker.style.width = "20px";
+          customMarker.style.height = "20px";
+          customMarker.style.backgroundColor = "#007BFF"; // 青色
+          customMarker.style.borderRadius = "50%";
+          customMarker.style.border = "3px solid white";
+          customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
+
+          new mapboxgl.Marker(customMarker)
+            .setLngLat([longitude, latitude])
             .addTo(map);
-        }
-      });
-    });
 
-    map.doubleClickZoom.disable();
+          map.flyTo({ center: [longitude, latitude], zoom: 16 });
+        },
+        (error) => console.error("位置情報の取得に失敗:", error),
+        { enableHighAccuracy: true }
+      );
+    }
 
-    map.on("dblclick", (e: mapboxgl.MapMouseEvent) => {
-      const coordinates = e.lngLat;
-
-      const customMarker = document.createElement("div");
-      customMarker.style.width = "20px";
-      customMarker.style.height = "20px";
-      customMarker.style.backgroundColor = "#007BFF";
-      customMarker.style.borderRadius = "50%";
-      customMarker.style.border = "3px solid white";
-      customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
-
-      const marker = new mapboxgl.Marker(customMarker)
-        .setLngLat(coordinates)
-        .addTo(map);
-
-      tempMarkerRef.current = marker;
-      setModalLat(coordinates.lat);
-      setModalLng(coordinates.lng);
-      setShowModal(true);
-    });
-
-    mapRef.current = map;
     return () => map.remove();
-  }, [mapboxToken, memos]);
+  }, [mapboxToken]);
 
   const handleZoomIn = () => {
-    mapRef.current?.zoomIn();
+    if (mapRef.current) mapRef.current.zoomIn();
   };
+
   const handleZoomOut = () => {
-    mapRef.current?.zoomOut();
+    if (mapRef.current) mapRef.current.zoomOut();
   };
+
   const handleReset = () => {
-    mapRef.current?.easeTo({ center: [139.6917, 35.6895], zoom: 12 });
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    if (tempMarkerRef.current) {
-      tempMarkerRef.current.remove();
-      tempMarkerRef.current = null;
-    }
-  };
-
-  const handleSubmitMemo = (memoData: {
-    title: string;
-    content: string;
-    place: string;
-    color: string;
-    lat: number;
-    lng: number;
-  }) => {
-    if (!userId) {
-      console.error("ユーザーIDが取得できませんでした。");
-      return;
-    }
-    const formData = new FormData();
-    formData.append("title", memoData.title);
-    formData.append("content", memoData.content);
-    formData.append("lat", memoData.lat.toString());
-    formData.append("lng", memoData.lng.toString());
-    formData.append("createdById", userId);
-    formData.append("color", memoData.color);
-    fetcher.submit(formData, { method: "post", action: "/map" });
-
-    if (tempMarkerRef.current) {
-      const markerEl = tempMarkerRef.current.getElement();
-      markerEl.style.backgroundColor = memoData.color;
-      markerEl.style.boxShadow = `0 0 5px ${memoData.color}`;
-      tempMarkerRef.current = null;
-    }
-    setShowModal(false);
-
     if (mapRef.current) {
-      mapRef.current.flyTo({
-        center: [memoData.lng, memoData.lat],
-        zoom: mapRef.current.getZoom(),
-      });
+      mapRef.current.easeTo({ center: [139.6917, 35.6895], zoom: 12 });
     }
   };
-
   return (
     <div style={{ position: "relative" }}>
       <div
@@ -210,16 +110,7 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
-      <div className="fixed top-4 left-5">
-        <Button onClick={() => handleSubscribe(vapidPublicKey)}>
-          Subscribe to Notifications
-        </Button>
-        ;
-        <Form action="/send" method="post">
-          <Button>Send</Button>
-        </Form>
-      </div>
-      <ActionBar />
+      <ActionBar/>
       <div
         style={{
           position: "fixed",
@@ -244,7 +135,7 @@ export default function MapPage() {
             cursor: "pointer",
           }}
         >
-          ズームイン
+          ボタン1
         </button>
         <button
           onClick={handleZoomOut}
@@ -257,7 +148,7 @@ export default function MapPage() {
             cursor: "pointer",
           }}
         >
-          ズームアウト
+          ボタン2
         </button>
         <button
           onClick={handleReset}
@@ -270,17 +161,9 @@ export default function MapPage() {
             cursor: "pointer",
           }}
         >
-          マップリセット
+          ボタン3
         </button>
       </div>
-      {showModal && (
-        <MemoCreateModal
-          lat={modalLat}
-          lng={modalLng}
-          onClose={handleCloseModal}
-          onSubmit={handleSubmitMemo}
-        />
-      )}
     </div>
   );
 }
