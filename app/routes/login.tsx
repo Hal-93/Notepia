@@ -70,7 +70,7 @@ export default function LoginPage() {
   return (
     <div
       className="flex min-h-screen items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: "url('/background.jpg')" }} // 背景画像を設定
+      style={{ backgroundImage: "url('/background.jpeg')" }} // 背景画像を設定
     >
       <div className="bg-white/70 dark:bg-black/60 p-8 rounded-xl shadow-lg max-w-md w-full">
         <h2 className="text-center text-2xl font-bold text-gray-900 dark:text-white">

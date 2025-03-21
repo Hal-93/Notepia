@@ -18,35 +18,51 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export default function Index() {
   const { isLoggedIn } = useLoaderData<{ isLoggedIn: boolean}>();
-  
+
   return (
-    <div className="relative w-screen h-screen overflow-hidden">
-      <img
-        src="/background.jpeg"
-        alt="background"
-        className="absolute inset-0 w-full h-full object-cover blur-sm"
-      />
-      <div className="absolute inset-0 bg-black/30" />
+    <div className="h-screen grid md:grid-cols-3">
+      {/* 左カラム */}
+      <div 
+        className="relative bg-cover bg-center md:bg-black flex flex-col justify-end"
+      >
+        {/* スマホ時だけのグラデーション背景 */}
+        <div 
+          className="absolute inset-0 md:hidden"
+          style={{ 
+            backgroundImage: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0, 0, 0, 0.85) 100%), url('/backgroundMobile.jpeg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center"
+          }}
+        ></div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center w-full h-full">
+        {/* コンテンツ */}
+        <nav className="relative flex flex-col items-center justify-center md:h-screen z-10">
+          <img 
+            src="/Notepia-light.svg" 
+            alt="Notepia"
+            className="w-[80vw] md:w-40 h-auto md:mb-40 mb-[300px]"
+          />
 
-        <img src="/notepia.png" alt="Notepia"/><br/>
-
-        <nav className="flex flex-col items-center gap-4">
-          <Link to={isLoggedIn ? "/map" : "/login"}>
-            <Button variant="ghost" className="w-96 py-4 text-md bg-white text-black">
+          <Link to={isLoggedIn ? "/map" : "/join"}>
+            <Button variant="ghost" className="w-[80vw] md:w-[28vw] bg-white text-black">
               はじめる
             </Button>
           </Link>
 
-          <p className="text-white text-center">
-            すでに Notepia アカウントをお持ちですか？
+          <p className="text-white mt-2 md:mt-4 px-3 md:font-semibold font-bold">
+            すでに Notepia のアカウントをお持ちですか？
           </p>
-          <p className="text-indigo-700 font-semibold">
+          <p className="text-indigo-700 md:font-semibold font-extrabold mt-0 mb-[20px]">
             <Link to="/login">ログイン</Link>
           </p>
         </nav>
       </div>
+
+      {/* 右カラム */}
+      <div 
+        className="hidden md:block col-span-2 bg-cover bg-center"
+        style={{ backgroundImage: "url('/background.jpeg')" }}
+      ></div>
     </div>
   );
 }
