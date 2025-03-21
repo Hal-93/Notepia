@@ -17,13 +17,13 @@ export default function MapPage() {
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
-
+    
     mapboxgl.accessToken = mapboxToken;
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/dark-v10",
+      style: "mapbox://styles/mapbox/standard",
       center: [139.6917, 35.6895],
-      zoom: 12,
+      zoom: 16,
       minZoom: 5,
       pitch: 45,
       antialias: true,
@@ -36,8 +36,8 @@ export default function MapPage() {
         type: "raster-dem",
         url: "mapbox://mapbox.terrain-rgb",
         tileSize: 512,
-        maxzoom: 14,
-        minzoom: 50,
+        maxzoom: 16,
+        minzoom: 45,
       });
 
       map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
@@ -75,7 +75,7 @@ export default function MapPage() {
             .setLngLat([longitude, latitude])
             .addTo(map);
 
-          map.flyTo({ center: [longitude, latitude], zoom: 14 });
+          map.flyTo({ center: [longitude, latitude], zoom: 16 });
         },
         (error) => console.error("位置情報の取得に失敗:", error),
         { enableHighAccuracy: true }
