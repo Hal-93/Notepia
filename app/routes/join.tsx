@@ -71,7 +71,7 @@ export default function Join() {
   return (
     <div
       className="flex min-h-screen items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: "url('/background.jpg')" }} // 背景画像を設定
+      style={{ backgroundImage: "url('/background.jpeg')" }} // 背景画像を設定
     >
       <Card className="bg-white/60 dark:bg-black/60 p-6 shadow-xl rounded-lg max-w-md w-full">
         <CardHeader>
