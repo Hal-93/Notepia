@@ -1,10 +1,12 @@
 import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { Form, useLoaderData } from "@remix-run/react";
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
+import { handleSubscribe } from "~/utils/pushNotification";
+import { Button } from "~/components/ui/button";
 
 export const loader = async () => {
   return json({ mapboxToken: process.env.MAPBOX_TOKEN });
@@ -110,7 +112,13 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
-      <ActionBar/>
+      <div className="fixed top-4 left-5">
+      <Button onClick={handleSubscribe}>Subscribe to Notifications</Button>;
+      <Form action="/send" method="post">
+        <Button>Send</Button>
+      </Form>
+      </div>
+      <ActionBar />
       <div
         style={{
           position: "fixed",
