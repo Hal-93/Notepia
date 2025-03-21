@@ -1,6 +1,6 @@
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -14,6 +14,7 @@ export default function MapPage() {
   const { mapboxToken } = useLoaderData<{ mapboxToken: string }>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  const [currentLocation, setCurrentLocation]  = useState<[number, number] | null>(null);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -57,10 +58,13 @@ export default function MapPage() {
       });
     });
 
+    mapRef.current = map;
+  
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
+          setCurrentLocation([longitude, latitude]);
 
           // 現在地用のカスタムマーカー
           const customMarker = document.createElement("div");
@@ -98,6 +102,16 @@ export default function MapPage() {
       mapRef.current.easeTo({ center: [139.6917, 35.6895], zoom: 12 });
     }
   };
+
+  const handleReturnToCurrentLocation = () => {
+    if (currentLocation && mapRef.current) {
+      mapRef.current?.flyTo({
+        center: currentLocation,
+        zoom: 14,
+      });
+    }
+  };
+
   return (
     <div style={{ position: "relative" }}>
       <div
@@ -110,7 +124,7 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
-      <ActionBar/>
+      <ActionBar onReturnToCurrentLocation={handleReturnToCurrentLocation} />
       <div
         style={{
           position: "fixed",
