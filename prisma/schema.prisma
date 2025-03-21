@@ -9,8 +9,8 @@ generator client {
 
 model User {
   id         String     @id @default(cuid())
-  uuid       String     @unique
-  name       String
+  uuid       String     @unique @default("00000000")
+  name       String     @default("No Name")
   email      String     @unique
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt

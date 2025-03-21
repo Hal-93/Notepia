@@ -1,6 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
+function generateRandom8Digit(): string {
+  return Math.floor(10000000 + Math.random() * 90000000).toString();
+}
+
 const prisma = new PrismaClient();
 
 async function seed() {
@@ -14,6 +18,8 @@ async function seed() {
     const user = await prisma.user.create({
       data: {
         email,
+        uuid: generateRandom8Digit(),
+        name: "Test User",
         password: {
           create: {
             hash: hashedPassword,
