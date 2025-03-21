@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import "mapbox-gl/dist/mapbox-gl.css";
+import ActionBar from "~/components/actionbar";
 
 export const loader = async () => {
   return json({ mapboxToken: process.env.MAPBOX_TOKEN });
@@ -31,56 +32,55 @@ export default function MapPage() {
     map.addControl(new MapboxLanguage({ defaultLanguage: "ja" }));
 
     map.on("load", () => {
-        map.addSource("mapbox-dem", {
-          type: "raster-dem",
-          url: "mapbox://mapbox.terrain-rgb",
-          tileSize: 512,
-          maxzoom: 14,
-          minzoom: 50
-        });
-  
-        map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
-  
-        map.addLayer({
-          id: "3d-buildings",
-          source: "composite",
-          "source-layer": "building",
-          type: "fill-extrusion",
-          minzoom: 15,
-          paint: {
-            "fill-extrusion-color": "#aaa",
-            "fill-extrusion-height": ["get", "height"],
-            "fill-extrusion-base": ["get", "min_height"],
-            "fill-extrusion-opacity": 0.6,
-          },
-        });
+      map.addSource("mapbox-dem", {
+        type: "raster-dem",
+        url: "mapbox://mapbox.terrain-rgb",
+        tileSize: 512,
+        maxzoom: 14,
+        minzoom: 50,
       });
-    
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-  
-            // 現在地用のカスタムマーカー
-            const customMarker = document.createElement("div");
-            customMarker.style.width = "20px";
-            customMarker.style.height = "20px";
-            customMarker.style.backgroundColor = "#007BFF"; // 青色
-            customMarker.style.borderRadius = "50%";
-            customMarker.style.border = "3px solid white";
-            customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
-  
-            new mapboxgl.Marker(customMarker)
-              .setLngLat([longitude, latitude])
-              .addTo(map);
-  
-  
-            map.flyTo({ center: [longitude, latitude], zoom: 14 });
-          },
-          (error) => console.error("位置情報の取得に失敗:", error),
-          { enableHighAccuracy: true }
-        );
-      }
+
+      map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
+
+      map.addLayer({
+        id: "3d-buildings",
+        source: "composite",
+        "source-layer": "building",
+        type: "fill-extrusion",
+        minzoom: 15,
+        paint: {
+          "fill-extrusion-color": "#aaa",
+          "fill-extrusion-height": ["get", "height"],
+          "fill-extrusion-base": ["get", "min_height"],
+          "fill-extrusion-opacity": 0.6,
+        },
+      });
+    });
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+
+          // 現在地用のカスタムマーカー
+          const customMarker = document.createElement("div");
+          customMarker.style.width = "20px";
+          customMarker.style.height = "20px";
+          customMarker.style.backgroundColor = "#007BFF"; // 青色
+          customMarker.style.borderRadius = "50%";
+          customMarker.style.border = "3px solid white";
+          customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
+
+          new mapboxgl.Marker(customMarker)
+            .setLngLat([longitude, latitude])
+            .addTo(map);
+
+          map.flyTo({ center: [longitude, latitude], zoom: 14 });
+        },
+        (error) => console.error("位置情報の取得に失敗:", error),
+        { enableHighAccuracy: true }
+      );
+    }
 
     return () => map.remove();
   }, [mapboxToken]);
@@ -110,7 +110,7 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
-
+      <ActionBar/>
       <div
         style={{
           position: "fixed",
