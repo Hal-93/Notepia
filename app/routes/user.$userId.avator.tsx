@@ -12,6 +12,6 @@ export const loader: LoaderFunction = async ({ params }) => {
       },
     });
   } catch (error) {
-    return new Response("Not Found", { status: 404 });
+    return new Response("404 Not Found", { status: 404 });
   }
 };
