@@ -1,5 +1,23 @@
 import { prisma } from "~/db.server";
-import type { Group } from "@prisma/client";
+import type { Group, User } from "@prisma/client";
+
+// ユーザーが所属しているグループ一覧を取得する関数
+export async function getUserGroups(userId: string): Promise<Group[]> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { groups: true },
+  });
+  return user?.groups || [];
+}
+
+// グループに所属しているユーザー一覧を表示する関数
+export async function getUsersByGroup(groupId: string): Promise<User[]> {
+  const group = await prisma.group.findUnique({
+    where: { id: groupId },
+    include: { users: true },
+  });
+  return group?.users || [];
+}
 
 // グループを作成する関数
 // 初期ユーザーIDの配列を渡すと、そのユーザーをグループに追加

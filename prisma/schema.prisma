@@ -9,6 +9,8 @@ generator client {
 
 model User {
   id         String     @id @default(cuid())
+  uuid       String     @unique @default("00000000")
+  name       String     @default("No Name")
   email      String     @unique
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
@@ -23,6 +25,8 @@ model User {
 
 model Memo {
   id          String   @id @default(cuid())
+  title       String
+  color       String   @default("white")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   content     String

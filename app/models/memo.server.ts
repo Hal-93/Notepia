@@ -33,6 +33,7 @@ export async function getMemoById(memoId: string): Promise<Memo | null> {
 
 // メモを作成する関数
 export async function createMemo(data: {
+  title: string;
   content: string;
   createdById: string;
   groupId?: string;
@@ -41,6 +42,7 @@ export async function createMemo(data: {
 }): Promise<Memo> {
   return await prisma.memo.create({
     data: {
+      title: data.title,
       content: data.content,
       createdById: data.createdById,
       groupId: data.groupId ? data.groupId : null,
@@ -65,5 +67,15 @@ export async function updateMemo(
   return await prisma.memo.update({
     where: { id: memoId },
     data,
+  });
+}
+
+// ユーザーの完了したメモ一覧を取得する関数
+export async function getCompletedMemosByUser(userId: string): Promise<Memo[]> {
+  return await prisma.memo.findMany({
+    where: {
+      createdById: userId,
+      completed: true,
+    },
   });
 }
