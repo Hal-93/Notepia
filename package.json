@@ -45,6 +45,7 @@
     "@remix-run/react": "^2.16.0",
     "@remix-run/serve": "^2.16.0",
     "bcryptjs": "^3.0.2",
+    "boring-avatars": "^1.11.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
