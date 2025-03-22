@@ -12,12 +12,11 @@ import { getUserId } from "~/session.server";
 import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
 import { handleSubscribe } from "~/utils/pushNotification";
+import { Memo } from "@prisma/client";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
-  if (!userId) {
-    return redirect("/login");
-  }
+  if (!userId) return redirect("/login");
   const { getUsersMemo } = await import("~/models/memo.server");
   const memos = userId ? await getUsersMemo(userId) : [];
   return json({
@@ -32,6 +31,7 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const title = formData.get("title") as string;
   const content = formData.get("content") as string;
+  const place = formData.get("place") as string;
   const lat = parseFloat(formData.get("lat") as string);
   const lng = parseFloat(formData.get("lng") as string);
   const createdById = formData.get("createdById") as string;
@@ -41,6 +41,7 @@ export const action: ActionFunction = async ({ request }) => {
   const memo = await createMemo({
     title,
     content,
+    place,
     createdById,
     latitude: lat,
     longitude: lng,
@@ -243,6 +244,7 @@ export default function MapPage() {
     const formData = new FormData();
     formData.append("title", memoData.title);
     formData.append("content", memoData.content);
+    formData.append("place", memoData.place);
     formData.append("lat", memoData.lat.toString());
     formData.append("lng", memoData.lng.toString());
     formData.append("createdById", userId);
@@ -295,6 +297,7 @@ export default function MapPage() {
         <MemoCreateModal
           lat={modalLat}
           lng={modalLng}
+          mapboxToken={mapboxToken}
           onClose={handleCloseModal}
           onSubmit={handleSubmitMemo}
         />

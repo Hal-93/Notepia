@@ -35,18 +35,20 @@ export default function MemoDetailModal({ memo, onClose }: MemoDetailModalProps)
           </button>
         </div>
         <p className="mb-2">{memo.content}</p>
-        <p className="mb-2">{memo.completed ? "完了" : "未完了"}</p>
+        <p className="mb-2">{memo.completed ? <p className="text-green-500">完了</p> : <p className="text-red-500">未完了</p>}</p>
         {memo.latitude != null && memo.longitude != null && (
-          <p className="mb-2">
-            緯度: {memo.latitude.toFixed(4)}, 経度: {memo.longitude.toFixed(4)}
+        <>
+          <p>
+            場所: {memo.place || "未設定"}
           </p>
+        </>
         )}
         <div className="flex gap-4 mt-4">
           <button
             onClick={handleComplete}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-500"
           >
-            完了にする
+            完了
           </button>
           <button
             onClick={handleDelete}
