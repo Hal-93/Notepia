@@ -7,7 +7,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 interface BarProps {
-  handleMakeFriend: () => void;
+  handleMakeFriend?: () => void;
   handleSearchMemo: () => void;
   handleGoToCurrentLocation: () => void;
 }
@@ -31,6 +31,7 @@ const Bar = ({
         borderRadius: "8px",
       }}
     >
+    {handleMakeFriend && (
     <Button
         onClick={handleMakeFriend}
         style={{
@@ -43,6 +44,7 @@ const Bar = ({
     >
     <FontAwesomeIcon icon={faUserPlus} />
     </Button>
+    )}
     <Button
         onClick={handleSearchMemo}
         style={{

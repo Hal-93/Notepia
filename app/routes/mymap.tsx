@@ -229,7 +229,7 @@ export default function MapPage() {
     });
   
     memoMarkersRef.current = newMarkers;
-  
+
     return () => {
       newMarkers.forEach((marker) => {
         marker.getPopup()?.remove();
@@ -285,11 +285,6 @@ export default function MapPage() {
     };
   }, [memos, setModalLat, setModalLng, setShowModal]);
   
-
-  const handleMakeFriend = () => {
-    /*フレンド追加機能 */
-  }
-
   const handleSearchMemo = () => {
     /*メモの検索機能 */
   };
@@ -376,7 +371,6 @@ export default function MapPage() {
         publicKey={vapidPublicKey}
       />
       <Bar
-        handleMakeFriend={handleMakeFriend}
         handleSearchMemo={handleSearchMemo}
         handleGoToCurrentLocation={handleGoToCurrentLocation}
       />
