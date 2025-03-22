@@ -1,11 +1,23 @@
 import { useState } from "react";
-import { Link, redirect, json, useLoaderData, useFetcher } from "@remix-run/react";
+import {
+  Link,
+  redirect,
+  json,
+  useLoaderData,
+  useFetcher,
+} from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Button } from "~/components/ui/button";
 import ActionBar from "~/components/actionbar";
 import { getUserId } from "~/session.server";
 import { getUserById } from "~/models/user.server";
-import { createGroup, getUserGroups, removeUserFromGroup, deleteGroup, getUsersByGroup } from "~/models/group.server";
+import {
+  createGroup,
+  getUserGroups,
+  removeUserFromGroup,
+  deleteGroup,
+  getUsersByGroup,
+} from "~/models/group.server";
 import GroupCreateModal from "~/components/group/create";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGear } from "@fortawesome/free-solid-svg-icons";
@@ -67,7 +79,8 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function Home() {
-  const { userId, username, uuid, avatarUrl, groups } = useLoaderData<typeof loader>();
+  const { userId, username, uuid, avatarUrl, groups, vapidPublicKey } =
+    useLoaderData<typeof loader>();
   const [showModal, setShowModal] = useState(false);
   const [editingGroup, setEditingGroup] = useState<{
     id: string;
@@ -94,7 +107,12 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-black text-white">
       <header className="flex items-center justify-between px-6 pt-6">
         <h1 className="text-4xl font-bold">ホーム</h1>
-        <ActionBar username={username!} uuid={uuid!} initialAvatarUrl={avatarUrl} />
+        <ActionBar
+          username={username!}
+          uuid={uuid!}
+          initialAvatarUrl={avatarUrl}
+          publicKey={vapidPublicKey}
+        />
       </header>
 
       <main className="flex-1 px-6 py-8 flex flex-col items-center space-y-10">
@@ -124,16 +142,25 @@ export default function Home() {
           {groups.length > 0 ? (
             <div className="space-y-2">
               {groups.map((group) => (
-                <div key={group.id} className="flex items-center justify-between bg-gray-800 px-4 py-3 rounded-md">
-                  <Link to={`/group/${group.id}`} className="flex items-center gap-4 flex-1 hover:text-gray-300">
+                <div
+                  key={group.id}
+                  className="flex items-center justify-between bg-gray-800 px-4 py-3 rounded-md"
+                >
+                  <Link
+                    to={`/group/${group.id}`}
+                    className="flex items-center gap-4 flex-1 hover:text-gray-300"
+                  >
                     <div className="flex items-center">
                       {group.users.slice(0, 3).map((user, index) => (
                         <img
                           key={user.id}
-                          src={`https://notepia.fly.dev/user/${user.uuid}/avatar`}
+                          src={`/user/${user.uuid}/avatar`}
                           alt={user.name}
                           className="rounded-full border-2 border-black object-cover w-8 h-8"
-                          style={{ marginLeft: index === 0 ? 0 : "-20px", zIndex: group.users.length - index }}
+                          style={{
+                            marginLeft: index === 0 ? 0 : "-20px",
+                            zIndex: group.users.length - index,
+                          }}
                         />
                       ))}
                       {group.users.length > 3 && (
@@ -166,7 +193,9 @@ export default function Home() {
         </section>
       </main>
 
-      {showModal && <GroupCreateModal currentUserId={userId} onClose={handleCloseModal} />}
+      {showModal && (
+        <GroupCreateModal currentUserId={userId} onClose={handleCloseModal} />
+      )}
       {editingGroup && (
         <GroupEditModal
           groupId={editingGroup.id}
