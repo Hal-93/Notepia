@@ -23,7 +23,7 @@ export default function ActionBar({
   }, []);
 
   const refreshImage = () => {
-    setAvatorUrl(`${avatorUrl}?t=${new Date().getTime()}`);
+    setAvatorUrl(`user/${uuid}/avator?t=${new Date().getTime()}`);
   };
 
   if (!isClient) return null;
@@ -43,6 +43,7 @@ export default function ActionBar({
       const file = event.target.files[0];
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("uuid", uuid);
       const res = await fetch(window.location.pathname, {
         method: "POST",
         body: formData,
