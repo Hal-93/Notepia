@@ -7,7 +7,11 @@ import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import { useEffect, useRef } from "react";
 
-import { createUser, getUserByEmail } from "~/models/user.server";
+import {
+  createUser,
+  getUserByEmail,
+  getUserByUuid,
+} from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
 
@@ -24,24 +28,89 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
+  const uuid = formData.get("uuid");
   const email = formData.get("email");
   const password = formData.get("password");
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
 
+  if (typeof uuid !== "string" || !uuid) {
+    return json(
+      {
+        errors: {
+          uuid: "Invalid Username: Username must be a non-empty string",
+          email: null,
+          password: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  const uuidRegex = /^[0-9a-fA-F-_]+$/;
+  if (!uuidRegex.test(uuid)) {
+    return json(
+      {
+        errors: {
+          uuid: "Invalid Username: Username contains invalid characters",
+          email: null,
+          password: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
   if (!validateEmail(email)) {
-    return json({ errors: { email: "Invalid email address", password: null } }, { status: 400 });
+    return json(
+      {
+        errors: { uuid: null, email: "Invalid email address", password: null },
+      },
+      { status: 400 }
+    );
   }
 
   if (typeof password !== "string" || password.length < 8) {
-    return json({ errors: { email: null, password: "Password must be at least 8 characters" } }, { status: 400 });
+    return json(
+      {
+        errors: {
+          uuid: null,
+          email: null,
+          password: "Password must be at least 8 characters",
+        },
+      },
+      { status: 400 }
+    );
   }
 
   const existingUser = await getUserByEmail(email);
   if (existingUser) {
-    return json({ errors: { email: "A user already exists with this email", password: null } }, { status: 400 });
+    return json(
+      {
+        errors: {
+          uuid: null,
+          email: "A user already exists with this E-mail",
+          password: null,
+        },
+      },
+      { status: 400 }
+    );
   }
 
-  const user = await createUser(email, password);
+  const existingUuid = await getUserByUuid(uuid);
+  if (existingUuid) {
+    return json(
+      {
+        errors: {
+          uuid: "A user already exists with this Username",
+          email: null,
+          password: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  const user = await createUser(email, password, uuid);
 
   return createUserSession({
     redirectTo,
@@ -59,6 +128,7 @@ export default function Join() {
   const actionData = useActionData<typeof action>();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const userIdRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (actionData?.errors?.email) {
@@ -81,6 +151,26 @@ export default function Join() {
         </CardHeader>
         <CardContent>
           <Form method="post" className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="uuid">Username</Label>
+              <Input
+                id="uuid"
+                name="uuid"
+                type="text"
+                autoComplete="username"
+                required
+                ref={userIdRef}
+                className="w-full"
+                aria-invalid={actionData?.errors?.uuid ? true : undefined}
+                aria-describedby="uuid-error"
+              />
+              {actionData?.errors?.uuid && (
+                <p className="text-red-600 text-sm" id="uuid-error">
+                  {actionData.errors.uuid}
+                </p>
+              )}
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">Email address</Label>
               <Input
