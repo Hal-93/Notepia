@@ -9,6 +9,7 @@ import ActionBar from "~/components/actionbar";
 import MemoCreateModal from "~/components/memo/create";
 import MemoDetailModal from "~/components/memo/detail";
 import { getUserId } from "~/session.server";
+import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
 import { handleSubscribe } from "~/utils/pushNotification";
 
@@ -64,7 +65,6 @@ export default function MapPage() {
   const [modalLat, setModalLat] = useState(0);
   const [modalLng, setModalLng] = useState(0);
   const [currentLocation, setCurrentLocation]  = useState<[number, number] | null>(null);
-  const [currebtLocationMarker, setCurrentLocationMarker] = useState<mapboxgl.Marker | null>(null);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -160,11 +160,11 @@ export default function MapPage() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-
+          setCurrentLocation([longitude, latitude]);
           const customMarker = document.createElement("div");
           customMarker.style.width = "20px";
           customMarker.style.height = "20px";
-          customMarker.style.backgroundColor = "#007BFF"; // 青色
+          customMarker.style.backgroundColor = "#007BFF"; // 青
           customMarker.style.borderRadius = "50%";
           customMarker.style.border = "3px solid white";
           customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
@@ -286,59 +286,11 @@ export default function MapPage() {
         </Form>
       </div>
       <ActionBar />
-      <div
-        style={{
-          position: "fixed",
-          bottom: "20px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          display: "flex",
-          gap: "10px",
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
-          padding: "10px 20px",
-          borderRadius: "8px",
-        }}
-      >
-        <button
-          onClick={handleZoomIn}
-          style={{
-            color: "#fff",
-            backgroundColor: "#333",
-            border: "none",
-            padding: "8px 12px",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          ズームイン
-        </button>
-        <button
-          onClick={handleZoomOut}
-          style={{
-            color: "#fff",
-            backgroundColor: "#333",
-            border: "none",
-            padding: "8px 12px",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          ズームアウト
-        </button>
-        <button
-          onClick={handleGoToCurrentLocation}
-          style={{
-            color: "#fff",
-            backgroundColor: "#333",
-            border: "none",
-            padding: "8px 12px",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          現在地
-        </button>
-      </div>
+      <Bar
+      handleZoomIn={handleZoomIn}
+      handleZoomOut={handleZoomOut}
+      handleGoToCurrentLocation={handleGoToCurrentLocation}
+       />
       {showModal && (
         <MemoCreateModal
           lat={modalLat}
