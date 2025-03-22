@@ -1,5 +1,5 @@
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useFetcher } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
@@ -12,6 +12,9 @@ import type { Memo } from "@prisma/client";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
+  if (!userId) {
+    return redirect("/login");
+  }
   const { getUsersMemo } = await import("~/models/memo.server");
   const memos = userId ? await getUsersMemo(userId) : [];
   return json({ mapboxToken: process.env.MAPBOX_TOKEN, memos, userId });
