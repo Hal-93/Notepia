@@ -56,6 +56,7 @@ export async function getMemoById(memoId: string): Promise<Memo | null> {
 export async function createMemo(data: {
   title: string;
   content: string;
+  place: string;
   createdById: string;
   groupId?: string;
   latitude?: number;
@@ -66,6 +67,7 @@ export async function createMemo(data: {
     data: {
       title: data.title,
       content: data.content,
+      place: data.place,
       createdBy: { connect: { id: data.createdById } },
       group: data.groupId ? { connect: { id: data.groupId } } : undefined,
       latitude: data.latitude,

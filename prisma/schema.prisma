@@ -30,8 +30,9 @@ model Memo {
   color       String   @default("white")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  content     String
+  content     String?
   completed   Boolean  @default(false)
+  place       String?
   latitude    Float?
   longitude   Float?
   createdBy   User     @relation(fields: [createdById], references: [id])
