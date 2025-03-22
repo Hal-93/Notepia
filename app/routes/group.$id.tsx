@@ -59,7 +59,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       const pngBuffer = await sharp(buffer).png().toBuffer();
       const metadata = { "Content-Type": "image/png" };
       await uploadFile(pngBuffer, `${uuid}.png`, metadata);
-      await updateUserAvatar(userId, `user/${uuid}/avatar`);
+      await updateUserAvatar(userId, `/user/${uuid}/avatar`);
 
       return json(
         { message: "アイコンをアップロードしました。" },

@@ -45,7 +45,7 @@ export default function ActionBar({
     const formData = new FormData();
     formData.append("endpoint", endpoint!);
 
-    const response = await fetch("/checksubscription", {
+    const response = await fetch("/api/checksubscription", {
       method: "POST",
       body: formData,
     });

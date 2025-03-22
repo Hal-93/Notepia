@@ -68,7 +68,7 @@ export default function UserSearch({ onUserAdd }: UserSearchProps) {
             
              <img
                 key={user.id}
-                src={`https://notepia.fly.dev/user/${user.uuid}/avatar`}
+                src={`/user/${user.uuid}/avatar`}
                 alt={user.name}
                 className="rounded-full border-2 border-black object-cover w-8 h-8"
                 style={{ marginLeft: "-10px" }}
