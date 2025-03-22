@@ -1,6 +1,6 @@
 import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { redirect } from "@remix-run/node";
+import { Link } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { getUserId } from "~/session.server";
 
@@ -13,7 +13,7 @@ export const meta: MetaFunction = () => {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await getUserId(request);
-  if (userId) return redirect("/map");
+  if (userId) return redirect("/home");
   return null;
 };
 
