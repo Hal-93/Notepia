@@ -109,11 +109,11 @@ export default function MapPage() {
     mapboxgl.accessToken = mapboxToken;
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: "mapbox://styles/so03jp/cm8k8mtga018g01so5gl9b8w1",
+      style: "mapbox://styles/mapbox/dark-v11",
       center: [139.7590, 35.6840],
       zoom: 16,
       minZoom: 5,
-      pitch: 80,
+      pitch: 45,
       bearing: 85,
       antialias: true,
     });
