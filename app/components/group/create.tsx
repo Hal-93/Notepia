@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useFetcher } from "@remix-run/react";
+import UserSearch from "../search_user";
 
 type GroupCreateProps = {
   currentUserId: string;
@@ -8,6 +9,7 @@ type GroupCreateProps = {
 
 export default function GroupCreateModal({ currentUserId, onClose }: GroupCreateProps) {
   const [name, setName] = useState("");
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const fetcher = useFetcher();
 
   const handleSubmit = () => {
@@ -18,11 +20,25 @@ export default function GroupCreateModal({ currentUserId, onClose }: GroupCreate
     fetcher.submit(
       {
         name,
-        userIds: JSON.stringify([currentUserId]),
+        userIds: JSON.stringify([currentUserId, ...selectedUserIds]),
       },
       { method: "post", action: "/group/create" }
     );
     onClose();
+  };
+
+  const handleUserAdd = (user: {
+    id: string;
+    name: string;
+    email: string;
+    uuid: string;
+    createdAt: Date;
+    updatedAt: Date;
+    avatar: string | null;
+  }) => {
+    if (!selectedUserIds.includes(user.id)) {
+      setSelectedUserIds([...selectedUserIds, user.id]);
+    }
   };
 
   return (
@@ -49,14 +65,8 @@ export default function GroupCreateModal({ currentUserId, onClose }: GroupCreate
           />
         </label>
         
-        <label className="block mb-4">
-          <span className="text-sm">追加するユーザー</span>
-          <input
-            type="text"
-            className="mt-1 w-full rounded bg-gray-800 border border-gray-500 p-2"
-            placeholder="ユーザーを検索"
-          />
-        </label>
+
+        <UserSearch onUserAdd={handleUserAdd} />
         
 
         <button

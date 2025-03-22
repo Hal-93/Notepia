@@ -133,7 +133,7 @@ export default function Home() {
                           src={`https://notepia.fly.dev/user/${user.uuid}/avatar`}
                           alt={user.name}
                           className="rounded-full border-2 border-black object-cover w-8 h-8"
-                          style={{ marginLeft: index === 0 ? 0 : "-10px", zIndex: group.users.length - index }}
+                          style={{ marginLeft: index === 0 ? 0 : "-20px", zIndex: group.users.length - index }}
                         />
                       ))}
                       {group.users.length > 3 && (
