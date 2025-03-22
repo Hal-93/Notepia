@@ -9,6 +9,7 @@ import ActionBar from "~/components/actionbar";
 import MemoCreateModal from "~/components/memo/create";
 import MemoDetailModal from "~/components/memo/detail";
 import { getUserId } from "~/session.server";
+import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
 import { handleSubscribe } from "~/utils/pushNotification";
 
@@ -160,6 +161,18 @@ export default function MapPage() {
         (position) => {
           const { latitude, longitude } = position.coords;
           setCurrentLocation([longitude, latitude]);
+          const customMarker = document.createElement("div");
+          customMarker.style.width = "20px";
+          customMarker.style.height = "20px";
+          customMarker.style.backgroundColor = "#007BFF"; // 青
+          customMarker.style.borderRadius = "50%";
+          customMarker.style.border = "3px solid white";
+          customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
+
+          new mapboxgl.Marker(customMarker)
+            .setLngLat([longitude, latitude])
+            .addTo(map);
+        
         },
         (error: GeolocationPositionError) => {
           console.error("Geolocation error:", error);
@@ -198,8 +211,13 @@ export default function MapPage() {
   const handleZoomOut = () => {
     mapRef.current?.zoomOut();
   };
-  const handleReset = () => {
-    mapRef.current?.easeTo({ center: [139.6917, 35.6895], zoom: 12 });
+  const handleGoToCurrentLocation = () => {
+    if (currentLocation && mapRef.current) {
+      mapRef.current?.flyTo({
+        center: currentLocation,
+        zoom: 14,
+      });
+    }
   };
 
   const handleCloseModal = () => {
@@ -246,15 +264,6 @@ export default function MapPage() {
     }
   };
 
-  const handleReturnToCurrentLocation = () => {
-    if (currentLocation && mapRef.current) {
-      mapRef.current?.flyTo({
-        center: currentLocation,
-        zoom: 14,
-      });
-    }
-  };
-
   return (
     <div style={{ position: "relative" }}>
       <div
@@ -277,59 +286,11 @@ export default function MapPage() {
         </Form>
       </div>
       <ActionBar />
-      <div
-        style={{
-          position: "fixed",
-          bottom: "20px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          display: "flex",
-          gap: "10px",
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
-          padding: "10px 20px",
-          borderRadius: "8px",
-        }}
-      >
-        <button
-          onClick={handleZoomIn}
-          style={{
-            color: "#fff",
-            backgroundColor: "#333",
-            border: "none",
-            padding: "8px 12px",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          ズームイン
-        </button>
-        <button
-          onClick={handleZoomOut}
-          style={{
-            color: "#fff",
-            backgroundColor: "#333",
-            border: "none",
-            padding: "8px 12px",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          ズームアウト
-        </button>
-        <button
-          onClick={handleReset}
-          style={{
-            color: "#fff",
-            backgroundColor: "#333",
-            border: "none",
-            padding: "8px 12px",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          マップリセット
-        </button>
-      </div>
+      <Bar
+      handleZoomIn={handleZoomIn}
+      handleZoomOut={handleZoomOut}
+      handleGoToCurrentLocation={handleGoToCurrentLocation}
+       />
       {showModal && (
         <MemoCreateModal
           lat={modalLat}
