@@ -5,9 +5,11 @@ import { Button } from "~/components/ui/button";
 import ActionBar from "~/components/actionbar";
 import { getUserId } from "~/session.server";
 import { getUserById } from "~/models/user.server";
-import { createGroup, getUserGroups, removeUserFromGroup, deleteGroup } from "~/models/group.server";
+import { createGroup, getUserGroups, removeUserFromGroup, deleteGroup, getUsersByGroup } from "~/models/group.server";
 import GroupCreateModal from "~/components/group/create";
-import type { Group } from "@prisma/client";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGear } from "@fortawesome/free-solid-svg-icons";
+import GroupEditModal from "~/components/group/edit";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -19,13 +21,20 @@ export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUserById(userId);
   const groups = await getUserGroups(userId);
 
+  const groupsWithUsers = await Promise.all(
+    groups.map(async (group) => ({
+      ...group,
+      users: await getUsersByGroup(group.id),
+    }))
+  );
+
   return json({
     userId,
     username: user?.name,
     uuid: user?.uuid,
     avatarUrl: user?.avatar || null,
     memos,
-    groups,
+    groups: groupsWithUsers,
     mapboxToken: process.env.MAPBOX_TOKEN,
     vapidPublicKey: process.env.VAPID_PUBLIC_KEY,
   });
@@ -60,10 +69,20 @@ export const action: ActionFunction = async ({ request }) => {
 export default function Home() {
   const { userId, username, uuid, avatarUrl, groups } = useLoaderData<typeof loader>();
   const [showModal, setShowModal] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const fetcher = useFetcher();
 
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
+  const handleOpenEditModal = (groupId: string, groupName: string) => {
+    setEditingGroup({ id: groupId, name: groupName });
+  };
+  const handleCloseEditModal = () => {
+    setEditingGroup(null);
+  };
 
   const handleLeaveGroup = (groupId: string, groupName: string) => {
     if (confirm(`グループ ${groupName} から脱退しますか？`)) {
@@ -93,22 +112,45 @@ export default function Home() {
         </section>
 
         <section className="w-full max-w-[800px]">
-        <div className="w-full max-w-[800px] flex items-center justify-between mb-3">
-          <h2 className="text-xl font-bold">グループ</h2>
-          <Button
-            className="rounded-full py-4 px-4 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg"
-            onClick={handleOpenModal}
-          >
-            + グループ作成
-          </Button>
-        </div>
+          <div className="w-full max-w-[800px] flex items-center justify-between mb-3">
+            <h2 className="text-xl font-bold">グループ</h2>
+            <Button
+              className="rounded-full py-4 px-4 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg"
+              onClick={handleOpenModal}
+            >
+              + グループ作成
+            </Button>
+          </div>
           {groups.length > 0 ? (
             <div className="space-y-2">
-              {groups.map((group: Group) => (
+              {groups.map((group) => (
                 <div key={group.id} className="flex items-center justify-between bg-gray-800 px-4 py-3 rounded-md">
-                  <Link to={`/group/${group.id}`} className="flex-1 hover:text-gray-300">
-                    {group.name}
+                  <Link to={`/group/${group.id}`} className="flex items-center gap-4 flex-1 hover:text-gray-300">
+                    <div className="flex items-center">
+                      {group.users.slice(0, 3).map((user, index) => (
+                        <img
+                          key={user.id}
+                          src={`https://notepia.fly.dev/user/${user.uuid}/avatar`}
+                          alt={user.name}
+                          className="rounded-full border-2 border-black object-cover w-8 h-8"
+                          style={{ marginLeft: index === 0 ? 0 : "-20px", zIndex: group.users.length - index }}
+                        />
+                      ))}
+                      {group.users.length > 3 && (
+                        <div className="ml-2 text-sm text-gray-300">
+                          +{group.users.length - 3}
+                        </div>
+                      )}
+                    </div>
+                    <span>{group.name}</span>
                   </Link>
+                  <Button
+                    variant="ghost"
+                    className="text-white mr-2"
+                    onClick={() => handleOpenEditModal(group.id, group.name)}
+                  >
+                    <FontAwesomeIcon icon={faGear} />
+                  </Button>
                   <Button
                     variant="destructive"
                     onClick={() => handleLeaveGroup(group.id, group.name)}
@@ -125,6 +167,14 @@ export default function Home() {
       </main>
 
       {showModal && <GroupCreateModal currentUserId={userId} onClose={handleCloseModal} />}
+      {editingGroup && (
+        <GroupEditModal
+          groupId={editingGroup.id}
+          currentName={editingGroup.name}
+          currentUserId={userId}
+          onClose={handleCloseEditModal}
+        />
+      )}
     </div>
   );
 }

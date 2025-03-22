@@ -255,17 +255,22 @@ export default function MapPage() {
     return () => map.remove();
   }, [mapboxToken, memos]);
 
-  const handleZoomIn = () => {
-    mapRef.current?.zoomIn();
+
+  
+
+  const handleMakeFriend = () => {
+    /*フレンド追加機能 */
+  }
+
+  const handleSearchMemo = () => {
+    /*メモの検索機能 */
   };
-  const handleZoomOut = () => {
-    mapRef.current?.zoomOut();
-  };
+
   const handleGoToCurrentLocation = () => {
     if (currentLocation && mapRef.current) {
       mapRef.current?.flyTo({
         center: currentLocation,
-        zoom: 14,
+        zoom: 16,
       });
     }
   };
@@ -343,8 +348,8 @@ export default function MapPage() {
         publicKey={vapidPublicKey}
       />
       <Bar
-        handleZoomIn={handleZoomIn}
-        handleZoomOut={handleZoomOut}
+        handleMakeFriend={handleMakeFriend}
+        handleSearchMemo={handleSearchMemo}
         handleGoToCurrentLocation={handleGoToCurrentLocation}
       />
       {showModal && (

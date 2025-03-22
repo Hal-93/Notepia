@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { useFetcher } from "@remix-run/react";
-import UserSearch from "../search_user";
 
-type GroupCreateProps = {
+type GroupEditProps = {
+  groupId: string;
+  currentName: string;
   currentUserId: string;
   onClose: () => void;
 };
 
-export default function GroupCreateModal({ currentUserId, onClose }: GroupCreateProps) {
-  const [name, setName] = useState("");
-  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+export default function GroupEditModal({
+  groupId,
+  currentName,
+  onClose,
+}: GroupEditProps) {
+  const [name, setName] = useState(currentName);
   const fetcher = useFetcher();
 
   const handleSubmit = () => {
@@ -17,35 +21,23 @@ export default function GroupCreateModal({ currentUserId, onClose }: GroupCreate
       alert("グループ名を入力してください");
       return;
     }
+
     fetcher.submit(
       {
-        name,
-        userIds: JSON.stringify([currentUserId, ...selectedUserIds]),
+        intent: "rename",
+        groupId,
+        newName: name,
       },
-      { method: "post", action: "/group/create" }
+      { method: "post", action: "/group/edit" }
     );
     onClose();
-  };
-
-  const handleUserAdd = (user: {
-    id: string;
-    name: string;
-    email: string;
-    uuid: string;
-    createdAt: Date;
-    updatedAt: Date;
-    avatar: string | null;
-  }) => {
-    if (!selectedUserIds.includes(user.id)) {
-      setSelectedUserIds([...selectedUserIds, user.id]);
-    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
       <div className="relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white">
         <div className="flex justify-between">
-          <h2 className="text-white text-lg font-bold">グループの作成</h2>
+          <h2 className="text-white text-lg font-bold">グループの編集</h2>
           <button
             type="button"
             onClick={onClose}
@@ -64,17 +56,13 @@ export default function GroupCreateModal({ currentUserId, onClose }: GroupCreate
             onChange={(e) => setName(e.target.value)}
           />
         </label>
-        
-
-        <UserSearch onUserAdd={handleUserAdd} />
-        
 
         <button
           type="button"
           onClick={handleSubmit}
           className="w-full py-2 bg-indigo-500 rounded text-white hover:bg-indigo-700"
         >
-          グループを作成する
+          グループを更新する
         </button>
       </div>
     </div>

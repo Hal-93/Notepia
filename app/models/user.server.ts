@@ -81,3 +81,16 @@ export async function verifyLogin(
 
   return userWithoutPassword;
 }
+
+
+export async function searchUsersByUuid(query: string): Promise<User[]> {
+  return prisma.user.findMany({
+    where: {
+      uuid: {
+        contains: query,
+        mode: "insensitive",
+      },
+    },
+    take: 5,
+  });
+}
