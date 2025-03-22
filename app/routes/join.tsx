@@ -7,14 +7,17 @@ import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import { useEffect, useRef } from "react";
 
-import { createUser, getUserByEmail } from "~/models/user.server";
+import {
+  createUser,
+  getUserByEmail,
+  getUserByUuid,
+} from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
 
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await getUserId(request);
@@ -25,12 +28,56 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const email = formData.get("email");
+  const uuid = formData.get("uuid");
   const password = formData.get("password");
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
 
   if (!validateEmail(email)) {
     return json(
-      { errors: { email: "Invalid email address", password: null } },
+      {
+        errors: { uuid: null, email: "Invalid email address", password: null },
+      },
+      { status: 400 }
+    );
+  }
+
+  if (typeof uuid !== "string" || !uuid) {
+    return json(
+      {
+        errors: {
+          uuid: "Invalid Username: Username must be a non-empty string",
+          email: null,
+          password: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  const uuidRegex = /^[0-9a-zA-Z-_]+$/;
+  if (!uuidRegex.test(uuid)) {
+    return json(
+      {
+        errors: {
+          uuid: "Invalid Username: Username contains invalid characters",
+          email: null,
+          password: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  const existingUuid = await getUserByUuid(uuid);
+  if (existingUuid) {
+    return json(
+      {
+        errors: {
+          uuid: "A user already exists with this Username",
+          email: null,
+          password: null,
+        },
+      },
       { status: 400 }
     );
   }
@@ -39,6 +86,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return json(
       {
         errors: {
+          uuid: null,
           email: null,
           password: "Password must be at least 8 characters",
         },
@@ -52,6 +100,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return json(
       {
         errors: {
+          uuid: null,
           email: "A user already exists with this email",
           password: null,
         },
@@ -60,7 +109,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   }
 
-  const user = await createUser(email, password);
+  const user = await createUser(email, password, uuid);
 
   return createUserSession({
     redirectTo,
@@ -78,6 +127,7 @@ export default function Join() {
   const actionData = useActionData<typeof action>();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const uuidRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (actionData?.errors?.email) {
@@ -107,25 +157,25 @@ export default function Join() {
 
             <Form method="post" className="space-y-6 pt-10">
               <div className="space-y-2">
-                <Label htmlFor="" className="text-white">
+                <Label htmlFor="uuid" className="text-white">
                   ユーザーID
                 </Label>
                 <Input
-                  id=""
-                  name=""
-                  type=""
-                  autoComplete=""
+                  id="uuid"
+                  name="uuid"
+                  type="text"
+                  autoComplete="username"
                   required
                   // eslint-disable-next-line jsx-a11y/no-autofocus
                   autoFocus
-                  ref={emailRef}
-                  className="w-full"
-                  aria-invalid={actionData?.errors?.email ? true : undefined}
-                  aria-describedby="email-error"
+                  ref={uuidRef}
+                  className="w-full text-white"
+                  aria-invalid={actionData?.errors?.uuid ? true : undefined}
+                  aria-describedby="uuid-error"
                 />
-                {actionData?.errors?.email && (
-                  <p className="text-red-600 text-sm" id="email-error">
-                    {actionData.errors.email}
+                {actionData?.errors?.uuid && (
+                  <p className="text-red-600 text-sm" id="uuid-error">
+                    {actionData.errors.uuid}
                   </p>
                 )}
               </div>
@@ -143,7 +193,7 @@ export default function Join() {
                   // eslint-disable-next-line jsx-a11y/no-autofocus
                   autoFocus
                   ref={emailRef}
-                  className="w-full"
+                  className="w-full text-white"
                   aria-invalid={actionData?.errors?.email ? true : undefined}
                   aria-describedby="email-error"
                 />
@@ -165,7 +215,7 @@ export default function Join() {
                   autoComplete="new-password"
                   required
                   ref={passwordRef}
-                  className="w-full"
+                  className="w-full text-white"
                   aria-invalid={actionData?.errors?.password ? true : undefined}
                   aria-describedby="password-error"
                 />
@@ -188,9 +238,9 @@ export default function Join() {
             <p className="text-white text-xs text-center md:text-[1vw] pt-[2.5vh] font-md">
               すでに Notepia のアカウントをお持ちですか？{" "}
               <Link
-                to={{ 
+                to={{
                   pathname: "/login",
-                  search: searchParams.toString() 
+                  search: searchParams.toString(),
                 }}
                 className="text-indigo-700 text-xs text-center md:text-[1vw] pt-1 md:font-md font-bold hover:underline hover:text-indigo-900 underline "
               >

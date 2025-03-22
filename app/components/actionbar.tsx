@@ -3,9 +3,6 @@ import { Form } from "@remix-run/react";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
-interface ActionBarProps {
-  onReturnToCurrentLocation: () => void;
-}
 
 export default function ActionBar() {
   const [isOpen, setIsOpen] = useState(false);
