@@ -13,7 +13,7 @@ import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
 import { handleSubscribe } from "~/utils/pushNotification";
 import { Memo } from "@prisma/client";
-import { getUserById, updateUserAvator } from "~/models/user.server";
+import { getUserById, updateUserAvatar } from "~/models/user.server";
 import sharp from "sharp";
 import { uploadFile } from "~/utils/minio.server";
 
@@ -25,7 +25,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUserById(userId!);
   const uuid = user?.uuid;
   const username = user?.name;
-  const avatorUrl = user?.avatar as string | null;
+  const avatarUrl = user?.avatar as string | null;
   return json({
     mapboxToken: process.env.MAPBOX_TOKEN,
     vapidPublicKey: process.env.VAPID_PUBLIC_KEY!,
@@ -33,7 +33,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     userId,
     username,
     uuid,
-    avatorUrl,
+    avatarUrl,
   });
 };
 
@@ -51,7 +51,7 @@ export const action: ActionFunction = async ({ request }) => {
       const pngBuffer = await sharp(buffer).png().toBuffer();
       const metadata = { "Content-Type": "image/png" };
       await uploadFile(pngBuffer, `${uuid}.png`, metadata);
-      await updateUserAvator(userId, `user/${uuid}/avator`);
+      await updateUserAvatar(userId, `user/${uuid}/avatar`);
 
       return json({ message: "アイコンをアップロードしました。" }, { status: 200 });
     } catch (error) {
@@ -89,7 +89,7 @@ export default function MapPage() {
     vapidPublicKey,
     username,
     uuid,
-    avatorUrl,
+    avatarUrl,
   } = useLoaderData<typeof loader>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -328,7 +328,7 @@ export default function MapPage() {
           <Button>Send</Button>
         </Form>
       </div>
-      <ActionBar username={username!} uuid={uuid!} initialAvatorUrl={avatorUrl} />
+      <ActionBar username={username!} uuid={uuid!} initialAvatarUrl={avatarUrl} />
       <Bar
         handleZoomIn={handleZoomIn}
         handleZoomOut={handleZoomOut}

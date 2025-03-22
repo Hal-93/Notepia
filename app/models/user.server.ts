@@ -37,13 +37,13 @@ export async function createUser(
   });
 }
 
-export async function updateUserAvator(id: string, avator: string) {
+export async function updateUserAvatar(id: string, avatar: string) {
   return prisma.user.update({
     where: {
       id,
     },
     data: {
-      avatar: avator,
+      avatar: avatar,
     },
   });
 }
