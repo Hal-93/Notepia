@@ -13,47 +13,83 @@ import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
 import { handleSubscribe } from "~/utils/pushNotification";
 import { Memo } from "@prisma/client";
+import { getUserById, updateUserAvator } from "~/models/user.server";
+import sharp from "sharp";
+import { uploadFile } from "~/utils/minio.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
   if (!userId) return redirect("/login");
   const { getUsersMemo } = await import("~/models/memo.server");
   const memos = userId ? await getUsersMemo(userId) : [];
+  const user = await getUserById(userId!);
+  const uuid = user?.uuid;
+  const username = user?.name;
+  const avatorUrl = user?.avatar as string | null;
   return json({
     mapboxToken: process.env.MAPBOX_TOKEN,
     vapidPublicKey: process.env.VAPID_PUBLIC_KEY!,
     memos,
     userId,
+    username,
+    uuid,
+    avatorUrl,
   });
 };
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const title = formData.get("title") as string;
-  const content = formData.get("content") as string;
-  const place = formData.get("place") as string;
-  const lat = parseFloat(formData.get("lat") as string);
-  const lng = parseFloat(formData.get("lng") as string);
-  const createdById = formData.get("createdById") as string;
-  const color = formData.get("color") as string;
+  const file = formData.get("file") as File;
+  if (file) {
+    const userId = (await getUserId(request)) as string;
+    if (!userId) {
+      return json({ error: "エラーが発生しました。" }, { status: 500 });
+    }
+    const buffer = Buffer.from(await file.arrayBuffer());
+    try {
+      const pngBuffer = await sharp(buffer).png().toBuffer();
+      const metadata = { "Content-Type": "image/png" };
+      await uploadFile(pngBuffer, `${userId}.png`, metadata);
+      await updateUserAvator(userId, `user/${userId}/avator`);
 
-  const { createMemo } = await import("~/models/memo.server");
-  const memo = await createMemo({
-    title,
-    content,
-    place,
-    createdById,
-    latitude: lat,
-    longitude: lng,
-    color,
-  });
+      return json({ message: "アイコンをアップロードしました。" }, { status: 200 });
+    } catch (error) {
+      return json({ error: "エラーが発生しました。" }, { status: 500 });
+    }
+  } else {
+    const title = formData.get("title") as string;
+    const content = formData.get("content") as string;
+    const place = formData.get("place") as string;
+    const lat = parseFloat(formData.get("lat") as string);
+    const lng = parseFloat(formData.get("lng") as string);
+    const createdById = formData.get("createdById") as string;
+    const color = formData.get("color") as string;
 
-  return json({ memo });
+    const { createMemo } = await import("~/models/memo.server");
+    const memo = await createMemo({
+      title,
+      content,
+      place,
+      createdById,
+      latitude: lat,
+      longitude: lng,
+      color,
+    });
+
+    return json({ memo });
+  }
 };
 
 export default function MapPage() {
-  const { mapboxToken, memos, userId, vapidPublicKey } =
-    useLoaderData<typeof loader>();
+  const {
+    mapboxToken,
+    memos,
+    userId,
+    vapidPublicKey,
+    username,
+    uuid,
+    avatorUrl,
+  } = useLoaderData<typeof loader>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const tempMarkerRef = useRef<mapboxgl.Marker | null>(null);
@@ -65,7 +101,9 @@ export default function MapPage() {
   const [showModal, setShowModal] = useState(false);
   const [modalLat, setModalLat] = useState(0);
   const [modalLng, setModalLng] = useState(0);
-  const [currentLocation, setCurrentLocation]  = useState<[number, number] | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<
+    [number, number] | null
+  >(null);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -106,46 +144,45 @@ export default function MapPage() {
 
       memos.forEach((memo) => {
         if (memo.latitude != null && memo.longitude != null) {
-
           const markerEl = document.createElement("div");
           markerEl.style.width = "20px";
           markerEl.style.height = "20px";
 
-          const bgColor = memo.completed ? "#000000" : (memo.color || "#ffffff");
+          const bgColor = memo.completed ? "#000000" : memo.color || "#ffffff";
           markerEl.style.backgroundColor = bgColor;
           markerEl.style.borderRadius = "50%";
           markerEl.style.border = "3px solid white";
           markerEl.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
-      
+
           const marker = new mapboxgl.Marker(markerEl)
             .setLngLat([memo.longitude, memo.latitude])
             .addTo(map);
-      
+
           marker.getElement().addEventListener("click", (e) => {
             e.stopPropagation();
             setSelectedMemo(memo);
             setShowDetail(true);
           });
-      
+
           if (!memo.completed) {
             const popupContent = document.createElement("div");
             popupContent.style.backgroundColor = bgColor;
             popupContent.style.padding = "8px";
             popupContent.style.cursor = "pointer";
             popupContent.innerHTML = `<b>${memo.title}</b>`;
-            
+
             popupContent.addEventListener("click", (e) => {
               e.stopPropagation();
               setSelectedMemo(memo);
               setShowDetail(true);
             });
-            
+
             marker.setPopup(
-              new mapboxgl.Popup({ 
+              new mapboxgl.Popup({
                 offset: 25,
                 closeOnClick: false,
                 closeButton: false,
-               }).setDOMContent(popupContent)
+              }).setDOMContent(popupContent)
             );
 
             marker.togglePopup();
@@ -156,7 +193,7 @@ export default function MapPage() {
 
     map.doubleClickZoom.disable();
     mapRef.current = map;
-  
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -173,13 +210,12 @@ export default function MapPage() {
           new mapboxgl.Marker(customMarker)
             .setLngLat([longitude, latitude])
             .addTo(map);
-        
         },
         (error: GeolocationPositionError) => {
           console.error("Geolocation error:", error);
         }
       );
-    }    
+    }
 
     map.on("dblclick", (e: mapboxgl.MapMouseEvent) => {
       const coordinates = e.lngLat;
@@ -249,7 +285,11 @@ export default function MapPage() {
     formData.append("lng", memoData.lng.toString());
     formData.append("createdById", userId);
     formData.append("color", memoData.color);
-    fetcher.submit(formData, { method: "post", action: "/map", preventScrollReset: true });
+    fetcher.submit(formData, {
+      method: "post",
+      action: "/map",
+      preventScrollReset: true,
+    });
     if (tempMarkerRef.current) {
       const markerEl = tempMarkerRef.current.getElement();
       markerEl.style.backgroundColor = memoData.color;
@@ -287,12 +327,12 @@ export default function MapPage() {
           <Button>Send</Button>
         </Form>
       </div>
-      <ActionBar />
+      <ActionBar username={username!} uuid={uuid!} initialAvatorUrl={avatorUrl} />
       <Bar
-      handleZoomIn={handleZoomIn}
-      handleZoomOut={handleZoomOut}
-      handleGoToCurrentLocation={handleGoToCurrentLocation}
-       />
+        handleZoomIn={handleZoomIn}
+        handleZoomOut={handleZoomOut}
+        handleGoToCurrentLocation={handleGoToCurrentLocation}
+      />
       {showModal && (
         <MemoCreateModal
           lat={modalLat}
