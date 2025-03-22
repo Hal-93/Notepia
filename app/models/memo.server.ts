@@ -13,6 +13,16 @@ export async function getMemosByUser(userId: string): Promise<Memo[]> {
   });
 }
 
+// ユーザー個人メモを全て取得する関数
+export async function getUsersMemo(userId: string): Promise<Memo[]> {
+  return await prisma.memo.findMany({
+    where: {
+      createdById: userId,
+      groupId: null,
+    },
+  });
+}
+
 // グループのメモを全て取得する関数
 export async function getMemosByGroup(groupId: string): Promise<Memo[]> {
   return await prisma.memo.findMany({
@@ -39,15 +49,17 @@ export async function createMemo(data: {
   groupId?: string;
   latitude?: number;
   longitude?: number;
+  color: string;
 }): Promise<Memo> {
   return await prisma.memo.create({
     data: {
       title: data.title,
       content: data.content,
-      createdById: data.createdById,
-      groupId: data.groupId ? data.groupId : null,
+      createdBy: { connect: { id: data.createdById } },
+      group: data.groupId ? { connect: { id: data.groupId } } : undefined,
       latitude: data.latitude,
       longitude: data.longitude,
+      color: data.color,
     },
   });
 }
