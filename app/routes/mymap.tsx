@@ -368,6 +368,7 @@ export default function MapPage() {
         username={username!}
         uuid={uuid!}
         initialAvatarUrl={avatarUrl}
+        publicKey={vapidPublicKey}
       />
       <Bar
         handleSearchMemo={handleSearchMemo}
