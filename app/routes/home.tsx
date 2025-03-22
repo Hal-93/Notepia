@@ -129,7 +129,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-black text-white">
-      <header className="flex items-center justify-between px-6 pt-6">
+      <header className="flex items-center justify-between px-10 pt-10">
         <h1 className="text-4xl font-bold">ホーム</h1>
         <ActionBar
           username={username!}
@@ -139,42 +139,43 @@ export default function Home() {
         />
       </header>
 
-      <main className="flex-1 px-6 py-8 flex flex-col items-center space-y-10">
-        <section className="w-full max-w-[800px]">
-          <h2 className="text-xl font-bold mb-3">マイマップ</h2>
+      <main className="flex-1 px-[40px] py-5 flex flex-col">
+      <h2 className="md:text-[1.7vw] text-lg font-bold py-5 ">マイマップ</h2>
+        <section className="w-full h-[200px] overflow-hidden rounded-xl shadow-lg border border-gray-700">
           <Link to="/mymap">
-            <div className="aspect-[3/2] overflow-hidden rounded-xl shadow-lg border border-gray-700">
               <img
-                className="object-cover w-full h-full"
-                src="https://tk.ismcdn.jp/mwimgs/4/6/1200w/img_46d920c8a05067bf52c9e11fa205e8ad356700.jpg"
+                className="object-cover  w-full h-full"
+                src="/mymapbg.jpeg"
                 alt="My Map"
               />
-            </div>
           </Link>
         </section>
 
-        <section className="w-full max-w-[800px]">
-          <div className="w-full max-w-[800px] flex items-center justify-between mb-3">
-            <h2 className="text-xl font-bold">グループ</h2>
-            <Button
-              className="rounded-full py-4 px-4 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg"
-              onClick={handleOpenModal}
-            >
-              + グループ作成
-            </Button>
+        <section className="w-full">
+          <div className="w-full max-w-[800px] items-center justify-between pt-2">
+            <h2 className="md:text-[1.7vw] text-lg font-bold py-3">グループ</h2>
+            {groups.length === 0 && (
+      <Button
+        className="rounded-full py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg"
+        onClick={handleOpenModal}
+      >
+        + グループ作成
+      </Button>
+    )}
           </div>
           {groups.length > 0 ? (
-            <div className="space-y-2">
+            <div className="flex flex-col md:flex-row gap-2 md:gap-4 space-y-2 md:space-y-0 overflow-x-auto whitespace-nowrap py-2">
               {groups.map((group) => (
                 <div
                   key={group.id}
-                  className="flex items-center justify-between bg-gray-800 px-4 py-3 rounded-md"
+                  className="relative flex flex-col justify-between bg-gray-800 px-4 py-3 rounded-md md:h-[30vh] md:w-[20vw]"
                 >
                   <Link
                     to={`/group/${group.id}`}
-                    className="flex items-center gap-4 flex-1 hover:text-gray-300"
+                    className="flex flex-col hover:text-gray-300"
                   >
-                    <div className="flex items-center">
+                    <span className="text-md truncate w-full block">{group.name}</span>
+                    <div className="flex mt-2">
                       {group.users.slice(0, 3).map((user, index) => (
                         <img
                           key={user.id}
@@ -193,26 +194,35 @@ export default function Home() {
                         </div>
                       )}
                     </div>
-                    <span>{group.name}</span>
+                    
                   </Link>
+
+                  <div className="flex justify-end">
                   <Button
                     variant="ghost"
-                    className="text-white mr-2"
+                    className="text-white w-[10vh]"
                     onClick={() => handleOpenEditModal(group.id, group.name)}
                   >
                     <FontAwesomeIcon icon={faGear} />
                   </Button>
                   <Button
+                    className="w-[10vh]"
                     variant="destructive"
                     onClick={() => handleLeaveGroup(group.id, group.name)}
                   >
                     脱退
                   </Button>
                 </div>
+                </div>
               ))}
+
+              <Button className="w-full md:w-auto flex items-center justify-center bg-gray-700 px-6 py-4 rounded-md md:min-w-[200px] md:h-[30vh] bg-transparent border border-4 border-dotted text-lg" 
+              onClick={handleOpenModal}>
+                  + グループ作成
+                </Button>
             </div>
           ) : (
-            <p className="text-gray-400">参加しているグループがありません。</p>
+            <p className="text-gray-400 pt-2">参加しているグループがありません。</p>
           )}
         </section>
       </main>
