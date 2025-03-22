@@ -1,9 +1,37 @@
-import { Link } from "@remix-run/react";
+import { Link, redirect, json, useLoaderData } from "@remix-run/react";
+import { LoaderFunction } from "@remix-run/node";
 import { Button } from "~/components/ui/button";
 import ActionBar from "~/components/actionbar";
+import { getUserId } from "~/session.server";
+import { getUserById } from "~/models/user.server";
+
+export const loader: LoaderFunction = async ({ request }) => {
+  const userId = await getUserId(request);
+  if (!userId) return redirect("/login");
+  const { getUsersMemo } = await import("~/models/memo.server");
+  const memos = userId ? await getUsersMemo(userId) : [];
+  const user = await getUserById(userId!);
+  const uuid = user?.uuid;
+  const username = user?.name;
+  const avatarUrl = user?.avatar as string | null;
+  return json({
+    mapboxToken: process.env.MAPBOX_TOKEN,
+    vapidPublicKey: process.env.VAPID_PUBLIC_KEY!,
+    memos,
+    userId,
+    username,
+    uuid,
+    avatarUrl,
+  });
+};
 
 export default function Home() {
-  return (
+    const {
+        username,
+        uuid,
+        avatarUrl,
+    } = useLoaderData<typeof loader>();
+    return (
     <div className="flex flex-col min-h-screen bg-black text-white">
       <header className="flex items-center px-4 pt-6">
         <h1 className="mb-3 text-4xl font-bold">ホーム</h1>
@@ -35,7 +63,7 @@ export default function Home() {
 
       <div className="absolute top-6 right-4">
         
-        <ActionBar />
+      <ActionBar username={username!} uuid={uuid!} initialAvatarUrl={avatarUrl} />
       </div>
     </div>
   );

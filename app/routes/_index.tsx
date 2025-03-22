@@ -13,7 +13,7 @@ export const meta: MetaFunction = () => {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await getUserId(request);
-  if (userId) return redirect("/map");
+  if (userId) return redirect("/home");
   return null;
 };
 
