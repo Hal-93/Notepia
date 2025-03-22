@@ -6,9 +6,11 @@
 cp .env.example .env
 docker compose up -d
 npm i
+npx web-push generate-vapid-keys
 npm run setup
 ```
 
+npx web-push generate-vapid-keysで生成したキーを.envに入力する。
 localhost:9001 にアクセスし、アクセスキー、シークレットキーを発行して .env に入力する。
 
 ## 開発サーバーの起動
