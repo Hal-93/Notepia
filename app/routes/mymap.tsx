@@ -52,7 +52,10 @@ export const action: ActionFunction = async ({ request }) => {
       await uploadFile(pngBuffer, `${uuid}.png`, metadata);
       await updateUserAvatar(userId, `user/${uuid}/avatar`);
 
-      return json({ message: "アイコンをアップロードしました。" }, { status: 200 });
+      return json(
+        { message: "アイコンをアップロードしました。" },
+        { status: 200 }
+      );
     } catch (error) {
       return json({ error: "エラーが発生しました。" }, { status: 500 });
     }
@@ -81,36 +84,31 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function MapPage() {
-  const {
-    mapboxToken,
-    memos,
-    userId,
-    username,
-    uuid,
-    avatarUrl,
-  } = useLoaderData<typeof loader>();
+  const { mapboxToken, memos, userId, username, uuid, avatarUrl } =
+    useLoaderData<typeof loader>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const tempMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const fetcher = useFetcher();
-
   const [selectedMemo, setSelectedMemo] = useState<Memo | null>(null);
   const [showDetail, setShowDetail] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
-  const [modalLat, setModalLat] = useState(0);
-  const [modalLng, setModalLng] = useState(0);
+  const [modalLat, setModalLat] = useState(35.684);
+  const [modalLng, setModalLng] = useState(139.759);
   const [currentLocation, setCurrentLocation] = useState<
     [number, number] | null
   >(null);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
+
     mapboxgl.accessToken = mapboxToken;
+
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [139.7590, 35.6840],
+      center: [139.759, 35.684],
       zoom: 16,
       minZoom: 5,
       pitch: 45,
@@ -119,6 +117,7 @@ export default function MapPage() {
     });
 
     map.addControl(new MapboxLanguage({ defaultLanguage: "ja" }));
+    map.doubleClickZoom.disable();
 
     map.on("load", () => {
       map.addSource("mapbox-dem", {
@@ -127,7 +126,9 @@ export default function MapPage() {
         tileSize: 512,
         maxzoom: 16,
       });
+
       map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
+
       map.addLayer({
         id: "3d-buildings",
         source: "composite",
@@ -141,58 +142,77 @@ export default function MapPage() {
           "fill-extrusion-opacity": 0.6,
         },
       });
+    });
 
-      memos.forEach((memo: Memo) => {
-        if (memo.latitude != null && memo.longitude != null) {
-          const markerEl = document.createElement("div");
-          markerEl.style.width = "20px";
-          markerEl.style.height = "20px";
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        map.flyTo({
+          center: [longitude, latitude],
+          zoom: 16,
+        });
+      });
+    }
 
-          const bgColor = memo.completed ? "#000000" : memo.color || "#ffffff";
-          markerEl.style.backgroundColor = bgColor;
-          markerEl.style.borderRadius = "50%";
-          markerEl.style.border = "3px solid white";
-          markerEl.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
+    mapRef.current = map;
+    return () => map.remove();
+  }, [mapboxToken]);
 
-          const marker = new mapboxgl.Marker(markerEl)
-            .setLngLat([memo.longitude, memo.latitude])
-            .addTo(map);
+  useEffect(() => {
+    if (!mapRef.current) return;
 
-          marker.getElement().addEventListener("click", (e) => {
+    const map = mapRef.current;
+
+    document
+      .querySelectorAll(".mapboxgl-marker")
+      .forEach((marker) => marker.remove());
+
+    memos.forEach((memo: Memo) => {
+      if (memo.latitude != null && memo.longitude != null) {
+        const markerEl = document.createElement("div");
+        markerEl.style.width = "20px";
+        markerEl.style.height = "20px";
+        const bgColor = memo.completed ? "#000000" : memo.color || "#ffffff";
+        markerEl.style.backgroundColor = bgColor;
+        markerEl.style.borderRadius = "50%";
+        markerEl.style.border = "3px solid white";
+        markerEl.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
+
+        const marker = new mapboxgl.Marker(markerEl)
+          .setLngLat([memo.longitude, memo.latitude])
+          .addTo(map);
+
+        marker.getElement().addEventListener("click", (e) => {
+          e.stopPropagation();
+          setSelectedMemo(memo);
+          setShowDetail(true);
+        });
+
+        if (!memo.completed) {
+          const popupContent = document.createElement("div");
+          popupContent.style.backgroundColor = bgColor;
+          popupContent.style.padding = "8px";
+          popupContent.style.cursor = "pointer";
+          popupContent.innerHTML = `<b>${memo.title}</b>`;
+
+          popupContent.addEventListener("click", (e) => {
             e.stopPropagation();
             setSelectedMemo(memo);
             setShowDetail(true);
           });
 
-          if (!memo.completed) {
-            const popupContent = document.createElement("div");
-            popupContent.style.backgroundColor = bgColor;
-            popupContent.style.padding = "8px";
-            popupContent.style.cursor = "pointer";
-            popupContent.innerHTML = `<b>${memo.title}</b>`;
+          marker.setPopup(
+            new mapboxgl.Popup({
+              offset: 25,
+              closeOnClick: false,
+              closeButton: false,
+            }).setDOMContent(popupContent)
+          );
 
-            popupContent.addEventListener("click", (e) => {
-              e.stopPropagation();
-              setSelectedMemo(memo);
-              setShowDetail(true);
-            });
-
-            marker.setPopup(
-              new mapboxgl.Popup({
-                offset: 25,
-                closeOnClick: false,
-                closeButton: false,
-              }).setDOMContent(popupContent)
-            );
-
-            marker.togglePopup();
-          }
+          marker.togglePopup();
         }
-      });
+      }
     });
-
-    map.doubleClickZoom.disable();
-    mapRef.current = map;
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -202,7 +222,7 @@ export default function MapPage() {
           const customMarker = document.createElement("div");
           customMarker.style.width = "20px";
           customMarker.style.height = "20px";
-          customMarker.style.backgroundColor = "#007BFF"; // 青
+          customMarker.style.backgroundColor = "#007BFF";
           customMarker.style.borderRadius = "50%";
           customMarker.style.border = "3px solid white";
           customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
@@ -211,13 +231,38 @@ export default function MapPage() {
             .setLngLat([longitude, latitude])
             .addTo(map);
         },
-        (error: GeolocationPositionError) => {
-          console.error("Geolocation error:", error);
-        }
+        (error) => console.error("Geolocation error:", error)
+      );
+    }
+  }, [memos]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    const map = mapRef.current;
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setCurrentLocation([longitude, latitude]);
+          const customMarker = document.createElement("div");
+          customMarker.style.width = "20px";
+          customMarker.style.height = "20px";
+          customMarker.style.backgroundColor = "#007BFF";
+          customMarker.style.borderRadius = "50%";
+          customMarker.style.border = "3px solid white";
+          customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
+
+          new mapboxgl.Marker(customMarker)
+            .setLngLat([longitude, latitude])
+            .addTo(map);
+        },
+        (error) => console.error("Geolocation error:", error)
       );
     }
 
-    map.on("dblclick", (e: mapboxgl.MapMouseEvent) => {
+    map.on("dblclick", (e) => {
       const coordinates = e.lngLat;
 
       const customMarker = document.createElement("div");
@@ -228,19 +273,11 @@ export default function MapPage() {
       customMarker.style.border = "3px solid white";
       customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
 
-      const marker = new mapboxgl.Marker(customMarker)
-        .setLngLat(coordinates)
-        .addTo(map);
-
-      tempMarkerRef.current = marker;
       setModalLat(coordinates.lat);
       setModalLng(coordinates.lng);
       setShowModal(true);
     });
-
-    mapRef.current = map;
-    return () => map.remove();
-  }, [mapboxToken, memos]);
+  }, [modalLat, modalLng, setShowModal]);
 
   const handleZoomIn = () => {
     mapRef.current?.zoomIn();
@@ -323,7 +360,11 @@ export default function MapPage() {
           <Button>ホームに戻る</Button>
         </Form>
       </div>
-      <ActionBar username={username!} uuid={uuid!} initialAvatarUrl={avatarUrl} />
+      <ActionBar
+        username={username!}
+        uuid={uuid!}
+        initialAvatarUrl={avatarUrl}
+      />
       <Bar
         handleZoomIn={handleZoomIn}
         handleZoomOut={handleZoomOut}
