@@ -50,7 +50,7 @@ export const action: ActionFunction = async ({ request }) => {
       const pngBuffer = await sharp(buffer).png().toBuffer();
       const metadata = { "Content-Type": "image/png" };
       await uploadFile(pngBuffer, `${uuid}.png`, metadata);
-      await updateUserAvatar(userId, `/user/${uuid}/avatar`);
+      await updateUserAvatar(userId, `user/${uuid}/avatar`);
 
       return json(
         { message: "アイコンをアップロードしました。" },
@@ -84,15 +84,8 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function MapPage() {
-  const {
-    mapboxToken,
-    memos,
-    userId,
-    username,
-    uuid,
-    avatarUrl,
-    vapidPublicKey,
-  } = useLoaderData<typeof loader>();
+  const { mapboxToken, memos, userId, username, uuid, avatarUrl } =
+    useLoaderData<typeof loader>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const tempMarkerRef = useRef<mapboxgl.Marker | null>(null);
@@ -229,7 +222,7 @@ export default function MapPage() {
     });
   
     memoMarkersRef.current = newMarkers;
-  
+
     return () => {
       newMarkers.forEach((marker) => {
         marker.getPopup()?.remove();
@@ -285,11 +278,6 @@ export default function MapPage() {
     };
   }, [memos, setModalLat, setModalLng, setShowModal]);
   
-
-  const handleMakeFriend = () => {
-    /*フレンド追加機能 */
-  }
-
   const handleSearchMemo = () => {
     /*メモの検索機能 */
   };
@@ -373,10 +361,8 @@ export default function MapPage() {
         username={username!}
         uuid={uuid!}
         initialAvatarUrl={avatarUrl}
-        publicKey={vapidPublicKey}
       />
       <Bar
-        handleMakeFriend={handleMakeFriend}
         handleSearchMemo={handleSearchMemo}
         handleGoToCurrentLocation={handleGoToCurrentLocation}
       />
