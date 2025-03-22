@@ -10,9 +10,8 @@ export async function registerServiceWorker() {
   }
 }
 
-export async function subscribeUser() {
+export async function subscribeUser(publicKey: string) {
   const registration = await navigator.serviceWorker.ready;
-  const publicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
   if (!publicKey) throw new Error("VAPID_PUBLIC_KEY が設定されていません。");
 
@@ -46,12 +45,11 @@ function urlBase64ToUint8Array(base64String: string) {
   }
 }
 
-export const handleSubscribe = async () => {
-  const res = await subscribeUser();
+export const handleSubscribe = async (publicKey: string) => {
+  const res = await subscribeUser(publicKey);
   if (res.method === "add") {
     alert("通知をオンにしました！");
-  }
-  else if(res.method==="remove"){
+  } else if (res.method === "remove") {
     alert("通知をオフにしました...");
   }
 };

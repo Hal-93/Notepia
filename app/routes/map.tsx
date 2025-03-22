@@ -10,11 +10,12 @@ import MemoCreateModal from "~/components/memo/create";
 import { getUserId } from "~/session.server";
 import type { Memo } from "@prisma/client";
 
+
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
   const { getUsersMemo } = await import("~/models/memo.server");
   const memos = userId ? await getUsersMemo(userId) : [];
-  return json({ mapboxToken: process.env.MAPBOX_TOKEN, memos, userId });
+  return json({ mapboxToken: process.env.MAPBOX_TOKEN, memos, userId,vapidPublicKey: process.env.VAPID_PUBLIC_KEY!, });
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -40,11 +41,7 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function MapPage() {
-  const { mapboxToken, memos, userId } = useLoaderData<{
-    mapboxToken: string;
-    memos: Memo[];
-    userId?: string;
-  }>();
+  const { mapboxToken, memos, userId, vapidPublicKey } = useLoaderData<typeof loader>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const tempMarkerRef = useRef<mapboxgl.Marker | null>(null);
@@ -207,6 +204,15 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
+        <div className="fixed top-4 left-5">
+        <Button onClick={() => handleSubscribe(vapidPublicKey)}>
+          Subscribe to Notifications
+        </Button>
+        ;
+        <Form action="/send" method="post">
+          <Button>Send</Button>
+        </Form>
+      </div>
       <ActionBar />
       <div
         style={{
