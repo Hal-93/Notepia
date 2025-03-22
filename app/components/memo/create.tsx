@@ -49,6 +49,14 @@ export default function MemoCreateModal({
   }, [lat, lng]);
 
   const handleSubmit = () => {
+    if (title.trim() === "") {
+        alert("タイトルを入力してください");
+        return;
+    }
+    if (content.trim() === "") {
+        alert("メモの内容を入力してください");
+        return;
+    }
     onSubmit({
       title,
       place,
@@ -109,7 +117,7 @@ export default function MemoCreateModal({
               <button
                 key={c}
                 className={`w-8 h-8 rounded-full border-2 ${
-                  color === c ? "border-white" : "border-transparent"
+                  color === c ? "border-blue-500" : "border-transparent"
                 }`}
                 style={{ backgroundColor: c }}
                 onClick={() => setColor(c)}

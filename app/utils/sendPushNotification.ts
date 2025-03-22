@@ -3,7 +3,7 @@ import { getSubscriptions } from "~/models/subscription.server";
 
 webPush.setVapidDetails(
   "mailto:contact@cyberhub.jp",
-  process.env.VITE_VAPID_PUBLIC_KEY!,
+  process.env.VAPID_PUBLIC_KEY!,
   process.env.VAPID_PRIVATE_KEY!
 );
 
