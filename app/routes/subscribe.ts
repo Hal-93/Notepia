@@ -1,21 +1,23 @@
-import { json } from "@remix-run/node";
+import { ActionFunctionArgs, json } from "@remix-run/node";
 import { getUserId } from "~/session.server";
 import {
   addSubscription,
   isDeviceSubscribed,
-  removeSubscriptions,
+  removeSubscription,
 } from "~/models/subscription.server";
 
-export async function action({ request }: { request: Request }) {
+export async function action({ request }: ActionFunctionArgs) {
   const userId = (await getUserId(request)) as string;
   const subscriptionData = await request.json();
   const endpoint = subscriptionData.endpoint;
   const p256dh = subscriptionData.keys.p256dh;
   const auth = subscriptionData.keys.auth;
+
   const isSubscribed = await isDeviceSubscribed(endpoint);
+
   if (isSubscribed) {
     try {
-      await removeSubscriptions(endpoint);
+      await removeSubscription(endpoint);
       return json({ success: true, method: "remove" });
     } catch (error) {
       console.error("Subscription 削除エラー:", error);

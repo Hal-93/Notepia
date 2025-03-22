@@ -22,7 +22,7 @@ export async function addSubscription(
   });
 }
 
-export async function removeSubscriptions(endpoint: string) {
+export async function removeSubscription(endpoint: string) {
   return await prisma.subscription.delete({
     where: { endpoint: endpoint },
   });
