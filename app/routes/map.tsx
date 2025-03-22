@@ -1,5 +1,5 @@
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useFetcher, Form } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
@@ -7,12 +7,16 @@ import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
 import MemoCreateModal from "~/components/memo/create";
+import MemoDetailModal from "~/components/memo/detail";
 import { getUserId } from "~/session.server";
 import { Button } from "~/components/ui/button";
 import { handleSubscribe } from "~/utils/pushNotification";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
+  if (!userId) {
+    return redirect("/login");
+  }
   const { getUsersMemo } = await import("~/models/memo.server");
   const memos = userId ? await getUsersMemo(userId) : [];
   return json({
@@ -53,9 +57,14 @@ export default function MapPage() {
   const tempMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const fetcher = useFetcher();
 
+  const [selectedMemo, setSelectedMemo] = useState<Memo | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
+
   const [showModal, setShowModal] = useState(false);
   const [modalLat, setModalLat] = useState(0);
   const [modalLng, setModalLng] = useState(0);
+  const [currentLocation, setCurrentLocation]  = useState<[number, number] | null>(null);
+  const [currebtLocationMarker, setCurrentLocationMarker] = useState<mapboxgl.Marker | null>(null);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -96,27 +105,80 @@ export default function MapPage() {
 
       memos.forEach((memo) => {
         if (memo.latitude != null && memo.longitude != null) {
+
           const markerEl = document.createElement("div");
           markerEl.style.width = "20px";
           markerEl.style.height = "20px";
-          markerEl.style.backgroundColor = memo.color || "#ffffff";
+
+          const bgColor = memo.completed ? "#000000" : (memo.color || "#ffffff");
+          markerEl.style.backgroundColor = bgColor;
           markerEl.style.borderRadius = "50%";
           markerEl.style.border = "3px solid white";
           markerEl.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
-
-          new mapboxgl.Marker(markerEl)
+      
+          const marker = new mapboxgl.Marker(markerEl)
             .setLngLat([memo.longitude, memo.latitude])
-            .setPopup(
-              new mapboxgl.Popup({ offset: 25 }).setHTML(
-                `<p>${memo.title}</p><p>${memo.content}</p>`
-              )
-            )
             .addTo(map);
+      
+          marker.getElement().addEventListener("click", (e) => {
+            e.stopPropagation();
+            setSelectedMemo(memo);
+            setShowDetail(true);
+          });
+      
+          if (!memo.completed) {
+            const popupContent = document.createElement("div");
+            popupContent.style.backgroundColor = bgColor;
+            popupContent.style.padding = "8px";
+            popupContent.style.cursor = "pointer";
+            popupContent.innerHTML = `<b>${memo.title}</b>`;
+            
+            popupContent.addEventListener("click", (e) => {
+              e.stopPropagation();
+              setSelectedMemo(memo);
+              setShowDetail(true);
+            });
+            
+            marker.setPopup(
+              new mapboxgl.Popup({ 
+                offset: 25,
+                closeOnClick: false,
+                closeButton: false,
+               }).setDOMContent(popupContent)
+            );
+
+            marker.togglePopup();
+          }
         }
       });
     });
 
     map.doubleClickZoom.disable();
+    mapRef.current = map;
+  
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+
+          const customMarker = document.createElement("div");
+          customMarker.style.width = "20px";
+          customMarker.style.height = "20px";
+          customMarker.style.backgroundColor = "#007BFF"; // 青色
+          customMarker.style.borderRadius = "50%";
+          customMarker.style.border = "3px solid white";
+          customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
+
+          new mapboxgl.Marker(customMarker)
+            .setLngLat([longitude, latitude])
+            .addTo(map);
+        
+        },
+        (error: GeolocationPositionError) => {
+          console.error("Geolocation error:", error);
+        }
+      );
+    }    
 
     map.on("dblclick", (e: mapboxgl.MapMouseEvent) => {
       const coordinates = e.lngLat;
@@ -149,8 +211,13 @@ export default function MapPage() {
   const handleZoomOut = () => {
     mapRef.current?.zoomOut();
   };
-  const handleReset = () => {
-    mapRef.current?.easeTo({ center: [139.6917, 35.6895], zoom: 12 });
+  const handleGoToCurrentLocation = () => {
+    if (currentLocation && mapRef.current) {
+      mapRef.current?.flyTo({
+        center: currentLocation,
+        zoom: 14,
+      });
+    }
   };
 
   const handleCloseModal = () => {
@@ -180,8 +247,7 @@ export default function MapPage() {
     formData.append("lng", memoData.lng.toString());
     formData.append("createdById", userId);
     formData.append("color", memoData.color);
-    fetcher.submit(formData, { method: "post", action: "/map" });
-
+    fetcher.submit(formData, { method: "post", action: "/map", preventScrollReset: true });
     if (tempMarkerRef.current) {
       const markerEl = tempMarkerRef.current.getElement();
       markerEl.style.backgroundColor = memoData.color;
@@ -260,7 +326,7 @@ export default function MapPage() {
           ズームアウト
         </button>
         <button
-          onClick={handleReset}
+          onClick={handleGoToCurrentLocation}
           style={{
             color: "#fff",
             backgroundColor: "#333",
@@ -270,7 +336,7 @@ export default function MapPage() {
             cursor: "pointer",
           }}
         >
-          マップリセット
+          現在地
         </button>
       </div>
       {showModal && (
@@ -279,6 +345,15 @@ export default function MapPage() {
           lng={modalLng}
           onClose={handleCloseModal}
           onSubmit={handleSubmitMemo}
+        />
+      )}
+      {showDetail && selectedMemo && (
+        <MemoDetailModal
+          memo={selectedMemo}
+          onClose={() => {
+            setShowDetail(false);
+            setSelectedMemo(null);
+          }}
         />
       )}
     </div>
