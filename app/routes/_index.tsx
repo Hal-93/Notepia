@@ -52,7 +52,7 @@ export default function Index() {
           <p className="text-white mt-2 md:mt-4 px-3 md:font-semibold font-bold">
             すでに Notepia のアカウントをお持ちですか？
           </p>
-          <p className="text-indigo-700 md:font-semibold font-extrabold mt-0 mb-[20px]">
+          <p className="text-indigo-700 md:font-semibold font-extrabold mt-0 mb-[80px]">
             <Link to="/login">ログイン</Link>
           </p>
         </nav>
