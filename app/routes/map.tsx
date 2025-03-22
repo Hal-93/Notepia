@@ -40,6 +40,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const file = formData.get("file") as File;
+  const uuid = formData.get("uuid") as string;
   if (file) {
     const userId = (await getUserId(request)) as string;
     if (!userId) {
@@ -49,8 +50,8 @@ export const action: ActionFunction = async ({ request }) => {
     try {
       const pngBuffer = await sharp(buffer).png().toBuffer();
       const metadata = { "Content-Type": "image/png" };
-      await uploadFile(pngBuffer, `${userId}.png`, metadata);
-      await updateUserAvator(userId, `user/${userId}/avator`);
+      await uploadFile(pngBuffer, `${uuid}.png`, metadata);
+      await updateUserAvator(userId, `user/${uuid}/avator`);
 
       return json({ message: "アイコンをアップロードしました。" }, { status: 200 });
     } catch (error) {
