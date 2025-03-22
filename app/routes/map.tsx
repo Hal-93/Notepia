@@ -1,6 +1,6 @@
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useLoaderData, useFetcher } from "@remix-run/react";
+import { useLoaderData, useFetcher, Form } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
@@ -9,7 +9,8 @@ import ActionBar from "~/components/actionbar";
 import MemoCreateModal from "~/components/memo/create";
 import MemoDetailModal from "~/components/memo/detail";
 import { getUserId } from "~/session.server";
-import type { Memo } from "@prisma/client";
+import { Button } from "~/components/ui/button";
+import { handleSubscribe } from "~/utils/pushNotification";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -18,7 +19,12 @@ export const loader: LoaderFunction = async ({ request }) => {
   }
   const { getUsersMemo } = await import("~/models/memo.server");
   const memos = userId ? await getUsersMemo(userId) : [];
-  return json({ mapboxToken: process.env.MAPBOX_TOKEN, memos, userId });
+  return json({
+    mapboxToken: process.env.MAPBOX_TOKEN,
+    vapidPublicKey: process.env.VAPID_PUBLIC_KEY!,
+    memos,
+    userId,
+  });
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -44,11 +50,8 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function MapPage() {
-  const { mapboxToken, memos, userId } = useLoaderData<{
-    mapboxToken: string;
-    memos: Memo[];
-    userId?: string;
-  }>();
+  const { mapboxToken, memos, userId, vapidPublicKey } =
+    useLoaderData<typeof loader>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const tempMarkerRef = useRef<mapboxgl.Marker | null>(null);
@@ -213,7 +216,6 @@ export default function MapPage() {
     formData.append("createdById", userId);
     formData.append("color", memoData.color);
     fetcher.submit(formData, { method: "post", action: "/map", preventScrollReset: true });
-  
     if (tempMarkerRef.current) {
       const markerEl = tempMarkerRef.current.getElement();
       markerEl.style.backgroundColor = memoData.color;
@@ -221,7 +223,7 @@ export default function MapPage() {
       tempMarkerRef.current = null;
     }
     setShowModal(false);
-  
+
     if (mapRef.current) {
       mapRef.current.flyTo({
         center: [memoData.lng, memoData.lat],
@@ -242,6 +244,15 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
+      <div className="fixed top-4 left-5">
+        <Button onClick={() => handleSubscribe(vapidPublicKey)}>
+          Subscribe to Notifications
+        </Button>
+        ;
+        <Form action="/send" method="post">
+          <Button>Send</Button>
+        </Form>
+      </div>
       <ActionBar />
       <div
         style={{
