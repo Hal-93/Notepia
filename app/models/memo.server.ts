@@ -43,6 +43,18 @@ export async function getMemosByGroup(groupId: string): Promise<Memo[]> {
   });
 }
 
+// グループの完了していないメモを全て取得する関数
+export async function getNotCompletedMemosByGroup(groupId: string): Promise<Memo[]> {
+  return await prisma.memo.findMany({
+    where: {
+      groupId: groupId,
+      completed: false,
+    },
+  });
+}
+
+
+
 // 特定のメモを取得する関数
 export async function getMemoById(memoId: string): Promise<Memo | null> {
   return await prisma.memo.findUnique({
