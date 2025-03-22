@@ -46,7 +46,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   }
 
-  const uuidRegex = /^[0-9a-fA-F-_]+$/;
+  const uuidRegex = /^[0-9a-zA-Z-_]+$/;
   if (!uuidRegex.test(uuid)) {
     return json(
       {
