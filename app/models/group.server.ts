@@ -2,10 +2,10 @@ import { prisma } from "~/db.server";
 import type { Group, User } from "@prisma/client";
 
 // ユーザーが所属しているグループ一覧を取得する関数
-export async function getUserGroups(userId: string): Promise<Group[]> {
+export async function getUserGroups(userId: string): Promise<(Group & { users: User[] })[]> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { groups: true },
+    include: { groups: { include: { users: true } } },
   });
   return user?.groups || [];
 }
