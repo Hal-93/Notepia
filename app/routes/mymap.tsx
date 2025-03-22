@@ -11,7 +11,6 @@ import MemoDetailModal from "~/components/memo/detail";
 import { getUserId } from "~/session.server";
 import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
-import { handleSubscribe } from "~/utils/pushNotification";
 import { Memo } from "@prisma/client";
 import { getUserById, updateUserAvatar } from "~/models/user.server";
 import sharp from "sharp";
@@ -86,7 +85,6 @@ export default function MapPage() {
     mapboxToken,
     memos,
     userId,
-    vapidPublicKey,
     username,
     uuid,
     avatarUrl,
@@ -143,7 +141,7 @@ export default function MapPage() {
         },
       });
 
-      memos.forEach((memo) => {
+      memos.forEach((memo: Memo) => {
         if (memo.latitude != null && memo.longitude != null) {
           const markerEl = document.createElement("div");
           markerEl.style.width = "20px";
@@ -320,12 +318,8 @@ export default function MapPage() {
         }}
       />
       <div className="fixed top-4 left-5">
-        <Button onClick={() => handleSubscribe(vapidPublicKey)}>
-          Subscribe to Notifications
-        </Button>
-        ;
-        <Form action="/send" method="post">
-          <Button>Send</Button>
+        <Form action="/home">
+          <Button>ホームに戻る</Button>
         </Form>
       </div>
       <ActionBar username={username!} uuid={uuid!} initialAvatarUrl={avatarUrl} />
