@@ -99,7 +99,7 @@ export default function LoginPage() {
               // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
               ref={emailRef}
-              className="w-full"
+              className="w-full text-white"
               aria-invalid={actionData?.errors?.email ? true : undefined}
               aria-describedby="email-error"
             />
@@ -121,7 +121,7 @@ export default function LoginPage() {
               autoComplete="current-password"
               required
               ref={passwordRef}
-              className="w-full"
+              className="w-full text-white"
               aria-invalid={actionData?.errors?.password ? true : undefined}
               aria-describedby="password-error"
             />
