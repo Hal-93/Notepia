@@ -1,68 +1,28 @@
-import type { LoaderFunction, ActionFunction } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
-import { useLoaderData, useFetcher } from "@remix-run/react";
-import { useEffect, useRef, useState } from "react";
+import { json } from "@remix-run/node";
+import { Form, useLoaderData } from "@remix-run/react";
+import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
-import MemoCreateModal from "~/components/memo/create";
-import MemoDetailModal from "~/components/memo/detail";
-import { getUserId } from "~/session.server";
-import type { Memo } from "@prisma/client";
+import { handleSubscribe } from "~/utils/pushNotification";
+import { Button } from "~/components/ui/button";
 
-export const loader: LoaderFunction = async ({ request }) => {
-  const userId = await getUserId(request);
-  if (!userId) {
-    return redirect("/login");
-  }
-  const { getUsersMemo } = await import("~/models/memo.server");
-  const memos = userId ? await getUsersMemo(userId) : [];
-  return json({ mapboxToken: process.env.MAPBOX_TOKEN, memos, userId });
-};
-
-export const action: ActionFunction = async ({ request }) => {
-  const formData = await request.formData();
-  const title = formData.get("title") as string;
-  const content = formData.get("content") as string;
-  const lat = parseFloat(formData.get("lat") as string);
-  const lng = parseFloat(formData.get("lng") as string);
-  const createdById = formData.get("createdById") as string;
-  const color = formData.get("color") as string;
-
-  const { createMemo } = await import("~/models/memo.server");
-  const memo = await createMemo({
-    title,
-    content,
-    createdById,
-    latitude: lat,
-    longitude: lng,
-    color,
+export const loader = async () => {
+  return json({
+    mapboxToken: process.env.MAPBOX_TOKEN,
+    vapidPublicKey: process.env.VAPID_PUBLIC_KEY!,
   });
-
-  return json({ memo });
 };
 
 export default function MapPage() {
-  const { mapboxToken, memos, userId } = useLoaderData<{
-    mapboxToken: string;
-    memos: Memo[];
-    userId?: string;
-  }>();
+  const { mapboxToken, vapidPublicKey } = useLoaderData<typeof loader>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  const tempMarkerRef = useRef<mapboxgl.Marker | null>(null);
-  const fetcher = useFetcher();
-
-  const [selectedMemo, setSelectedMemo] = useState<Memo | null>(null);
-  const [showDetail, setShowDetail] = useState(false);
-
-  const [showModal, setShowModal] = useState(false);
-  const [modalLat, setModalLat] = useState(0);
-  const [modalLng, setModalLng] = useState(0);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
+
     mapboxgl.accessToken = mapboxToken;
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
@@ -82,8 +42,11 @@ export default function MapPage() {
         url: "mapbox://mapbox.terrain-rgb",
         tileSize: 512,
         maxzoom: 14,
+        minzoom: 50,
       });
+
       map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
+
       map.addLayer({
         id: "3d-buildings",
         source: "composite",
@@ -97,139 +60,49 @@ export default function MapPage() {
           "fill-extrusion-opacity": 0.6,
         },
       });
+    });
 
-      memos.forEach((memo) => {
-        if (memo.latitude != null && memo.longitude != null) {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
 
-          const markerEl = document.createElement("div");
-          markerEl.style.width = "20px";
-          markerEl.style.height = "20px";
+          // 現在地用のカスタムマーカー
+          const customMarker = document.createElement("div");
+          customMarker.style.width = "20px";
+          customMarker.style.height = "20px";
+          customMarker.style.backgroundColor = "#007BFF"; // 青色
+          customMarker.style.borderRadius = "50%";
+          customMarker.style.border = "3px solid white";
+          customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
 
-          const bgColor = memo.completed ? "#000000" : (memo.color || "#ffffff");
-          markerEl.style.backgroundColor = bgColor;
-          markerEl.style.borderRadius = "50%";
-          markerEl.style.border = "3px solid white";
-          markerEl.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
-      
-          const marker = new mapboxgl.Marker(markerEl)
-            .setLngLat([memo.longitude, memo.latitude])
+          new mapboxgl.Marker(customMarker)
+            .setLngLat([longitude, latitude])
             .addTo(map);
-      
-          marker.getElement().addEventListener("click", (e) => {
-            e.stopPropagation();
-            setSelectedMemo(memo);
-            setShowDetail(true);
-          });
-      
-          if (!memo.completed) {
-            const popupContent = document.createElement("div");
-            popupContent.style.backgroundColor = bgColor;
-            popupContent.style.padding = "8px";
-            popupContent.style.cursor = "pointer";
-            popupContent.innerHTML = `<b>${memo.title}</b>`;
-            
-            popupContent.addEventListener("click", (e) => {
-              e.stopPropagation();
-              setSelectedMemo(memo);
-              setShowDetail(true);
-            });
-            
-            marker.setPopup(
-              new mapboxgl.Popup({ 
-                offset: 25,
-                closeOnClick: false,
-                closeButton: false,
-               }).setDOMContent(popupContent)
-            );
 
-            marker.togglePopup();
-          }
-        }
-      });
-    });
+          map.flyTo({ center: [longitude, latitude], zoom: 14 });
+        },
+        (error) => console.error("位置情報の取得に失敗:", error),
+        { enableHighAccuracy: true }
+      );
+    }
 
-    map.doubleClickZoom.disable();
-
-    map.on("dblclick", (e: mapboxgl.MapMouseEvent) => {
-      const coordinates = e.lngLat;
-
-      const customMarker = document.createElement("div");
-      customMarker.style.width = "20px";
-      customMarker.style.height = "20px";
-      customMarker.style.backgroundColor = "#007BFF";
-      customMarker.style.borderRadius = "50%";
-      customMarker.style.border = "3px solid white";
-      customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
-
-      const marker = new mapboxgl.Marker(customMarker)
-        .setLngLat(coordinates)
-        .addTo(map);
-
-      tempMarkerRef.current = marker;
-      setModalLat(coordinates.lat);
-      setModalLng(coordinates.lng);
-      setShowModal(true);
-    });
-
-    mapRef.current = map;
     return () => map.remove();
-  }, [mapboxToken, memos]);
+  }, [mapboxToken]);
 
   const handleZoomIn = () => {
-    mapRef.current?.zoomIn();
+    if (mapRef.current) mapRef.current.zoomIn();
   };
+
   const handleZoomOut = () => {
-    mapRef.current?.zoomOut();
+    if (mapRef.current) mapRef.current.zoomOut();
   };
+
   const handleReset = () => {
-    mapRef.current?.easeTo({ center: [139.6917, 35.6895], zoom: 12 });
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    if (tempMarkerRef.current) {
-      tempMarkerRef.current.remove();
-      tempMarkerRef.current = null;
-    }
-  };
-
-  const handleSubmitMemo = (memoData: {
-    title: string;
-    content: string;
-    place: string;
-    color: string;
-    lat: number;
-    lng: number;
-  }) => {
-    if (!userId) {
-      console.error("ユーザーIDが取得できませんでした。");
-      return;
-    }
-    const formData = new FormData();
-    formData.append("title", memoData.title);
-    formData.append("content", memoData.content);
-    formData.append("lat", memoData.lat.toString());
-    formData.append("lng", memoData.lng.toString());
-    formData.append("createdById", userId);
-    formData.append("color", memoData.color);
-    fetcher.submit(formData, { method: "post", action: "/map", preventScrollReset: true });
-  
-    if (tempMarkerRef.current) {
-      const markerEl = tempMarkerRef.current.getElement();
-      markerEl.style.backgroundColor = memoData.color;
-      markerEl.style.boxShadow = `0 0 5px ${memoData.color}`;
-      tempMarkerRef.current = null;
-    }
-    setShowModal(false);
-  
     if (mapRef.current) {
-      mapRef.current.flyTo({
-        center: [memoData.lng, memoData.lat],
-        zoom: mapRef.current.getZoom(),
-      });
+      mapRef.current.easeTo({ center: [139.6917, 35.6895], zoom: 12 });
     }
   };
-
   return (
     <div style={{ position: "relative" }}>
       <div
@@ -242,6 +115,15 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
+      <div className="fixed top-4 left-5">
+        <Button onClick={() => handleSubscribe(vapidPublicKey)}>
+          Subscribe to Notifications
+        </Button>
+        ;
+        <Form action="/send" method="post">
+          <Button>Send</Button>
+        </Form>
+      </div>
       <ActionBar />
       <div
         style={{
@@ -267,7 +149,7 @@ export default function MapPage() {
             cursor: "pointer",
           }}
         >
-          ズームイン
+          ボタン1
         </button>
         <button
           onClick={handleZoomOut}
@@ -280,7 +162,7 @@ export default function MapPage() {
             cursor: "pointer",
           }}
         >
-          ズームアウト
+          ボタン2
         </button>
         <button
           onClick={handleReset}
@@ -293,26 +175,9 @@ export default function MapPage() {
             cursor: "pointer",
           }}
         >
-          マップリセット
+          ボタン3
         </button>
       </div>
-      {showModal && (
-        <MemoCreateModal
-          lat={modalLat}
-          lng={modalLng}
-          onClose={handleCloseModal}
-          onSubmit={handleSubmitMemo}
-        />
-      )}
-      {showDetail && selectedMemo && (
-        <MemoDetailModal
-          memo={selectedMemo}
-          onClose={() => {
-            setShowDetail(false);
-            setSelectedMemo(null);
-          }}
-        />
-      )}
     </div>
   );
 }
