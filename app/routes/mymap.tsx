@@ -279,12 +279,14 @@ export default function MapPage() {
     });
   }, [modalLat, modalLng, setShowModal]);
 
-  const handleZoomIn = () => {
-    mapRef.current?.zoomIn();
+  const handleMakeFriend = () => {
+    /*フレンド追加機能 */
+  }
+
+  const handleSearchMemo = () => {
+    /*メモの検索機能 */
   };
-  const handleZoomOut = () => {
-    mapRef.current?.zoomOut();
-  };
+
   const handleGoToCurrentLocation = () => {
     if (currentLocation && mapRef.current) {
       mapRef.current?.flyTo({
@@ -366,8 +368,8 @@ export default function MapPage() {
         initialAvatarUrl={avatarUrl}
       />
       <Bar
-        handleZoomIn={handleZoomIn}
-        handleZoomOut={handleZoomOut}
+        handleMakeFriend={handleMakeFriend}
+        handleSearchMemo={handleSearchMemo}
         handleGoToCurrentLocation={handleGoToCurrentLocation}
       />
       {showModal && (

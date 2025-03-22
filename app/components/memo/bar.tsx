@@ -1,15 +1,21 @@
 import { Button } from "~/components/ui/button";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faLocationDot,
+  faMagnifyingGlass,
+  faUserPlus,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface BarProps {
-  handleZoomIn: () => void;
-  handleZoomOut: () => void;
+  handleMakeFriend: () => void;
+  handleSearchMemo: () => void;
   handleGoToCurrentLocation: () => void;
 }
 
 const Bar = ({
-  handleZoomIn,
-  handleZoomOut,
-  handleGoToCurrentLocation,
+    handleMakeFriend,
+    handleSearchMemo,
+    handleGoToCurrentLocation,
 }: BarProps) => {
   return (
     <div
@@ -25,45 +31,42 @@ const Bar = ({
         borderRadius: "8px",
       }}
     >
-      <button
-        onClick={handleZoomIn}
+    <Button
+        onClick={handleMakeFriend}
         style={{
-          color: "#fff",
-          backgroundColor: "#333",
           border: "none",
           padding: "8px 12px",
           borderRadius: "4px",
           cursor: "pointer",
         }}
-      >
-        ズームイン
-      </button>
-      <button
-        onClick={handleZoomOut}
+        className="bg-indigo-500 text-white rounded-full w-12 h-12 flex items-center justify-center"
+    >
+    <FontAwesomeIcon icon={faUserPlus} />
+    </Button>
+    <Button
+        onClick={handleSearchMemo}
         style={{
-          color: "#fff",
-          backgroundColor: "#333",
           border: "none",
           padding: "8px 12px",
           borderRadius: "4px",
           cursor: "pointer",
         }}
-      >
-        ズームアウト
-      </button>
-      <button
+        className="bg-indigo-500 text-white rounded-full w-12 h-12 flex items-center justify-center"
+    >
+        <FontAwesomeIcon icon={faMagnifyingGlass} />
+    </Button>
+    <Button
         onClick={handleGoToCurrentLocation}
         style={{
-          color: "#fff",
-          backgroundColor: "#333",
           border: "none",
           padding: "8px 12px",
           borderRadius: "4px",
           cursor: "pointer",
         }}
-      >
-        現在地
-      </button>
+        className="bg-indigo-500 text-white rounded-full w-12 h-12 flex items-center justify-center"
+    >
+    <FontAwesomeIcon icon={faLocationDot} className="text-4xl" />
+    </Button>
     </div>
   );
 };
