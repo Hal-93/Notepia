@@ -173,7 +173,7 @@ export default function MapPage() {
         markerEl.style.width = "20px";
         markerEl.style.height = "20px";
         const bgColor = memo.completed ? "#000000" : memo.color || "#ffffff";
-          markerEl.style.backgroundColor = bgColor;
+        markerEl.style.backgroundColor = bgColor;
         markerEl.style.borderRadius = "50%";
         markerEl.style.border = "3px solid white";
         markerEl.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
@@ -213,6 +213,27 @@ export default function MapPage() {
         }
       }
     });
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setCurrentLocation([longitude, latitude]);
+          const customMarker = document.createElement("div");
+          customMarker.style.width = "20px";
+          customMarker.style.height = "20px";
+          customMarker.style.backgroundColor = "#007BFF";
+          customMarker.style.borderRadius = "50%";
+          customMarker.style.border = "3px solid white";
+          customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
+
+          new mapboxgl.Marker(customMarker)
+            .setLngLat([longitude, latitude])
+            .addTo(map);
+        },
+        (error) => console.error("Geolocation error:", error)
+      );
+    }
   }, [memos]);
 
   useEffect(() => {
@@ -252,11 +273,6 @@ export default function MapPage() {
       customMarker.style.border = "3px solid white";
       customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
 
-      const marker = new mapboxgl.Marker(customMarker)
-        .setLngLat(coordinates)
-        .addTo(map);
-
-      tempMarkerRef.current = marker;
       setModalLat(coordinates.lat);
       setModalLng(coordinates.lng);
       setShowModal(true);

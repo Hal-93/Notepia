@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 
-async function reverseGeocode(lat: number, lng: number, token: string): Promise<string> {
+async function reverseGeocode(
+  lat: number,
+  lng: number,
+  token: string
+): Promise<string> {
   if (!token) {
     throw new Error("MAPBOX_TOKENエラー");
   }
@@ -25,7 +29,7 @@ async function reverseGeocode(lat: number, lng: number, token: string): Promise<
         if (ctx.id.startsWith("region.")) {
           prefecture = ctx.text;
         } else if (ctx.id.startsWith("place.")) {
-          city = ctx.text; 
+          city = ctx.text;
         } else if (ctx.id.startsWith("locality.")) {
           ward = ctx.text;
         }
@@ -83,12 +87,12 @@ export default function MemoCreateModal({
     reverseGeocode(lat, lng, mapboxToken)
       .then((addr) => setPlace(addr))
       .finally(() => setLoadingAddress(false));
-  }, [lat, lng]);
+  }, [lat, lng, mapboxToken]);
 
   const handleSubmit = () => {
     if (title.trim() === "") {
-        alert("タイトルを入力してください");
-        return;
+      alert("タイトルを入力してください");
+      return;
     }
     onSubmit({
       title,
@@ -103,16 +107,25 @@ export default function MemoCreateModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
       <div className="relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white">
-        <div className="flex justify-between items-center h-3" style={{ backgroundColor: color }}>
-        </div><br/>
+        <div
+          className="flex justify-between items-center h-3"
+          style={{ backgroundColor: color }}
+        ></div>
+        <br />
         <div className="flex justify-between">
           <h2 className="text-white text-lg font-bold">メモの作成</h2>
-          <button type="button" onClick={onClose} className="text-white hover:text-red-400">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-white hover:text-red-400"
+          >
             ×
           </button>
         </div>
         <label className="block mb-2">
-          <span className="text-sm">メモ <span className="text-red-500">*</span></span>
+          <span className="text-sm">
+            メモ <span className="text-red-500">*</span>
+          </span>
           <input
             type="text"
             className="mt-1 w-full rounded bg-gray-800 border border-gray-500 p-2"
@@ -122,7 +135,9 @@ export default function MemoCreateModal({
           />
         </label>
         <label className="block mb-2">
-          <span className="text-sm">場所 <span className="text-red-500">*</span></span>
+          <span className="text-sm">
+            場所 <span className="text-red-500">*</span>
+          </span>
           <div className="flex gap-2 items-center">
             <input
               type="text"
