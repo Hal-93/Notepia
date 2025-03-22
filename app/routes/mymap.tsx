@@ -15,6 +15,9 @@ import { Memo } from "@prisma/client";
 import { getUserById, updateUserAvatar } from "~/models/user.server";
 import sharp from "sharp";
 import { uploadFile } from "~/utils/minio.server";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "~/components/ui/drawer";
+import { Input } from "~/components/ui/input";
+import { ScrollArea } from "~/components/ui/scroll-area";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -107,6 +110,35 @@ export default function MapPage() {
     [number, number] | null
   >(null);
   const memoMarkersRef = useRef<mapboxgl.Marker[]>([]);
+
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredMemos, setFilteredMemos] = useState<Memo[]>([]);
+
+useEffect(() => {
+  if (searchQuery.trim() === "") {
+    setFilteredMemos(memos);
+  } else {
+    const lower = searchQuery.toLowerCase();
+    setFilteredMemos(
+      memos.filter((memo: Memo) => memo.title.toLowerCase().includes(lower))
+    );
+  }
+}, [searchQuery, memos]);
+
+const handleSearchMemo = () => {
+  setIsDrawerOpen(true);
+};
+
+const jumpToMemo = (memo: Memo) => {
+  if (mapRef.current) {
+    mapRef.current.flyTo({
+      center: [memo.longitude!, memo.latitude!],
+      zoom: 18,
+    });
+    setIsDrawerOpen(false);
+  }
+};
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -284,10 +316,6 @@ export default function MapPage() {
       map.off("dblclick", () => {});
     };
   }, [memos, setModalLat, setModalLng, setShowModal]);
-  
-  const handleSearchMemo = () => {
-    /*メモの検索機能 */
-  };
 
   const handleGoToCurrentLocation = () => {
     if (currentLocation && mapRef.current) {
@@ -374,6 +402,31 @@ export default function MapPage() {
         handleSearchMemo={handleSearchMemo}
         handleGoToCurrentLocation={handleGoToCurrentLocation}
       />
+      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <DrawerContent className="h-[80%] bg-black text-white">
+          <DrawerHeader>
+            <DrawerTitle>メモを検索</DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-4">
+            <Input
+              placeholder="タイトルで検索"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <ScrollArea className="h-64 mt-4">
+              {filteredMemos.map((memo) => (
+              <div
+                key={memo.id}
+                className="p-2 bg-white text-black border-b cursor-pointer hover:bg-gray-200 transition"
+                onClick={() => jumpToMemo(memo)}
+              >
+                {memo.title}
+              </div>
+              ))}
+            </ScrollArea>
+          </div>
+          </DrawerContent>
+        </Drawer>
       {showModal && (
         <MemoCreateModal
           lat={modalLat}
