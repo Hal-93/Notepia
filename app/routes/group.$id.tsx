@@ -17,30 +17,32 @@ import sharp from "sharp";
 import { uploadFile } from "~/utils/minio.server";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-    const userId = await getUserId(request);
-    if (!userId) throw redirect("/login");
-  
-    const groupId = params.id;
-    if (!groupId) throw new Response("グループIDが指定されていません", { status: 400 });
-  
-    const { getMemosByGroup } = await import("~/models/memo.server");
-    const groupMemos = await getMemosByGroup(groupId);
-  
-    const user = await getUserById(userId);
-    if (!user) throw redirect("/login");
-  
-    const mapboxToken = process.env.MAPBOX_TOKEN;
-    if (!mapboxToken) throw new Response("サーバー設定エラー", { status: 500 });
-  
-    return json({
-      mapboxToken,
-      memos: groupMemos,
-      userId,
-      username: user.name,
-      uuid: user.uuid,
-      avatarUrl: user.avatar,
-      groupId,
-    });
+  const userId = await getUserId(request);
+  if (!userId) throw redirect("/login");
+
+  const groupId = params.id;
+  if (!groupId)
+    throw new Response("グループIDが指定されていません", { status: 400 });
+
+  const { getMemosByGroup } = await import("~/models/memo.server");
+  const groupMemos = await getMemosByGroup(groupId);
+
+  const user = await getUserById(userId);
+  if (!user) throw redirect("/login");
+
+  const mapboxToken = process.env.MAPBOX_TOKEN;
+  if (!mapboxToken) throw new Response("サーバー設定エラー", { status: 500 });
+
+  return json({
+    vapidPublicKey: process.env.VAPID_PUBLIC_KEY!,
+    mapboxToken,
+    memos: groupMemos,
+    userId,
+    username: user.name,
+    uuid: user.uuid,
+    avatarUrl: user.avatar,
+    groupId,
+  });
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -59,7 +61,10 @@ export const action: ActionFunction = async ({ request, params }) => {
       await uploadFile(pngBuffer, `${uuid}.png`, metadata);
       await updateUserAvatar(userId, `user/${uuid}/avatar`);
 
-      return json({ message: "アイコンをアップロードしました。" }, { status: 200 });
+      return json(
+        { message: "アイコンをアップロードしました。" },
+        { status: 200 }
+      );
     } catch (error) {
       return json({ error: "エラーが発生しました。" }, { status: 500 });
     }
@@ -98,6 +103,7 @@ export default function MapPage() {
     uuid,
     avatarUrl,
     groupId,
+    vapidPublicKey,
   } = useLoaderData<typeof loader>();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -117,7 +123,7 @@ export default function MapPage() {
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
-  
+
     mapboxgl.accessToken = mapboxToken;
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
@@ -128,9 +134,9 @@ export default function MapPage() {
       pitch: 45,
       antialias: true,
     });
-  
+
     map.addControl(new MapboxLanguage({ defaultLanguage: "ja" }));
-  
+
     map.on("load", () => {
       map.addSource("mapbox-dem", {
         type: "raster-dem",
@@ -139,40 +145,42 @@ export default function MapPage() {
         maxzoom: 14,
       });
       map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
-  
+
       memos.forEach((memo: Memo) => {
         if (memo.latitude != null && memo.longitude != null) {
           const markerEl = document.createElement("div");
           markerEl.style.width = "20px";
           markerEl.style.height = "20px";
-          markerEl.style.backgroundColor = memo.completed ? "#888888" : memo.color || "#ffffff";
+          markerEl.style.backgroundColor = memo.completed
+            ? "#888888"
+            : memo.color || "#ffffff";
           markerEl.style.borderRadius = "50%";
           markerEl.style.border = "3px solid white";
           markerEl.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
-  
+
           const marker = new mapboxgl.Marker(markerEl)
             .setLngLat([memo.longitude, memo.latitude])
             .addTo(map);
-  
+
           marker.getElement().addEventListener("click", (e) => {
             e.stopPropagation();
             setSelectedMemo(memo);
             setShowDetail(true);
           });
-  
+
           if (!memo.completed) {
             const popupContent = document.createElement("div");
             popupContent.style.backgroundColor = memo.color || "#ffffff";
             popupContent.style.padding = "8px";
             popupContent.style.cursor = "pointer";
             popupContent.innerHTML = `<b>${memo.title}</b>`;
-  
+
             popupContent.addEventListener("click", (e) => {
               e.stopPropagation();
               setSelectedMemo(memo);
               setShowDetail(true);
             });
-  
+
             marker.setPopup(
               new mapboxgl.Popup({
                 offset: 25,
@@ -180,19 +188,19 @@ export default function MapPage() {
                 closeButton: false,
               }).setDOMContent(popupContent)
             );
-  
+
             marker.togglePopup();
           }
         }
       });
     });
-  
+
     map.doubleClickZoom.disable();
-  
+
     // 🔽 ここから追加: ダブルクリックでモーダルを表示する
     map.on("dblclick", (e: mapboxgl.MapMouseEvent) => {
       const coordinates = e.lngLat;
-  
+
       // 仮のマーカーを設置
       const customMarker = document.createElement("div");
       customMarker.style.width = "20px";
@@ -201,37 +209,38 @@ export default function MapPage() {
       customMarker.style.borderRadius = "50%";
       customMarker.style.border = "3px solid white";
       customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
-  
+
       const marker = new mapboxgl.Marker(customMarker)
         .setLngLat(coordinates)
         .addTo(map);
-  
+
       tempMarkerRef.current = marker;
-  
+
       setModalLat(coordinates.lat);
       setModalLng(coordinates.lng);
       setShowModal(true);
     });
-  
+
     // 🔽 現在地を取得・表示する処理を追加
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           setCurrentLocation([longitude, latitude]);
-  
+
           const currentLocationMarker = document.createElement("div");
           currentLocationMarker.style.width = "20px";
           currentLocationMarker.style.height = "20px";
           currentLocationMarker.style.backgroundColor = "#007BFF";
           currentLocationMarker.style.borderRadius = "50%";
           currentLocationMarker.style.border = "3px solid white";
-          currentLocationMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
-  
+          currentLocationMarker.style.boxShadow =
+            "0 0 5px rgba(0, 0, 255, 0.5)";
+
           new mapboxgl.Marker(currentLocationMarker)
             .setLngLat([longitude, latitude])
             .addTo(map);
-  
+
           map.flyTo({ center: [longitude, latitude], zoom: 14 });
         },
         (error) => {
@@ -240,13 +249,11 @@ export default function MapPage() {
         { enableHighAccuracy: true }
       );
     }
-  
+
     mapRef.current = map;
-  
+
     return () => map.remove();
   }, [mapboxToken, memos]);
-
-  
 
   const handleZoomIn = () => {
     mapRef.current?.zoomIn();
@@ -329,7 +336,12 @@ export default function MapPage() {
           <Button>ホームに戻る</Button>
         </Form>
       </div>
-      <ActionBar username={username!} uuid={uuid!} initialAvatarUrl={avatarUrl} />
+      <ActionBar
+        username={username!}
+        uuid={uuid!}
+        initialAvatarUrl={avatarUrl}
+        publicKey={vapidPublicKey}
+      />
       <Bar
         handleZoomIn={handleZoomIn}
         handleZoomOut={handleZoomOut}

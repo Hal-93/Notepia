@@ -84,8 +84,15 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function MapPage() {
-  const { mapboxToken, memos, userId, username, uuid, avatarUrl } =
-    useLoaderData<typeof loader>();
+  const {
+    mapboxToken,
+    memos,
+    userId,
+    username,
+    uuid,
+    avatarUrl,
+    vapidPublicKey,
+  } = useLoaderData<typeof loader>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const tempMarkerRef = useRef<mapboxgl.Marker | null>(null);
@@ -364,6 +371,7 @@ export default function MapPage() {
         username={username!}
         uuid={uuid!}
         initialAvatarUrl={avatarUrl}
+        publicKey={vapidPublicKey}
       />
       <Bar
         handleZoomIn={handleZoomIn}
