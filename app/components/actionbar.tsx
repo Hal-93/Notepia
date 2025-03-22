@@ -7,7 +7,7 @@ interface ActionBarProps {
   onReturnToCurrentLocation: () => void;
 }
 
-export default function ActionBar({ onReturnToCurrentLocation }: ActionBarProps) {
+export default function ActionBar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -26,12 +26,6 @@ export default function ActionBar({ onReturnToCurrentLocation }: ActionBarProps)
           <Form action="/logout" method="post">
             <Button className="w-full">ログアウト</Button>
           </Form>
-          <Button
-            className="w-full"
-            onClick={onReturnToCurrentLocation} // 現在地に戻るボタン
-          >
-            現在地に戻る
-          </Button>
         </PopoverContent>
       </Popover>
     </div>

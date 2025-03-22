@@ -13,6 +13,27 @@ export async function getMemosByUser(userId: string): Promise<Memo[]> {
   });
 }
 
+// ユーザー個人メモを全て取得する関数
+export async function getUsersMemo(userId: string): Promise<Memo[]> {
+  return await prisma.memo.findMany({
+    where: {
+      createdById: userId,
+      groupId: null,
+    },
+  });
+}
+
+// ユーザーの完了していない個人メモを全て取得する関数
+export async function getNotCompletedUsersMemo(userId: string): Promise<Memo[]> {
+  return await prisma.memo.findMany({
+    where: {
+      createdById: userId,
+      groupId: null,
+      completed: false,
+    },
+  });
+}
+
 // グループのメモを全て取得する関数
 export async function getMemosByGroup(groupId: string): Promise<Memo[]> {
   return await prisma.memo.findMany({
@@ -35,19 +56,23 @@ export async function getMemoById(memoId: string): Promise<Memo | null> {
 export async function createMemo(data: {
   title: string;
   content: string;
+  place: string;
   createdById: string;
   groupId?: string;
   latitude?: number;
   longitude?: number;
+  color: string;
 }): Promise<Memo> {
   return await prisma.memo.create({
     data: {
       title: data.title,
       content: data.content,
-      createdById: data.createdById,
-      groupId: data.groupId ? data.groupId : null,
+      place: data.place,
+      createdBy: { connect: { id: data.createdById } },
+      group: data.groupId ? { connect: { id: data.groupId } } : undefined,
       latitude: data.latitude,
       longitude: data.longitude,
+      color: data.color,
     },
   });
 }
@@ -77,5 +102,13 @@ export async function getCompletedMemosByUser(userId: string): Promise<Memo[]> {
       createdById: userId,
       completed: true,
     },
+  });
+}
+
+// メモを完了にする関数
+export async function completeMemo(memoId: string): Promise<Memo> {
+  return await prisma.memo.update({
+    where: { id: memoId },
+    data: { completed: true },
   });
 }
