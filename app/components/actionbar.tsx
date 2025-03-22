@@ -14,25 +14,59 @@ import {
   DrawerHeader,
   DrawerTrigger,
 } from "./ui/drawer";
+import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
+import { getPushEndpoint, handleSubscribe } from "~/utils/pushNotification";
 
 export default function ActionBar({
   username,
   initialAvatarUrl,
   uuid,
+  publicKey,
 }: {
   username: string;
   initialAvatarUrl: string | null;
   uuid: string;
+  publicKey: string;
 }) {
   const [isClient, setIsClient] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
   const [isProfileChange, setIsProfileChange] = useState(false);
+  const [isSetting, setIsSetting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  async function checkSubscription() {
+    const endpoint = await getPushEndpoint();
+    const formData = new FormData();
+    formData.append("endpoint", endpoint!);
+
+    const response = await fetch("/checksubscription", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to check subscription status");
+    }
+
+    const data = await response.json();
+    setIsSubscribed(data.isSubscribed);
+  }
+
+  useEffect(() => {
+    checkSubscription();
+  }, []);
+
+  const toggleSubscription =async () => {
+    await setIsSubscribed((x) => !x);
+    await handleSubscribe(publicKey);
+    checkSubscription();
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
@@ -91,7 +125,7 @@ export default function ActionBar({
   }, []);
 
   const refreshImage = () => {
-    setAvatarUrl(`user/${uuid}/avatar?t=${new Date().getTime()}`);
+    setAvatarUrl(`/user/${uuid}/avatar?t=${new Date().getTime()}`);
   };
 
   if (!isClient) return null;
@@ -126,10 +160,11 @@ export default function ActionBar({
         >
           <DrawerHeader className="w-full flex justify-between items-center">
             <div>
-              {isProfileChange ? (
+              {isProfileChange || isSetting ? (
                 <Button
                   onClick={() => {
                     setIsProfileChange(false);
+                    setIsSetting(false);
                   }}
                   className="p-5"
                   style={{
@@ -150,13 +185,7 @@ export default function ActionBar({
                     height: "3rem",
                   }}
                 >
-                  <Button
-                    onClick={() => {
-                      setIsProfileChange(false);
-                    }}
-                    className="p-5"
-                    style={{ backgroundColor: "black" }}
-                  >
+                  <Button className="p-5" style={{ backgroundColor: "black" }}>
                     <FontAwesomeIcon
                       icon={faChevronLeft}
                       style={{ height: "3rem" }}
@@ -166,11 +195,17 @@ export default function ActionBar({
               )}
             </div>
 
-            {isProfileChange ? (
+            {isProfileChange || isSetting ? (
               <div className="p-5"></div>
             ) : (
               <div>
-                <Button className="p-5" style={{ backgroundColor: "black" }}>
+                <Button
+                  className="p-5"
+                  style={{ backgroundColor: "black" }}
+                  onClick={() => {
+                    setIsSetting(true);
+                  }}
+                >
                   <FontAwesomeIcon
                     icon={faGear}
                     style={{ height: "3rem", width: "3rem" }}
@@ -180,110 +215,131 @@ export default function ActionBar({
             )}
           </DrawerHeader>
 
-          <div className="p-4 relative inline-block">
-            {isProfileChange && (
-              <input
-                type="file"
-                id="fileInput"
-                multiple
-                accept="image/*"
-                ref={fileInputRef}
-                style={{ display: "none" }}
-                onChange={handleFileChange}
-              />
-            )}
-            {previewUrl ? (
-              <button
-                onClick={handleButtonClick}
-                className="p-0 border-0 bg-transparent"
-                style={{ display: "inline-flex" }}
-              >
-                <img
-                  src={previewUrl}
-                  alt={username}
-                  className="rounded-full cursor-pointer"
-                  style={{ height: "7rem", width: "7rem" }}
-                />
-              </button>
-            ) : avatarUrl ? (
-              <button
-                onClick={handleButtonClick}
-                className="p-0 border-0 bg-transparent"
-                style={{ display: "inline-flex" }}
-              >
-                <img
-                  src={avatarUrl}
-                  alt={username}
-                  className="rounded-full cursor-pointer"
-                  style={{ height: "7rem", width: "7rem" }}
-                />
-              </button>
-            ) : (
-              <Avatar size="7rem" name={uuid} variant="beam" />
-            )}
+          {isSetting ? (
+            <div className="flex">
+              <div className="p-4 flex flex-col">
+                <div className="text-white" style={{ fontSize: "2rem" }}>
+                  通知
+                </div>
+                <div className="text-gray-700" style={{ fontSize: "1rem" }}>
+                  通知の有無を切り替えられます。
+                </div>
+              </div>
+              <div className="p-7">
+                <Switch
+                  checked={isSubscribed}
+                  onClick={toggleSubscription}
+                  className="relative inline-flex items-center h-10 w-16 bg-gray-200 rounded-full p-1"
+                ></Switch>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="p-4 relative inline-block">
+                {isProfileChange && (
+                  <input
+                    type="file"
+                    id="fileInput"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    style={{ display: "none" }}
+                    onChange={handleFileChange}
+                  />
+                )}
+                {previewUrl ? (
+                  <button
+                    onClick={handleButtonClick}
+                    className="p-0 border-0 bg-transparent"
+                    style={{ display: "inline-flex" }}
+                  >
+                    <img
+                      src={previewUrl}
+                      alt={username}
+                      className="rounded-full cursor-pointer"
+                      style={{ height: "7rem", width: "7rem" }}
+                    />
+                  </button>
+                ) : avatarUrl ? (
+                  <button
+                    onClick={handleButtonClick}
+                    className="p-0 border-0 bg-transparent"
+                    style={{ display: "inline-flex" }}
+                  >
+                    <img
+                      src={avatarUrl}
+                      alt={username}
+                      className="rounded-full cursor-pointer"
+                      style={{ height: "7rem", width: "7rem" }}
+                    />
+                  </button>
+                ) : (
+                  <Avatar size="7rem" name={uuid} variant="beam" />
+                )}
 
-            {isProfileChange ? (
-              <FontAwesomeIcon
-                icon={faPen}
-                className="absolute top-0 right-0 bg-white p-1 rounded-full shadow  -translate-x-2/3 translate-y-2/3"
-              />
-            ) : null}
-          </div>
+                {isProfileChange ? (
+                  <FontAwesomeIcon
+                    icon={faPen}
+                    className="absolute top-0 right-0 bg-white p-1 rounded-full shadow  -translate-x-2/3 translate-y-2/3"
+                  />
+                ) : null}
+              </div>
 
-          <div className="text-white p-2">@{uuid}</div>
-          {isProfileChange ? (
-            <div
-              className="w-full "
-              style={{
-                alignItems: "center",
-                display: "flex",
-                flexFlow: "column",
-              }}
-            >
-              <div className="p-0 ali" style={{ width: "90%" }}>
-                <Label htmlFor="email" className="text-white">
-                  ユーザー名
-                </Label>
-                <Input
-                  id="username"
-                  name="username"
-                  type="username"
-                  autoComplete="username"
-                  required
-                  // eslint-disable-next-line jsx-a11y/no-autofocus
-                  autoFocus
-                  //ref={emailRef}
-                  className="w-full text-white"
-                  //aria-invalid={actionData?.errors?.email ? true : undefined}
-                  aria-describedby="username-error"
-                />
-                {/*actionData?.errors?.email && (
+              <div className="text-white p-2">@{uuid}</div>
+              {isProfileChange ? (
+                <div
+                  className="w-full "
+                  style={{
+                    alignItems: "center",
+                    display: "flex",
+                    flexFlow: "column",
+                  }}
+                >
+                  <div className="p-0 ali" style={{ width: "90%" }}>
+                    <Label htmlFor="email" className="text-white">
+                      ユーザー名
+                    </Label>
+                    <Input
+                      id="username"
+                      name="username"
+                      type="username"
+                      autoComplete="username"
+                      required
+                      // eslint-disable-next-line jsx-a11y/no-autofocus
+                      autoFocus
+                      //ref={emailRef}
+                      className="w-full text-white"
+                      //aria-invalid={actionData?.errors?.email ? true : undefined}
+                      aria-describedby="username-error"
+                    />
+                    {/*actionData?.errors?.email && (
                 <p className="text-red-600 text-sm" id="email-error">
                   {actionData.errors.email}
                 </p>
               )*/}
-              </div>
-              <Button
-                onClick={() => {
-                  setIsProfileChange(true);
-                  handleUpload();
-                }}
-                className="p-5 mt-5 bg-white text-black bg-indigo-500"
-                style={{ width: "90%" }}
-              >
-                保存
-              </Button>
-            </div>
-          ) : (
-            <Button
-              onClick={() => {
-                setIsProfileChange(true);
-              }}
-              className="p-5 bg-white text-black"
-              style={{ width: "90%" }}
-            >
-              プロフィールを編集
-            </Button>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      setIsProfileChange(true);
+                      handleUpload();
+                    }}
+                    className="p-5 mt-5 bg-white text-black bg-indigo-500"
+                    style={{ width: "90%" }}
+                  >
+                    保存
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => {
+                    setIsProfileChange(true);
+                  }}
+                  className="p-5 bg-white text-black"
+                  style={{ width: "90%" }}
+                >
+                  プロフィールを編集
+                </Button>
+              )}
+            </>
           )}
         </DrawerContent>
       </Drawer>

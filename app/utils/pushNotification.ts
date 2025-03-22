@@ -46,10 +46,22 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 export const handleSubscribe = async (publicKey: string) => {
-  const res = await subscribeUser(publicKey);
-  if (res.method === "add") {
-    alert("通知をオンにしました！");
-  } else if (res.method === "remove") {
-    alert("通知をオフにしました...");
-  }
+  await subscribeUser(publicKey);
 };
+
+export async function getPushEndpoint() {
+  if (!("serviceWorker" in navigator)) {
+    console.error("Service Worker not supported.");
+    return null;
+  }
+
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.getSubscription();
+
+  if (subscription) {
+    return subscription.endpoint;
+  } else {
+    console.warn("No active push subscription found.");
+    return null;
+  }
+}
