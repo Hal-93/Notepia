@@ -185,7 +185,6 @@ export default function ActionBar({
               <input
                 type="file"
                 id="fileInput"
-                multiple
                 accept="image/*"
                 ref={fileInputRef}
                 style={{ display: "none" }}
