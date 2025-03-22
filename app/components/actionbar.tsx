@@ -1,8 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import { Form } from "@remix-run/react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faChevronLeft,
+  faGear,
+  faPen,
+} from "@fortawesome/free-solid-svg-icons";
 import Avatar from "boring-avatars";
 import { Button } from "./ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "./ui/drawer";
 
 export default function ActionBar({
   username,
@@ -16,7 +30,7 @@ export default function ActionBar({
   const [isClient, setIsClient] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
-  const [isAvatarChange, setIsAvatarChange] = useState(false);
+  const [isProfileChange, setIsProfileChange] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     setIsClient(true);
@@ -27,10 +41,6 @@ export default function ActionBar({
   };
 
   if (!isClient) return null;
-
-  const toggleAvatarChange = () => {
-    setIsAvatarChange((x) => !x);
-  };
 
   const handleButtonClick = () => {
     fileInputRef.current?.click();
@@ -59,7 +69,7 @@ export default function ActionBar({
 
       if (res.ok) {
         refreshImage();
-        setIsAvatarChange(false);
+        setIsProfileChange(false);
       } else {
         alert("ファイルのアップロードに失敗しました。");
       }
@@ -68,31 +78,92 @@ export default function ActionBar({
 
   return (
     <div className="fixed top-4 right-5 z-10">
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <div>
-            {isOpen ? (
-              <Button
-                variant="ghost"
-                className="rounded-full bg-gray-800 text-white shadow-lg hover:bg-gray-700 transition"
-                style={{ height: "4rem", width: "4rem" }}
-                onClick={() => setIsAvatarChange(false)}
+      <Drawer>
+        <DrawerTrigger asChild>
+          {avatarUrl ? (
+            <img
+              src={`${avatarUrl}`}
+              alt={username}
+              className="rounded-full"
+              style={{ height: "4rem", width: "4rem" }}
+            />
+          ) : (
+            <Avatar size={"4rem"} name={uuid} variant="beam" />
+          )}
+        </DrawerTrigger>
+        <DrawerContent
+          className="h-full md:w-1/2 w-full mx-auto"
+          style={{
+            alignItems: "center",
+            display: "flex",
+            flexFlow: "column",
+            backgroundColor: "black",
+          }}
+        >
+          <DrawerHeader className="w-full flex justify-between items-center">
+            <div>
+              <DrawerClose
+                style={{
+                  width: "5rem",
+                  height: "3rem",
+                }}
               >
-                ✖
-              </Button>
-            ) : avatarUrl ? (
+                <Button className="p-5" style={{ backgroundColor: "black" }}>
+                  <FontAwesomeIcon
+                    icon={faChevronLeft}
+                    style={{ height: "3rem" }}
+                  />
+                </Button>
+              </DrawerClose>
+            </div>
+
+            {isProfileChange ? <div></div> : (
+              <div>
+                <Button className="p-5" style={{ backgroundColor: "black" }}>
+                  <FontAwesomeIcon
+                    icon={faGear}
+                    style={{ height: "3rem", width: "3rem" }}
+                  />
+                </Button>
+              </div>
+            )}
+          </DrawerHeader>
+
+          <div className="p-4 relative inline-block">
+            {avatarUrl ? (
               <img
-                src={`${avatarUrl}`}
+                src={avatarUrl}
                 alt={username}
                 className="rounded-full"
+                style={{ height: "7rem", width: "7rem" }}
               />
             ) : (
-              <Avatar size={"4rem"} name={uuid} variant="beam" />
+              <Avatar size={"7rem"} name={uuid} variant="beam" />
             )}
+
+            {isProfileChange ? (
+              <FontAwesomeIcon
+                icon={faPen}
+                className="absolute top-0 right-0 bg-white p-1 rounded-full shadow  -translate-x-2/3 translate-y-2/3"
+              />
+            ) : null}
           </div>
-        </PopoverTrigger>
-        {isAvatarChange ? (
+
+          <div className="text-white p-2">@{uuid}</div>
+          <Button
+            onClick={() => {
+              setIsProfileChange(true);
+            }}
+            className="p-5 bg-white text-black"
+            style={{ width: "90%" }}
+          >
+            プロフィールを編集
+          </Button>
+        </DrawerContent>
+        {/* {isAvatarChange ? (
           <PopoverContent
+            side="top"
+            sideOffset={-8}
             className="w-60 h-auto p-4"
             style={{
               alignItems: "center",
@@ -115,7 +186,8 @@ export default function ActionBar({
           </PopoverContent>
         ) : (
           <PopoverContent
-            className="w-60 h-auto p-4"
+            side="right"
+            className="w-60 h-auto"
             style={{
               alignItems: "center",
               display: "flex",
@@ -124,7 +196,12 @@ export default function ActionBar({
           >
             <div className="">
               {avatarUrl ? (
-                <img src={avatarUrl} alt={username} className="rounded-full" />
+                <img
+                  src={avatarUrl}
+                  alt={username}
+                  className="rounded-full"
+                  style={{ height: "5rem", width: "5rem" }}
+                />
               ) : (
                 <Avatar size={"5rem"} name={uuid} variant="beam" />
               )}
@@ -145,9 +222,9 @@ export default function ActionBar({
             <Form action="/logout" method="post">
               <Button>ログアウト</Button>
             </Form>
-          </PopoverContent>
-        )}
-      </Popover>
+          </PopoverContent> 
+        )}*/}
+      </Drawer>
     </div>
   );
 }
