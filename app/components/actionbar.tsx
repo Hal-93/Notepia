@@ -218,7 +218,7 @@ export default function ActionBar({
                 >
                   <FontAwesomeIcon
                     icon={faGear}
-                    style={{ height: "3rem", width: "3rem" }}
+                    style={{ height: "2rem", width: "2rem" }}
                   />
                 </Button>
               </div>
@@ -231,7 +231,7 @@ export default function ActionBar({
                 <div className="text-white" style={{ fontSize: "2rem" }}>
                   通知
                 </div>
-                <div className="text-gray-700" style={{ fontSize: "1rem" }}>
+                <div className="text-gray-500" style={{ fontSize: "1rem" }}>
                   通知の有無を切り替えられます。
                 </div>
               </div>
