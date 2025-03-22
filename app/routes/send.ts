@@ -1,4 +1,3 @@
-import { ActionFunctionArgs } from "@remix-run/node";
 import webPush from "web-push";
 import { getSubscriptions } from "~/models/subscription.server";
 
@@ -8,7 +7,7 @@ webPush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY!
 );
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action() {
   const subscriptions = await getSubscriptions();
 
   const payload = JSON.stringify({
