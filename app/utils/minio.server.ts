@@ -15,16 +15,22 @@ const minioClient = new Minio.Client({
 
 //ファイルアップロード関数
 export async function uploadFile(
-  sourceFile: File,
-  destinationObject: string
+  fileBuffer: Buffer,
+  destinationObject: string,
+  metaData: Minio.ItemBucketMetadata
 ): Promise<void> {
   try {
     const exists = await minioClient.bucketExists(bucket);
     if (!exists) {
       await minioClient.makeBucket(bucket);
     }
-    const fileBuffer = Buffer.from(await sourceFile.arrayBuffer());
-    await minioClient.putObject(bucket, destinationObject, fileBuffer);
+    await minioClient.putObject(
+      bucket,
+      destinationObject,
+      fileBuffer,
+      undefined,
+      metaData
+    );
     console.log(
       `File uploaded as object ${destinationObject} in bucket ${bucket}`
     );
