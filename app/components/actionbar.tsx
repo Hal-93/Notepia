@@ -41,16 +41,27 @@ export default function ActionBar({
   ) => {
     if (event.target.files?.length) {
       const file = event.target.files[0];
+      const maxSizeInBytes = 12 * 1024 * 1024;
+
+      if (file.size > maxSizeInBytes) {
+        alert("ファイルサイズは12MB以下にしてください。");
+        return;
+      }
+
       const formData = new FormData();
       formData.append("file", file);
       formData.append("uuid", uuid);
+
       const res = await fetch(window.location.pathname, {
         method: "POST",
         body: formData,
       });
+
       if (res.ok) {
         refreshImage();
         setIsAvatorChange(false);
+      } else {
+        alert("ファイルのアップロードに失敗しました。");
       }
     }
   };
