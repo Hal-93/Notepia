@@ -29,16 +29,35 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
 
   if (!validateEmail(email)) {
-    return json({ errors: { email: "Invalid email address", password: null } }, { status: 400 });
+    return json(
+      { errors: { email: "Invalid email address", password: null } },
+      { status: 400 }
+    );
   }
 
   if (typeof password !== "string" || password.length < 8) {
-    return json({ errors: { email: null, password: "Password must be at least 8 characters" } }, { status: 400 });
+    return json(
+      {
+        errors: {
+          email: null,
+          password: "Password must be at least 8 characters",
+        },
+      },
+      { status: 400 }
+    );
   }
 
   const existingUser = await getUserByEmail(email);
   if (existingUser) {
-    return json({ errors: { email: "A user already exists with this email", password: null } }, { status: 400 });
+    return json(
+      {
+        errors: {
+          email: "A user already exists with this email",
+          password: null,
+        },
+      },
+      { status: 400 }
+    );
   }
 
   const user = await createUser(email, password);
@@ -69,81 +88,124 @@ export default function Join() {
   }, [actionData]);
 
   return (
-    <div
-      className="flex min-h-screen items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: "url('/background.jpeg')" }} // 背景画像を設定
-    >
-      <Card className="bg-white/60 dark:bg-black/60 p-6 shadow-xl rounded-lg max-w-md w-full">
-        <CardHeader>
-          <CardTitle className="text-center text-2xl font-bold text-gray-900 dark:text-white">
-            新規登録
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form method="post" className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email address</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                // eslint-disable-next-line jsx-a11y/no-autofocus
-                autoFocus
-                ref={emailRef}
-                className="w-full"
-                aria-invalid={actionData?.errors?.email ? true : undefined}
-                aria-describedby="email-error"
+    <div className="h-screen h-full grid md:grid-cols-3">
+      {/* 左カラム */}
+      <div className="relative bg-cover bg-center bg-black flex flex-col">
+        {/* コンテンツ */}
+        <nav className="relative flex flex-col px-8 z-10">
+          <div className="h-screen justify-center">
+            <Link to={"/"}>
+              <img
+                src="/Notepia-light.svg"
+                alt="Notepia"
+                className="pt-0 mt-[10vh] md:mt-[5vh] w-[30vw] md:w-32 h-auto"
               />
-              {actionData?.errors?.email && (
-                <p className="text-red-600 text-sm" id="email-error">
-                  {actionData.errors.email}
-                </p>
-              )}
-            </div>
+            </Link>
+            <h2 className="text-white text-[3vh] md:text-[2.5vw] font-bold pt-[6vh]">
+              新規登録
+            </h2>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                ref={passwordRef}
-                className="w-full"
-                aria-invalid={actionData?.errors?.password ? true : undefined}
-                aria-describedby="password-error"
-              />
-              {actionData?.errors?.password && (
-                <p className="text-red-600 text-sm" id="password-error">
-                  {actionData.errors.password}
-                </p>
-              )}
-            </div>
+            <Form method="post" className="space-y-6 pt-10">
+              <div className="space-y-2">
+                <Label htmlFor="" className="text-white">
+                  ユーザーID
+                </Label>
+                <Input
+                  id=""
+                  name=""
+                  type=""
+                  autoComplete=""
+                  required
+                  // eslint-disable-next-line jsx-a11y/no-autofocus
+                  autoFocus
+                  ref={emailRef}
+                  className="w-full"
+                  aria-invalid={actionData?.errors?.email ? true : undefined}
+                  aria-describedby="email-error"
+                />
+                {actionData?.errors?.email && (
+                  <p className="text-red-600 text-sm" id="email-error">
+                    {actionData.errors.email}
+                  </p>
+                )}
+              </div>
 
-            <input type="hidden" name="redirectTo" value={redirectTo} />
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-white">
+                  メールアドレス
+                </Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  // eslint-disable-next-line jsx-a11y/no-autofocus
+                  autoFocus
+                  ref={emailRef}
+                  className="w-full"
+                  aria-invalid={actionData?.errors?.email ? true : undefined}
+                  aria-describedby="email-error"
+                />
+                {actionData?.errors?.email && (
+                  <p className="text-red-600 text-sm" id="email-error">
+                    {actionData.errors.email}
+                  </p>
+                )}
+              </div>
 
-            <Button type="submit" className="w-full py-3 text-lg">
-              アカウント作成
-            </Button>
+              <div className="space-y-2 pb-[2vh]">
+                <Label htmlFor="password" className="text-white">
+                  パスワード
+                </Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  ref={passwordRef}
+                  className="w-full"
+                  aria-invalid={actionData?.errors?.password ? true : undefined}
+                  aria-describedby="password-error"
+                />
+                {actionData?.errors?.password && (
+                  <p className="text-red-600 text-sm" id="password-error">
+                    {actionData.errors.password}
+                  </p>
+                )}
+              </div>
 
-            <p className="text-sm text-gray-700 dark:text-gray-300 text-center mt-4">
-              すでにアカウントをお持ちですか？{" "}
+              <input type="hidden" name="redirectTo" value={redirectTo} />
+
+              <Button
+                type="submit"
+                className="w-full md:text-[1.2vw] md:h-[2.5vw] px-5 bg-gradient-to-r from-purple-800 to-indigo-600 text-white hover:bg-gradient-to-l hover:from-indigo-900 hover:to-purple-950 hover:text-zinc-400"
+              >
+                アカウント作成
+              </Button>
+            </Form>
+            <p className="text-white text-xs text-center md:text-[1vw] pt-[2.5vh] font-md">
+              すでに Notepia のアカウントをお持ちですか？{" "}
               <Link
-                to={{
+                to={{ 
                   pathname: "/login",
-                  search: searchParams.toString(),
+                  search: searchParams.toString() 
                 }}
-                className="text-indigo-600 dark:text-indigo-400 underline"
+                className="text-indigo-700 text-xs text-center md:text-[1vw] pt-1 md:font-md font-bold hover:underline hover:text-indigo-900 underline "
               >
                 ログイン
               </Link>
             </p>
-          </Form>
-        </CardContent>
-      </Card>
+          </div>
+        </nav>
+      </div>
+
+      {/* 右カラム */}
+      <div
+        className="hidden md:block col-span-2 bg-cover bg-center"
+        style={{ backgroundImage: "url('/background.jpeg')" }}
+      ></div>
     </div>
   );
 }

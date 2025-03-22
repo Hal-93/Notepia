@@ -44,7 +44,7 @@ export default function Index() {
           <Link to={"/join"}>
             <Button
               variant="ghost"
-              className="w-[80vw] md:w-[28vw] bg-white text-black"
+              className="w-[80vw] md:w-[28vw] bg-white text-black text-md"
             >
               はじめる
             </Button>
