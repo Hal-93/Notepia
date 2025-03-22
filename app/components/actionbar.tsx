@@ -54,18 +54,28 @@ export default function ActionBar({
       throw new Error("Failed to check subscription status");
     }
 
-    const data = await response.json();
-    setIsSubscribed(data.isSubscribed);
+    if (!("Notification" in window)) {
+      console.error("This browser does not support notifications.");
+      return "unsupported";
+    }
+
+    const permission = Notification.permission;
+    if (permission === "granted") {
+      const data = await response.json();
+      setIsSubscribed(data.isSubscribed);
+    }else{
+      setIsSubscribed(false)
+    }
   }
 
   useEffect(() => {
     checkSubscription();
   }, []);
 
-  const toggleSubscription =async () => {
+  const toggleSubscription = async () => {
     await setIsSubscribed((x) => !x);
     await handleSubscribe(publicKey);
-    checkSubscription();
+    await checkSubscription();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
