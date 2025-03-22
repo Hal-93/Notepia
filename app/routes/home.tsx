@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Link, redirect, json, useLoaderData } from "@remix-run/react";
+import { Link, redirect, json, useLoaderData, useFetcher } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Button } from "~/components/ui/button";
 import ActionBar from "~/components/actionbar";
 import { getUserId } from "~/session.server";
 import { getUserById } from "~/models/user.server";
-import { createGroup, getUserGroups } from "~/models/group.server";
+import { createGroup, getUserGroups, removeUserFromGroup, deleteGroup } from "~/models/group.server";
 import GroupCreateModal from "~/components/group/create";
 import type { Group } from "@prisma/client";
 
@@ -34,16 +34,25 @@ export const loader: LoaderFunction = async ({ request }) => {
 export const action: ActionFunction = async ({ request }) => {
   const userId = await getUserId(request);
   const formData = await request.formData();
+  const intent = formData.get("intent") as string;
+
+  if (!userId) throw new Response("認証されていません", { status: 401 });
+
+  if (intent === "leaveGroup") {
+    const groupId = formData.get("groupId") as string;
+    await removeUserFromGroup(groupId, userId);
+
+    const updatedGroup = await getUserGroups(userId);
+    const group = updatedGroup.find((g) => g.id === groupId);
+    if (!group || group.users.length === 0) {
+      await deleteGroup(groupId);
+    }
+
+    return json({ success: true });
+  }
+
   const name = formData.get("name") as string;
   const userIds = JSON.parse(formData.get("userIds") as string) as string[];
-
-  if (!name) {
-    return json({ error: "グループ名が必要です" }, { status: 400 });
-  }
-  if (!userId) {
-    throw new Response("認証されていません", { status: 401 });
-  }
-
   const group = await createGroup(name, [userId, ...userIds]);
   return json({ group });
 };
@@ -51,9 +60,16 @@ export const action: ActionFunction = async ({ request }) => {
 export default function Home() {
   const { userId, username, uuid, avatarUrl, groups } = useLoaderData<typeof loader>();
   const [showModal, setShowModal] = useState(false);
+  const fetcher = useFetcher();
 
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
+
+  const handleLeaveGroup = (groupId: string, groupName: string) => {
+    if (confirm(`グループ ${groupName} から脱退しますか？`)) {
+      fetcher.submit({ intent: "leaveGroup", groupId }, { method: "post" });
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-black text-white">
@@ -77,15 +93,29 @@ export default function Home() {
         </section>
 
         <section className="w-full max-w-[800px]">
-          <h2 className="text-xl font-bold mb-3">グループ</h2>
+        <div className="w-full max-w-[800px] flex items-center justify-between mb-3">
+          <h2 className="text-xl font-bold">グループ</h2>
+          <Button
+            className="rounded-full py-4 px-4 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg"
+            onClick={handleOpenModal}
+          >
+            + グループ作成
+          </Button>
+        </div>
           {groups.length > 0 ? (
             <div className="space-y-2">
-              {groups.map((group: Group) => ( // <-- ここで型を指定
-                <Link key={group.id} to={`/group/${group.id}`}>
-                  <div className="px-4 py-3 rounded-md bg-gray-800 hover:bg-gray-700 transition">
+              {groups.map((group: Group) => (
+                <div key={group.id} className="flex items-center justify-between bg-gray-800 px-4 py-3 rounded-md">
+                  <Link to={`/group/${group.id}`} className="flex-1 hover:text-gray-300">
                     {group.name}
-                  </div>
-                </Link>
+                  </Link>
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleLeaveGroup(group.id, group.name)}
+                  >
+                    脱退
+                  </Button>
+                </div>
               ))}
             </div>
           ) : (
@@ -94,21 +124,7 @@ export default function Home() {
         </section>
       </main>
 
-      <div className="fixed bottom-6 right-6">
-        <Button
-          className="rounded-full py-6 px-8 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg"
-          onClick={handleOpenModal}
-        >
-          + グループ作成
-        </Button>
-      </div>
-
-      {showModal && (
-        <GroupCreateModal
-          currentUserId={userId}
-          onClose={handleCloseModal}
-        />
-      )}
+      {showModal && <GroupCreateModal currentUserId={userId} onClose={handleCloseModal} />}
     </div>
   );
 }
