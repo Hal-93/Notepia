@@ -101,3 +101,11 @@ export async function getPendingFollowRequests(
     },
   });
 }
+// フォロワー一覧取得関数
+export async function getAllFollowers(userId: string): Promise<Follow[]> {
+  return await prisma.follow.findMany({
+    where: {
+      followingId: userId,
+    },
+  });
+}

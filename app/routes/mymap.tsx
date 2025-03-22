@@ -115,7 +115,7 @@ export default function MapPage() {
 
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/dark-v11",
+      style: "mapbox://styles/so03jp/cm8k8mtga018g01so5gl9b8w1",
       center: [139.759, 35.684],
       zoom: 16,
       minZoom: 5,
@@ -293,7 +293,7 @@ export default function MapPage() {
       map.off("dblclick", () => {});
     };
   }, [memos, setModalLat, setModalLng, setShowModal]);
-  
+
   const handleSearchMemo = () => {
     /*メモの検索機能 */
   };
@@ -382,6 +382,7 @@ export default function MapPage() {
       <Bar
         handleSearchMemo={handleSearchMemo}
         handleGoToCurrentLocation={handleGoToCurrentLocation}
+        userId={userId}
       />
       {showModal && (
         <MemoCreateModal

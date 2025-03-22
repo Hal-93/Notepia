@@ -1,5 +1,5 @@
 import { prisma } from "~/db.server";
-import type { Subscription } from "@prisma/client";
+import type { Subscription, User } from "@prisma/client";
 
 export async function addSubscription(
   endpoint: string,
@@ -30,6 +30,16 @@ export async function removeSubscription(endpoint: string) {
 
 export async function getSubscriptions(): Promise<Subscription[]> {
   return await prisma.subscription.findMany();
+}
+
+export async function getSubscriptionByUserId(
+  userId: User["id"]
+): Promise<Subscription[] | null> {
+  return await prisma.subscription.findMany({
+    where: {
+      userId,
+    },
+  });
 }
 
 export async function isDeviceSubscribed(endpoint: string): Promise<boolean> {

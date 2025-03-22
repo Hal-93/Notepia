@@ -11,13 +11,16 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
+  DrawerDescription,
   DrawerHeader,
+  DrawerTitle,
   DrawerTrigger,
 } from "./ui/drawer";
 import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { getPushEndpoint, handleSubscribe } from "~/utils/pushNotification";
+import { Form } from "@remix-run/react";
 
 export default function ActionBar({
   username,
@@ -63,8 +66,8 @@ export default function ActionBar({
     if (permission === "granted") {
       const data = await response.json();
       setIsSubscribed(data.isSubscribed);
-    }else{
-      setIsSubscribed(false)
+    } else {
+      setIsSubscribed(false);
     }
   }
 
@@ -96,20 +99,17 @@ export default function ActionBar({
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) {
-      alert("ファイルを選択してください。");
-      return;
-    }
-
-    const maxSizeInBytes = 12 * 1024 * 1024; // 12MB
-    if (selectedFile.size > maxSizeInBytes) {
-      alert("ファイルサイズは12MB以下にしてください。");
-      return;
-    }
-
     const formData = new FormData();
-    formData.append("file", selectedFile);
-    formData.append("uuid", uuid);
+    if (selectedFile) {
+      const maxSizeInBytes = 12 * 1024 * 1024; // 12MB
+      if (selectedFile.size > maxSizeInBytes) {
+        alert("ファイルサイズは12MB以下にしてください。");
+        return;
+      }
+
+      formData.append("file", selectedFile);
+      formData.append("uuid", uuid);
+    }
 
     try {
       const res = await fetch(window.location.pathname, {
@@ -147,6 +147,8 @@ export default function ActionBar({
   return (
     <div className="fixed top-4 right-5 z-10">
       <Drawer>
+        <DrawerTitle></DrawerTitle>
+        <DrawerDescription></DrawerDescription>
         <DrawerTrigger asChild>
           {avatarUrl ? (
             <img
@@ -195,12 +197,10 @@ export default function ActionBar({
                     height: "3rem",
                   }}
                 >
-                  <Button className="p-5" style={{ backgroundColor: "black" }}>
-                    <FontAwesomeIcon
-                      icon={faChevronLeft}
-                      style={{ height: "3rem" }}
-                    />
-                  </Button>
+                  <FontAwesomeIcon
+                    icon={faChevronLeft}
+                    style={{ height: "3rem", color: "white" }}
+                  />
                 </DrawerClose>
               )}
             </div>
@@ -293,7 +293,9 @@ export default function ActionBar({
                   />
                 ) : null}
               </div>
-              <div className="text-white " style={{fontSize:"2rem"}}>{username}</div>
+              <div className="text-white " style={{ fontSize: "2rem" }}>
+                {username}
+              </div>
               <div className="text-white p-2">@{uuid}</div>
               {isProfileChange ? (
                 <div
@@ -339,15 +341,30 @@ export default function ActionBar({
                   </Button>
                 </div>
               ) : (
-                <Button
-                  onClick={() => {
-                    setIsProfileChange(true);
-                  }}
-                  className="p-5 bg-white text-black"
-                  style={{ width: "90%" }}
-                >
-                  プロフィールを編集
-                </Button>
+                <>
+                  <Button
+                    onClick={() => {
+                      setIsProfileChange(true);
+                    }}
+                    className="p-5 bg-white text-black"
+                    style={{ width: "90%" }}
+                  >
+                    プロフィールを編集
+                  </Button>
+                  <Form
+                    method="post"
+                    action="/logout"
+                    className="w-full pt-5 flex justify-center"
+                  >
+                    <Button
+                      type="submit"
+                      className="p-5 bg-red-500 text-white"
+                      style={{ width: "90%" }}
+                    >
+                      ログアウト
+                    </Button>
+                  </Form>
+                </>
               )}
             </>
           )}
