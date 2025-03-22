@@ -121,7 +121,7 @@ export default function MapPage() {
     mapboxgl.accessToken = mapboxToken;
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/dark-v10",
+      style: "mapbox://styles/so03jp/cm8k8mtga018g01so5gl9b8w1",
       center: [139.6917, 35.6895],
       zoom: 12,
       minZoom: 5,

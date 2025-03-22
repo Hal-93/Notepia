@@ -109,11 +109,12 @@ export default function MapPage() {
     mapboxgl.accessToken = mapboxToken;
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/dark-v10",
-      center: [139.6917, 35.6895],
-      zoom: 12,
+      style: "mapbox://styles/so03jp/cm8k8mtga018g01so5gl9b8w1",
+      center: [139.7590, 35.6840],
+      zoom: 16,
       minZoom: 5,
-      pitch: 45,
+      pitch: 80,
+      bearing: 85,
       antialias: true,
     });
 
@@ -124,7 +125,7 @@ export default function MapPage() {
         type: "raster-dem",
         url: "mapbox://mapbox.terrain-rgb",
         tileSize: 512,
-        maxzoom: 14,
+        maxzoom: 16,
       });
       map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
       map.addLayer({
@@ -132,7 +133,7 @@ export default function MapPage() {
         source: "composite",
         "source-layer": "building",
         type: "fill-extrusion",
-        minzoom: 15,
+        minzoom: 16,
         paint: {
           "fill-extrusion-color": "#aaa",
           "fill-extrusion-height": ["get", "height"],
@@ -251,7 +252,7 @@ export default function MapPage() {
     if (currentLocation && mapRef.current) {
       mapRef.current?.flyTo({
         center: currentLocation,
-        zoom: 14,
+        zoom: 16,
       });
     }
   };
