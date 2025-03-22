@@ -2,7 +2,7 @@ import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useFetcher, Form } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
-import mapboxgl from "mapbox-gl";
+import mapboxgl, { Marker } from "mapbox-gl";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
@@ -121,87 +121,176 @@ export default function MapPage() {
     [number, number] | null
   >(null);
 
+  const memoMarkersRef = useRef<mapboxgl.Marker[]>([]);
+
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
     mapboxgl.accessToken = mapboxToken;
+
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: [139.6917, 35.6895],
-      zoom: 12,
+      style: "mapbox://styles/so03jp/cm8k8mtga018g01so5gl9b8w1",
+      center: [139.759, 35.684],
+      zoom: 16,
       minZoom: 5,
       pitch: 45,
+      bearing: 85,
       antialias: true,
     });
 
     map.addControl(new MapboxLanguage({ defaultLanguage: "ja" }));
+    map.doubleClickZoom.disable();
 
     map.on("load", () => {
       map.addSource("mapbox-dem", {
         type: "raster-dem",
         url: "mapbox://mapbox.terrain-rgb",
         tileSize: 512,
-        maxzoom: 14,
+        maxzoom: 16,
       });
+
       map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
 
-      memos.forEach((memo: Memo) => {
-        if (memo.latitude != null && memo.longitude != null) {
-          const markerEl = document.createElement("div");
-          markerEl.style.width = "20px";
-          markerEl.style.height = "20px";
-          markerEl.style.backgroundColor = memo.completed
-            ? "#888888"
-            : memo.color || "#ffffff";
-          markerEl.style.borderRadius = "50%";
-          markerEl.style.border = "3px solid white";
-          markerEl.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
+      map.addLayer({
+        id: "3d-buildings",
+        source: "composite",
+        "source-layer": "building",
+        type: "fill-extrusion",
+        minzoom: 16,
+        paint: {
+          "fill-extrusion-color": "#aaa",
+          "fill-extrusion-height": ["get", "height"],
+          "fill-extrusion-base": ["get", "min_height"],
+          "fill-extrusion-opacity": 0.6,
+        },
+      });
+    });
 
-          const marker = new mapboxgl.Marker(markerEl)
-            .setLngLat([memo.longitude, memo.latitude])
-            .addTo(map);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        map.flyTo({
+          center: [longitude, latitude],
+          zoom: 16,
+        });
+      });
+    }
 
-          marker.getElement().addEventListener("click", (e) => {
+    mapRef.current = map;
+    return () => map.remove();
+  }, [mapboxToken]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    const map = mapRef.current;
+
+    memoMarkersRef.current.forEach((marker) => {
+      marker.getPopup()?.remove();
+      marker.remove();
+    });
+    memoMarkersRef.current = [];
+
+    const newMarkers: mapboxgl.Marker[] = [];
+
+    memos.forEach((memo: Memo) => {
+      if (memo.latitude != null && memo.longitude != null) {
+        const markerEl = document.createElement("div");
+        markerEl.style.width = "20px";
+        markerEl.style.height = "20px";
+        const bgColor = memo.completed ? "#000000" : memo.color || "#ffffff";
+        markerEl.style.backgroundColor = bgColor;
+        markerEl.style.borderRadius = "50%";
+        markerEl.style.border = "3px solid white";
+        markerEl.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
+
+        const marker = new mapboxgl.Marker(markerEl)
+          .setLngLat([memo.longitude, memo.latitude])
+          .addTo(map);
+
+        marker.getElement().addEventListener("click", (e) => {
+          e.stopPropagation();
+          setSelectedMemo(memo);
+          setShowDetail(true);
+        });
+
+        if (!memo.completed) {
+          const popupContent = document.createElement("div");
+          popupContent.style.backgroundColor = bgColor;
+          popupContent.style.padding = "8px";
+          popupContent.style.cursor = "pointer";
+          popupContent.innerHTML = `<b>${memo.title}</b>`;
+
+          popupContent.addEventListener("click", (e) => {
             e.stopPropagation();
             setSelectedMemo(memo);
             setShowDetail(true);
           });
 
-          if (!memo.completed) {
-            const popupContent = document.createElement("div");
-            popupContent.style.backgroundColor = memo.color || "#ffffff";
-            popupContent.style.padding = "8px";
-            popupContent.style.cursor = "pointer";
-            popupContent.innerHTML = `<b>${memo.title}</b>`;
+          marker.setPopup(
+            new mapboxgl.Popup({
+              offset: 25,
+              closeOnClick: false,
+              closeButton: false,
+            }).setDOMContent(popupContent)
+          );
 
-            popupContent.addEventListener("click", (e) => {
-              e.stopPropagation();
-              setSelectedMemo(memo);
-              setShowDetail(true);
-            });
-
-            marker.setPopup(
-              new mapboxgl.Popup({
-                offset: 25,
-                closeOnClick: false,
-                closeButton: false,
-              }).setDOMContent(popupContent)
-            );
-
-            marker.togglePopup();
-          }
+          marker.togglePopup();
         }
-      });
+
+        newMarkers.push(marker);
+      }
     });
 
-    map.doubleClickZoom.disable();
+    memoMarkersRef.current = newMarkers;
 
-    // 🔽 ここから追加: ダブルクリックでモーダルを表示する
-    map.on("dblclick", (e: mapboxgl.MapMouseEvent) => {
+    return () => {
+      newMarkers.forEach((marker) => {
+        marker.getPopup()?.remove();
+        marker.remove();
+      });
+      memoMarkersRef.current = [];
+    };
+  }, [memos]);
+
+  const markerRef = useRef<Marker | null>(null);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current;
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setCurrentLocation([longitude, latitude]);
+
+          // マーカーが既に存在する場合は位置を更新
+          if (markerRef.current) {
+            markerRef.current.setLngLat([longitude, latitude]);
+          } else {
+            // マーカーがない場合のみ新規作成
+            const customMarker = document.createElement("div");
+            customMarker.style.width = "20px";
+            customMarker.style.height = "20px";
+            customMarker.style.backgroundColor = "#007BFF";
+            customMarker.style.borderRadius = "50%";
+            customMarker.style.border = "3px solid white";
+            customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
+
+            markerRef.current = new mapboxgl.Marker(customMarker)
+              .setLngLat([longitude, latitude])
+              .addTo(map);
+          }
+        },
+        (error) => console.error("Geolocation error:", error)
+      );
+    }
+
+    map.on("dblclick", (e) => {
       const coordinates = e.lngLat;
 
-      // 仮のマーカーを設置
       const customMarker = document.createElement("div");
       customMarker.style.width = "20px";
       customMarker.style.height = "20px";
@@ -210,57 +299,19 @@ export default function MapPage() {
       customMarker.style.border = "3px solid white";
       customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
 
-      const marker = new mapboxgl.Marker(customMarker)
-        .setLngLat(coordinates)
-        .addTo(map);
-
-      tempMarkerRef.current = marker;
-
       setModalLat(coordinates.lat);
       setModalLng(coordinates.lng);
       setShowModal(true);
     });
 
-    // 🔽 現在地を取得・表示する処理を追加
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setCurrentLocation([longitude, latitude]);
-
-          const currentLocationMarker = document.createElement("div");
-          currentLocationMarker.style.width = "20px";
-          currentLocationMarker.style.height = "20px";
-          currentLocationMarker.style.backgroundColor = "#007BFF";
-          currentLocationMarker.style.borderRadius = "50%";
-          currentLocationMarker.style.border = "3px solid white";
-          currentLocationMarker.style.boxShadow =
-            "0 0 5px rgba(0, 0, 255, 0.5)";
-
-          new mapboxgl.Marker(currentLocationMarker)
-            .setLngLat([longitude, latitude])
-            .addTo(map);
-
-          map.flyTo({ center: [longitude, latitude], zoom: 14 });
-        },
-        (error) => {
-          console.error("位置情報の取得に失敗しました:", error);
-        },
-        { enableHighAccuracy: true }
-      );
-    }
-
-    mapRef.current = map;
-
-    return () => map.remove();
-  }, [mapboxToken, memos]);
-
-
-  
+    return () => {
+      map.off("dblclick", () => {});
+    };
+  }, [memos, setModalLat, setModalLng, setShowModal]);
 
   const handleMakeFriend = () => {
     /*フレンド追加機能 */
-  }
+  };
 
   const handleSearchMemo = () => {
     /*メモの検索機能 */
@@ -351,6 +402,7 @@ export default function MapPage() {
         handleMakeFriend={handleMakeFriend}
         handleSearchMemo={handleSearchMemo}
         handleGoToCurrentLocation={handleGoToCurrentLocation}
+        userId={userId}
       />
       {showModal && (
         <MemoCreateModal
