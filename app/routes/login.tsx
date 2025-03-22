@@ -68,19 +68,27 @@ export default function LoginPage() {
   }, [actionData]);
 
   return (
-    <div
-      className="flex min-h-screen items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: "url('/background.jpeg')" }} // 背景画像を設定
-    >
-      <div className="bg-white/70 dark:bg-black/60 p-8 rounded-xl shadow-lg max-w-md w-full">
-        <h2 className="text-center text-2xl font-bold text-gray-900 dark:text-white">
-          ログイン
-        </h2>
+    <div className="h-screen h-full grid md:grid-cols-3">
+      {/* 左カラム */}
+      <div className="relative bg-cover bg-center bg-black flex flex-col">
+        {/* コンテンツ */}
+        <nav className="relative flex flex-col px-8 z-10">
+          <div className="h-screen justify-center">
+            <Link to={"/"}>
+              <img
+                src="/Notepia-light.svg"
+                alt="Notepia"
+                className="pt-0 mt-[10vh] md:mt-[5vh] w-[30vw] md:w-32 h-auto"
+              />
+            </Link>
+            <h2 className="text-white text-[3vh] md:text-[2.5vw] font-bold pt-[6vh]">
+              ログイン
+            </h2>
 
-        <Form method="post" className="space-y-6 mt-6">
+        <Form method="post" className="space-y-6 pt-10">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">
-              Email address
+            <Label htmlFor="email" className="text-white">
+              メールアドレス
             </Label>
             <Input
               id="email"
@@ -103,8 +111,8 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">
-              Password
+            <Label htmlFor="password" className="text-white">
+              パスワード
             </Label>
             <Input
               id="password"
@@ -126,32 +134,38 @@ export default function LoginPage() {
 
           <input type="hidden" name="redirectTo" value={redirectTo} />
 
-          <Button type="submit" className="w-full py-3 text-lg">
-            ログイン
-          </Button>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Checkbox id="remember" name="remember" />
-              <Label htmlFor="remember" className="text-gray-700 dark:text-gray-300 text-sm">
+          <div className="flex items-center space-x-2">
+              <Checkbox id="remember" name="remember" className="border-white"/>
+              <Label htmlFor="remember" className="text-white">
                 Remember me
               </Label>
             </div>
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              アカウントをお持ちでないですか？{" "}
+
+          <Button type="submit" className="w-full md:text-[1.2vw] md:h-[2.5vw] px-5 bg-gradient-to-r from-purple-700 to-orange-500 text-white hover:bg-gradient-to-l hover:from-orange-900 hover:to-purple-950 hover:text-zinc-400">
+            ログイン
+          </Button>
+
+            <p className="text-white text-xs text-center md:text-[1vw] font-md">
+              まだアカウントをお持ちでないですか？{" "}
               <Link
                 to={{
                   pathname: "/join",
                   search: searchParams.toString(),
                 }}
-                className="text-indigo-600 dark:text-indigo-400 underline"
+                className="text-indigo-700 text-xs text-center md:text-[1vw] md:font-md font-bold hover:underline hover:text-indigo-900 underline "
               >
                 登録する
               </Link>
             </p>
-          </div>
         </Form>
+        </div>
+        </nav>
       </div>
+      {/* 右カラム */}
+      <div
+        className="hidden md:block col-span-2 bg-cover bg-center"
+        style={{ backgroundImage: "url('/background.jpeg')" }}
+      ></div>
     </div>
   );
 }

@@ -44,7 +44,7 @@ export default function Index() {
           />
 
           <Link to={isLoggedIn ? "/map" : "/join"}>
-            <Button variant="ghost" className="w-[80vw] md:w-[28vw] bg-white text-black">
+            <Button variant="ghost" className="w-[80vw] md:w-[28vw] bg-white text-black text-md">
               はじめる
             </Button>
           </Link>
