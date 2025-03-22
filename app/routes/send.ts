@@ -1,4 +1,4 @@
-import { ActionFunctionArgs } from "@remix-run/node";
+/*  import { ActionFunctionArgs } from "@remix-run/node";
 import webPush from "web-push";
 import { getSubscriptions } from "~/models/subscription.server";
 
@@ -37,3 +37,4 @@ export async function action({ request }: ActionFunctionArgs) {
   await Promise.all(notifications);
   return null;
 }
+*/

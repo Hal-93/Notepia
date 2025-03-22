@@ -53,6 +53,7 @@ export default function MapPage() {
   const [showModal, setShowModal] = useState(false);
   const [modalLat, setModalLat] = useState(0);
   const [modalLng, setModalLng] = useState(0);
+  const [currentLocation, setCurrentLocation]  = useState<[number, number] | null>(null);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -114,6 +115,19 @@ export default function MapPage() {
     });
 
     map.doubleClickZoom.disable();
+    mapRef.current = map;
+  
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setCurrentLocation([longitude, latitude]);
+        },
+        (error: GeolocationPositionError) => {
+          console.error("Geolocation error:", error);
+        }
+      );
+    }    
 
     map.on("dblclick", (e: mapboxgl.MapMouseEvent) => {
       const coordinates = e.lngLat;
@@ -195,6 +209,15 @@ export default function MapPage() {
     }
   };
 
+  const handleReturnToCurrentLocation = () => {
+    if (currentLocation && mapRef.current) {
+      mapRef.current?.flyTo({
+        center: currentLocation,
+        zoom: 14,
+      });
+    }
+  };
+
   return (
     <div style={{ position: "relative" }}>
       <div
@@ -272,3 +295,4 @@ export default function MapPage() {
     </div>
   );
 }
+  
