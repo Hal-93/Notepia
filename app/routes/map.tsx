@@ -1,26 +1,37 @@
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { useLoaderData, useFetcher } from "@remix-run/react";
+import { json, redirect } from "@remix-run/node";
+import { useLoaderData, useFetcher, Form } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
 import MemoCreateModal from "~/components/memo/create";
+import MemoDetailModal from "~/components/memo/detail";
 import { getUserId } from "~/session.server";
-import type { Memo } from "@prisma/client";
+import Bar from "~/components/memo/bar";
+import { Button } from "~/components/ui/button";
+import { handleSubscribe } from "~/utils/pushNotification";
+import { Memo } from "@prisma/client";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
+  if (!userId) return redirect("/login");
   const { getUsersMemo } = await import("~/models/memo.server");
   const memos = userId ? await getUsersMemo(userId) : [];
-  return json({ mapboxToken: process.env.MAPBOX_TOKEN, memos, userId });
+  return json({
+    mapboxToken: process.env.MAPBOX_TOKEN,
+    vapidPublicKey: process.env.VAPID_PUBLIC_KEY!,
+    memos,
+    userId,
+  });
 };
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const title = formData.get("title") as string;
   const content = formData.get("content") as string;
+  const place = formData.get("place") as string;
   const lat = parseFloat(formData.get("lat") as string);
   const lng = parseFloat(formData.get("lng") as string);
   const createdById = formData.get("createdById") as string;
@@ -30,6 +41,7 @@ export const action: ActionFunction = async ({ request }) => {
   const memo = await createMemo({
     title,
     content,
+    place,
     createdById,
     latitude: lat,
     longitude: lng,
@@ -40,19 +52,20 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function MapPage() {
-  const { mapboxToken, memos, userId } = useLoaderData<{
-    mapboxToken: string;
-    memos: Memo[];
-    userId?: string;
-  }>();
+  const { mapboxToken, memos, userId, vapidPublicKey } =
+    useLoaderData<typeof loader>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const tempMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const fetcher = useFetcher();
 
+  const [selectedMemo, setSelectedMemo] = useState<Memo | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
+
   const [showModal, setShowModal] = useState(false);
   const [modalLat, setModalLat] = useState(0);
   const [modalLng, setModalLng] = useState(0);
+  const [currentLocation, setCurrentLocation]  = useState<[number, number] | null>(null);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -93,27 +106,80 @@ export default function MapPage() {
 
       memos.forEach((memo) => {
         if (memo.latitude != null && memo.longitude != null) {
+
           const markerEl = document.createElement("div");
           markerEl.style.width = "20px";
           markerEl.style.height = "20px";
-          markerEl.style.backgroundColor = memo.color || "#ffffff";
+
+          const bgColor = memo.completed ? "#000000" : (memo.color || "#ffffff");
+          markerEl.style.backgroundColor = bgColor;
           markerEl.style.borderRadius = "50%";
           markerEl.style.border = "3px solid white";
           markerEl.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
-
-          new mapboxgl.Marker(markerEl)
+      
+          const marker = new mapboxgl.Marker(markerEl)
             .setLngLat([memo.longitude, memo.latitude])
-            .setPopup(
-              new mapboxgl.Popup({ offset: 25 }).setHTML(
-                `<p>${memo.title}</p><p>${memo.content}</p>`
-              )
-            )
             .addTo(map);
+      
+          marker.getElement().addEventListener("click", (e) => {
+            e.stopPropagation();
+            setSelectedMemo(memo);
+            setShowDetail(true);
+          });
+      
+          if (!memo.completed) {
+            const popupContent = document.createElement("div");
+            popupContent.style.backgroundColor = bgColor;
+            popupContent.style.padding = "8px";
+            popupContent.style.cursor = "pointer";
+            popupContent.innerHTML = `<b>${memo.title}</b>`;
+            
+            popupContent.addEventListener("click", (e) => {
+              e.stopPropagation();
+              setSelectedMemo(memo);
+              setShowDetail(true);
+            });
+            
+            marker.setPopup(
+              new mapboxgl.Popup({ 
+                offset: 25,
+                closeOnClick: false,
+                closeButton: false,
+               }).setDOMContent(popupContent)
+            );
+
+            marker.togglePopup();
+          }
         }
       });
     });
 
     map.doubleClickZoom.disable();
+    mapRef.current = map;
+  
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setCurrentLocation([longitude, latitude]);
+          const customMarker = document.createElement("div");
+          customMarker.style.width = "20px";
+          customMarker.style.height = "20px";
+          customMarker.style.backgroundColor = "#007BFF"; // 青
+          customMarker.style.borderRadius = "50%";
+          customMarker.style.border = "3px solid white";
+          customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
+
+          new mapboxgl.Marker(customMarker)
+            .setLngLat([longitude, latitude])
+            .addTo(map);
+        
+        },
+        (error: GeolocationPositionError) => {
+          console.error("Geolocation error:", error);
+        }
+      );
+    }    
 
     map.on("dblclick", (e: mapboxgl.MapMouseEvent) => {
       const coordinates = e.lngLat;
@@ -146,8 +212,13 @@ export default function MapPage() {
   const handleZoomOut = () => {
     mapRef.current?.zoomOut();
   };
-  const handleReset = () => {
-    mapRef.current?.easeTo({ center: [139.6917, 35.6895], zoom: 12 });
+  const handleGoToCurrentLocation = () => {
+    if (currentLocation && mapRef.current) {
+      mapRef.current?.flyTo({
+        center: currentLocation,
+        zoom: 14,
+      });
+    }
   };
 
   const handleCloseModal = () => {
@@ -173,12 +244,12 @@ export default function MapPage() {
     const formData = new FormData();
     formData.append("title", memoData.title);
     formData.append("content", memoData.content);
+    formData.append("place", memoData.place);
     formData.append("lat", memoData.lat.toString());
     formData.append("lng", memoData.lng.toString());
     formData.append("createdById", userId);
     formData.append("color", memoData.color);
-    fetcher.submit(formData, { method: "post", action: "/map" });
-  
+    fetcher.submit(formData, { method: "post", action: "/map", preventScrollReset: true });
     if (tempMarkerRef.current) {
       const markerEl = tempMarkerRef.current.getElement();
       markerEl.style.backgroundColor = memoData.color;
@@ -186,7 +257,7 @@ export default function MapPage() {
       tempMarkerRef.current = null;
     }
     setShowModal(false);
-  
+
     if (mapRef.current) {
       mapRef.current.flyTo({
         center: [memoData.lng, memoData.lat],
@@ -207,66 +278,37 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
-      <ActionBar />
-      <div
-        style={{
-          position: "fixed",
-          bottom: "20px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          display: "flex",
-          gap: "10px",
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
-          padding: "10px 20px",
-          borderRadius: "8px",
-        }}
-      >
-        <button
-          onClick={handleZoomIn}
-          style={{
-            color: "#fff",
-            backgroundColor: "#333",
-            border: "none",
-            padding: "8px 12px",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          ズームイン
-        </button>
-        <button
-          onClick={handleZoomOut}
-          style={{
-            color: "#fff",
-            backgroundColor: "#333",
-            border: "none",
-            padding: "8px 12px",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          ズームアウト
-        </button>
-        <button
-          onClick={handleReset}
-          style={{
-            color: "#fff",
-            backgroundColor: "#333",
-            border: "none",
-            padding: "8px 12px",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          マップリセット
-        </button>
+      <div className="fixed top-4 left-5">
+        <Button onClick={() => handleSubscribe(vapidPublicKey)}>
+          Subscribe to Notifications
+        </Button>
+        ;
+        <Form action="/send" method="post">
+          <Button>Send</Button>
+        </Form>
       </div>
+      <ActionBar />
+      <Bar
+      handleZoomIn={handleZoomIn}
+      handleZoomOut={handleZoomOut}
+      handleGoToCurrentLocation={handleGoToCurrentLocation}
+       />
       {showModal && (
         <MemoCreateModal
           lat={modalLat}
           lng={modalLng}
+          mapboxToken={mapboxToken}
           onClose={handleCloseModal}
           onSubmit={handleSubmitMemo}
+        />
+      )}
+      {showDetail && selectedMemo && (
+        <MemoDetailModal
+          memo={selectedMemo}
+          onClose={() => {
+            setShowDetail(false);
+            setSelectedMemo(null);
+          }}
         />
       )}
     </div>

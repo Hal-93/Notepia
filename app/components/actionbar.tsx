@@ -3,11 +3,15 @@ import { Form } from "@remix-run/react";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
+interface ActionBarProps {
+  onReturnToCurrentLocation: () => void;
+}
+
 export default function ActionBar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="fixed top-4 right-5">
+    <div className="fixed top-4 right-5 z-10">
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -18,9 +22,9 @@ export default function ActionBar() {
             {isOpen ? "✖" : "☰"}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-40 p-4">
+        <PopoverContent className="w-40 p-4 space-y-2">
           <Form action="/logout" method="post">
-            <Button>ログアウト</Button>
+            <Button className="w-full">ログアウト</Button>
           </Form>
         </PopoverContent>
       </Popover>
