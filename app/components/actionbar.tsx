@@ -11,12 +11,11 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
-  DrawerTitle,
   DrawerTrigger,
 } from "./ui/drawer";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
 
 export default function ActionBar({
   username,
@@ -28,10 +27,65 @@ export default function ActionBar({
   uuid: string;
 }) {
   const [isClient, setIsClient] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
   const [isProfileChange, setIsProfileChange] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    setSelectedFile(file);
+
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string); // プレビューを設定
+      };
+
+      reader.readAsDataURL(file);
+    } else {
+      setPreviewUrl(null);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      alert("ファイルを選択してください。");
+      return;
+    }
+
+    const maxSizeInBytes = 12 * 1024 * 1024; // 12MB
+    if (selectedFile.size > maxSizeInBytes) {
+      alert("ファイルサイズは12MB以下にしてください。");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    formData.append("uuid", uuid);
+
+    try {
+      const res = await fetch(window.location.pathname, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        refreshImage();
+        setIsProfileChange(false);
+        alert("保存しました。");
+        setSelectedFile(null);
+      } else {
+        alert("保存に失敗しました。");
+      }
+    } catch (error) {
+      alert("エラーが発生しました: " + error);
+    }
+  };
+
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -44,36 +98,6 @@ export default function ActionBar({
 
   const handleButtonClick = () => {
     fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    if (event.target.files?.length) {
-      const file = event.target.files[0];
-      const maxSizeInBytes = 12 * 1024 * 1024;
-
-      if (file.size > maxSizeInBytes) {
-        alert("ファイルサイズは12MB以下にしてください。");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("uuid", uuid);
-
-      const res = await fetch(window.location.pathname, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (res.ok) {
-        refreshImage();
-        setIsProfileChange(false);
-      } else {
-        alert("ファイルのアップロードに失敗しました。");
-      }
-    }
   };
 
   return (
@@ -92,7 +116,7 @@ export default function ActionBar({
           )}
         </DrawerTrigger>
         <DrawerContent
-          className="h-full md:w-1/2 w-full mx-auto"
+          className="h-full lg:w-1/2 w-full mx-auto"
           style={{
             alignItems: "center",
             display: "flex",
@@ -102,22 +126,49 @@ export default function ActionBar({
         >
           <DrawerHeader className="w-full flex justify-between items-center">
             <div>
-              <DrawerClose
-                style={{
-                  width: "5rem",
-                  height: "3rem",
-                }}
-              >
-                <Button className="p-5" style={{ backgroundColor: "black" }}>
+              {isProfileChange ? (
+                <Button
+                  onClick={() => {
+                    setIsProfileChange(false);
+                  }}
+                  className="p-5"
+                  style={{
+                    backgroundColor: "black",
+                    width: "5rem",
+                    height: "2rem",
+                  }}
+                >
                   <FontAwesomeIcon
                     icon={faChevronLeft}
                     style={{ height: "3rem" }}
                   />
                 </Button>
-              </DrawerClose>
+              ) : (
+                <DrawerClose
+                  style={{
+                    width: "5rem",
+                    height: "3rem",
+                  }}
+                >
+                  <Button
+                    onClick={() => {
+                      setIsProfileChange(false);
+                    }}
+                    className="p-5"
+                    style={{ backgroundColor: "black" }}
+                  >
+                    <FontAwesomeIcon
+                      icon={faChevronLeft}
+                      style={{ height: "3rem" }}
+                    />
+                  </Button>
+                </DrawerClose>
+              )}
             </div>
 
-            {isProfileChange ? <div></div> : (
+            {isProfileChange ? (
+              <div className="p-5"></div>
+            ) : (
               <div>
                 <Button className="p-5" style={{ backgroundColor: "black" }}>
                   <FontAwesomeIcon
@@ -130,15 +181,45 @@ export default function ActionBar({
           </DrawerHeader>
 
           <div className="p-4 relative inline-block">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={username}
-                className="rounded-full"
-                style={{ height: "7rem", width: "7rem" }}
+            {isProfileChange && (
+              <input
+                type="file"
+                id="fileInput"
+                multiple
+                accept="image/*"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                onChange={handleFileChange}
               />
+            )}
+            {previewUrl ? (
+              <button
+                onClick={handleButtonClick}
+                className="p-0 border-0 bg-transparent"
+                style={{ display: "inline-flex" }}
+              >
+                <img
+                  src={previewUrl}
+                  alt={username}
+                  className="rounded-full cursor-pointer"
+                  style={{ height: "7rem", width: "7rem" }}
+                />
+              </button>
+            ) : avatarUrl ? (
+              <button
+                onClick={handleButtonClick}
+                className="p-0 border-0 bg-transparent"
+                style={{ display: "inline-flex" }}
+              >
+                <img
+                  src={avatarUrl}
+                  alt={username}
+                  className="rounded-full cursor-pointer"
+                  style={{ height: "7rem", width: "7rem" }}
+                />
+              </button>
             ) : (
-              <Avatar size={"7rem"} name={uuid} variant="beam" />
+              <Avatar size="7rem" name={uuid} variant="beam" />
             )}
 
             {isProfileChange ? (
@@ -150,80 +231,61 @@ export default function ActionBar({
           </div>
 
           <div className="text-white p-2">@{uuid}</div>
-          <Button
-            onClick={() => {
-              setIsProfileChange(true);
-            }}
-            className="p-5 bg-white text-black"
-            style={{ width: "90%" }}
-          >
-            プロフィールを編集
-          </Button>
-        </DrawerContent>
-        {/* {isAvatarChange ? (
-          <PopoverContent
-            side="top"
-            sideOffset={-8}
-            className="w-60 h-auto p-4"
-            style={{
-              alignItems: "center",
-              display: "flex",
-              flexFlow: "column",
-            }}
-          >
-            <div className="p-2">
-              <input
-                type="file"
-                id="fileInput"
-                multiple
-                accept="image/*"
-                ref={fileInputRef}
-                style={{ display: "none" }}
-                onChange={handleFileChange}
-              />
-              <Button onClick={handleButtonClick}>画像をアップロード</Button>
-            </div>
-          </PopoverContent>
-        ) : (
-          <PopoverContent
-            side="right"
-            className="w-60 h-auto"
-            style={{
-              alignItems: "center",
-              display: "flex",
-              flexFlow: "column",
-            }}
-          >
-            <div className="">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={username}
-                  className="rounded-full"
-                  style={{ height: "5rem", width: "5rem" }}
-                />
-              ) : (
-                <Avatar size={"5rem"} name={uuid} variant="beam" />
-              )}
-            </div>
+          {isProfileChange ? (
             <div
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  toggleAvatarChange();
-                }
+              className="w-full "
+              style={{
+                alignItems: "center",
+                display: "flex",
+                flexFlow: "column",
               }}
-              className="p-1"
-              onClick={toggleAvatarChange}
             >
-              アイコンを変更する
+              <div className="p-0 ali" style={{ width: "90%" }}>
+                <Label htmlFor="email" className="text-white">
+                  ユーザー名
+                </Label>
+                <Input
+                  id="username"
+                  name="username"
+                  type="username"
+                  autoComplete="username"
+                  required
+                  // eslint-disable-next-line jsx-a11y/no-autofocus
+                  autoFocus
+                  //ref={emailRef}
+                  className="w-full text-white"
+                  //aria-invalid={actionData?.errors?.email ? true : undefined}
+                  aria-describedby="username-error"
+                />
+                {/*actionData?.errors?.email && (
+                <p className="text-red-600 text-sm" id="email-error">
+                  {actionData.errors.email}
+                </p>
+              )*/}
+              </div>
+              <Button
+                onClick={() => {
+                  setIsProfileChange(true);
+                  handleUpload();
+                }}
+                className="p-5 mt-5 bg-white text-black bg-indigo-500"
+                style={{ width: "90%" }}
+              >
+                保存
+              </Button>
             </div>
-            <Form action="/logout" method="post">
-              <Button>ログアウト</Button>
-            </Form>
-          </PopoverContent> 
-        )}*/}
+          ) : (
+            <Button
+              onClick={() => {
+                setIsProfileChange(true);
+              }}
+              className="p-5 bg-white text-black"
+              style={{ width: "90%" }}
+            >
+              プロフィールを編集
+            </Button>
+          )}
+        </DrawerContent>
       </Drawer>
     </div>
   );
