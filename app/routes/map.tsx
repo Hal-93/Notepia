@@ -64,6 +64,7 @@ export default function MapPage() {
   const [modalLat, setModalLat] = useState(0);
   const [modalLng, setModalLng] = useState(0);
   const [currentLocation, setCurrentLocation]  = useState<[number, number] | null>(null);
+  const [currebtLocationMarker, setCurrentLocationMarker] = useState<mapboxgl.Marker | null>(null);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -159,7 +160,19 @@ export default function MapPage() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          setCurrentLocation([longitude, latitude]);
+
+          const customMarker = document.createElement("div");
+          customMarker.style.width = "20px";
+          customMarker.style.height = "20px";
+          customMarker.style.backgroundColor = "#007BFF"; // 青色
+          customMarker.style.borderRadius = "50%";
+          customMarker.style.border = "3px solid white";
+          customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
+
+          new mapboxgl.Marker(customMarker)
+            .setLngLat([longitude, latitude])
+            .addTo(map);
+        
         },
         (error: GeolocationPositionError) => {
           console.error("Geolocation error:", error);
@@ -198,8 +211,13 @@ export default function MapPage() {
   const handleZoomOut = () => {
     mapRef.current?.zoomOut();
   };
-  const handleReset = () => {
-    mapRef.current?.easeTo({ center: [139.6917, 35.6895], zoom: 12 });
+  const handleGoToCurrentLocation = () => {
+    if (currentLocation && mapRef.current) {
+      mapRef.current?.flyTo({
+        center: currentLocation,
+        zoom: 14,
+      });
+    }
   };
 
   const handleCloseModal = () => {
@@ -242,15 +260,6 @@ export default function MapPage() {
       mapRef.current.flyTo({
         center: [memoData.lng, memoData.lat],
         zoom: mapRef.current.getZoom(),
-      });
-    }
-  };
-
-  const handleReturnToCurrentLocation = () => {
-    if (currentLocation && mapRef.current) {
-      mapRef.current?.flyTo({
-        center: currentLocation,
-        zoom: 14,
       });
     }
   };
@@ -317,7 +326,7 @@ export default function MapPage() {
           ズームアウト
         </button>
         <button
-          onClick={handleReset}
+          onClick={handleGoToCurrentLocation}
           style={{
             color: "#fff",
             backgroundColor: "#333",
@@ -327,7 +336,7 @@ export default function MapPage() {
             cursor: "pointer",
           }}
         >
-          マップリセット
+          現在地
         </button>
       </div>
       {showModal && (
