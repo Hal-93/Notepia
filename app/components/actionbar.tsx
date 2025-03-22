@@ -293,7 +293,7 @@ export default function ActionBar({
                   />
                 ) : null}
               </div>
-
+              <div className="text-white " style={{fontSize:"2rem"}}>{username}</div>
               <div className="text-white p-2">@{uuid}</div>
               {isProfileChange ? (
                 <div
