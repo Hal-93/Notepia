@@ -7,6 +7,9 @@ import { getUserId } from "~/session.server";
 import { getUserById } from "~/models/user.server";
 import { createGroup, getUserGroups, removeUserFromGroup, deleteGroup, getUsersByGroup } from "~/models/group.server";
 import GroupCreateModal from "~/components/group/create";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGear } from "@fortawesome/free-solid-svg-icons";
+import GroupEditModal from "~/components/group/edit";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -66,10 +69,20 @@ export const action: ActionFunction = async ({ request }) => {
 export default function Home() {
   const { userId, username, uuid, avatarUrl, groups } = useLoaderData<typeof loader>();
   const [showModal, setShowModal] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const fetcher = useFetcher();
 
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
+  const handleOpenEditModal = (groupId: string, groupName: string) => {
+    setEditingGroup({ id: groupId, name: groupName });
+  };
+  const handleCloseEditModal = () => {
+    setEditingGroup(null);
+  };
 
   const handleLeaveGroup = (groupId: string, groupName: string) => {
     if (confirm(`グループ ${groupName} から脱退しますか？`)) {
@@ -132,6 +145,13 @@ export default function Home() {
                     <span>{group.name}</span>
                   </Link>
                   <Button
+                    variant="ghost"
+                    className="text-white mr-2"
+                    onClick={() => handleOpenEditModal(group.id, group.name)}
+                  >
+                    <FontAwesomeIcon icon={faGear} />
+                  </Button>
+                  <Button
                     variant="destructive"
                     onClick={() => handleLeaveGroup(group.id, group.name)}
                   >
@@ -147,6 +167,14 @@ export default function Home() {
       </main>
 
       {showModal && <GroupCreateModal currentUserId={userId} onClose={handleCloseModal} />}
+      {editingGroup && (
+        <GroupEditModal
+          groupId={editingGroup.id}
+          currentName={editingGroup.name}
+          currentUserId={userId}
+          onClose={handleCloseEditModal}
+        />
+      )}
     </div>
   );
 }
