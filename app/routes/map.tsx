@@ -9,11 +9,14 @@ import { handleSubscribe } from "~/utils/pushNotification";
 import { Button } from "~/components/ui/button";
 
 export const loader = async () => {
-  return json({ mapboxToken: process.env.MAPBOX_TOKEN });
+  return json({
+    mapboxToken: process.env.MAPBOX_TOKEN,
+    vapidPublicKey: process.env.VAPID_PUBLIC_KEY!,
+  });
 };
 
 export default function MapPage() {
-  const { mapboxToken } = useLoaderData<{ mapboxToken: string }>();
+  const { mapboxToken, vapidPublicKey } = useLoaderData<typeof loader>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
 
@@ -113,10 +116,13 @@ export default function MapPage() {
         }}
       />
       <div className="fixed top-4 left-5">
-      <Button onClick={handleSubscribe}>Subscribe to Notifications</Button>;
-      <Form action="/send" method="post">
-        <Button>Send</Button>
-      </Form>
+        <Button onClick={() => handleSubscribe(vapidPublicKey)}>
+          Subscribe to Notifications
+        </Button>
+        ;
+        <Form action="/send" method="post">
+          <Button>Send</Button>
+        </Form>
       </div>
       <ActionBar />
       <div
