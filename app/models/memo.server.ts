@@ -23,6 +23,17 @@ export async function getUsersMemo(userId: string): Promise<Memo[]> {
   });
 }
 
+// ユーザーの完了していない個人メモを全て取得する関数
+export async function getNotCompletedUsersMemo(userId: string): Promise<Memo[]> {
+  return await prisma.memo.findMany({
+    where: {
+      createdById: userId,
+      groupId: null,
+      completed: false,
+    },
+  });
+}
+
 // グループのメモを全て取得する関数
 export async function getMemosByGroup(groupId: string): Promise<Memo[]> {
   return await prisma.memo.findMany({
@@ -89,5 +100,13 @@ export async function getCompletedMemosByUser(userId: string): Promise<Memo[]> {
       createdById: userId,
       completed: true,
     },
+  });
+}
+
+// メモを完了にする関数
+export async function completeMemo(memoId: string): Promise<Memo> {
+  return await prisma.memo.update({
+    where: { id: memoId },
+    data: { completed: true },
   });
 }
