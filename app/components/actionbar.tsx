@@ -6,30 +6,30 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 export default function ActionBar({
   username,
-  initialAvatorUrl,
+  initialAvatarUrl,
   uuid,
 }: {
   username: string;
-  initialAvatorUrl: string | null;
+  initialAvatarUrl: string | null;
   uuid: string;
 }) {
   const [isClient, setIsClient] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [avatorUrl, setAvatorUrl] = useState(initialAvatorUrl);
-  const [isAvatorChange, setIsAvatorChange] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
+  const [isAvatarChange, setIsAvatarChange] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   const refreshImage = () => {
-    setAvatorUrl(`user/${uuid}/avator?t=${new Date().getTime()}`);
+    setAvatarUrl(`user/${uuid}/avatar?t=${new Date().getTime()}`);
   };
 
   if (!isClient) return null;
 
-  const toggleAvatorChange = () => {
-    setIsAvatorChange((x) => !x);
+  const toggleAvatarChange = () => {
+    setIsAvatarChange((x) => !x);
   };
 
   const handleButtonClick = () => {
@@ -59,7 +59,7 @@ export default function ActionBar({
 
       if (res.ok) {
         refreshImage();
-        setIsAvatorChange(false);
+        setIsAvatarChange(false);
       } else {
         alert("ファイルのアップロードに失敗しました。");
       }
@@ -76,13 +76,13 @@ export default function ActionBar({
                 variant="ghost"
                 className="rounded-full bg-gray-800 text-white shadow-lg hover:bg-gray-700 transition"
                 style={{ height: "4rem", width: "4rem" }}
-                onClick={() => setIsAvatorChange(false)}
+                onClick={() => setIsAvatarChange(false)}
               >
                 ✖
               </Button>
-            ) : avatorUrl ? (
+            ) : avatarUrl ? (
               <img
-                src={`${avatorUrl}`}
+                src={`${avatarUrl}`}
                 alt={username}
                 className="rounded-full"
               />
@@ -91,7 +91,7 @@ export default function ActionBar({
             )}
           </div>
         </PopoverTrigger>
-        {isAvatorChange ? (
+        {isAvatarChange ? (
           <PopoverContent
             className="w-60 h-auto p-4"
             style={{
@@ -123,8 +123,8 @@ export default function ActionBar({
             }}
           >
             <div className="">
-              {avatorUrl ? (
-                <img src={avatorUrl} alt={username} className="rounded-full" />
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={username} className="rounded-full" />
               ) : (
                 <Avatar size={"5rem"} name={uuid} variant="beam" />
               )}
@@ -134,11 +134,11 @@ export default function ActionBar({
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
-                  toggleAvatorChange();
+                  toggleAvatarChange();
                 }
               }}
               className="p-1"
-              onClick={toggleAvatorChange}
+              onClick={toggleAvatarChange}
             >
               アイコンを変更する
             </div>
