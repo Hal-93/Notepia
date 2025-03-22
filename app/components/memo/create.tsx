@@ -2,44 +2,39 @@ import { useEffect, useState } from "react";
 
 async function reverseGeocode(lat: number, lng: number, token: string): Promise<string> {
   if (!token) {
-    throw new Error("MAPBOX_TOKEN が設定されていません");
+    throw new Error("MAPBOX_TOKENエラー");
   }
-  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${token}&limit=1`;
+  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${token}&limit=1&language=ja`;
   const res = await fetch(url);
   if (!res.ok) {
-    throw new Error("Reverse geocoding リクエストに失敗しました");
+    throw new Error("リクエストに失敗しました");
   }
   const data = await res.json();
+
   if (data.features && data.features.length > 0) {
-    const fullAddress: string = data.features[0].place_name;
-    const parts = fullAddress.split(",");
-    if (parts.length < 2) return fullAddress;
+    const feature = data.features[0];
 
-    const firstPart = parts[0].trim();
-    const prefecturePart = parts[1].trim();
+    let prefecture = "";
+    let city = "";
+    let ward = "";
+    const street = feature.text;
+    const building = feature.properties?.address;
 
-    const prefectureMapping: Record<string, string> = {
-      "Tokyo Prefecture": "東京都",
-      "Osaka Prefecture": "大阪府",
-      "Hokkaido": "北海道",
-      "Kyoto Prefecture": "京都府",
-      "Kanagawa Prefecture": "神奈川県",
-      "Saitama Prefecture": "埼玉県",
-      "Chiba Prefecture": "千葉県",
-      "Aichi Prefecture": "愛知県",
-      "Hyogo Prefecture": "兵庫県",
-      "Fukuoka Prefecture": "福岡県",
-    };
+    if (feature.context && Array.isArray(feature.context)) {
+      for (const ctx of feature.context) {
+        if (ctx.id.startsWith("region.")) {
+          prefecture = ctx.text;
+        } else if (ctx.id.startsWith("place.")) {
+          city = ctx.text; 
+        } else if (ctx.id.startsWith("locality.")) {
+          ward = ctx.text;
+        }
+      }
+    }
 
-    const prefecture = prefectureMapping[prefecturePart] || prefecturePart;
-
-    const firstParts = firstPart.split(" ");
-    if (firstParts.length < 3) return fullAddress;
-
-    const buildingNumber = firstParts[0];
-    const street = firstParts[1].replace("番", "");
-    const municipality = firstParts.slice(2).join(" ");
-    return `${prefecture}${municipality}${street}-${buildingNumber}`;
+    const municipality = ward || city;
+    const address = `${prefecture}${municipality}${street}`;
+    return building ? `${address}-${building}` : address;
   }
   return "住所が見つかりませんでした";
 }
