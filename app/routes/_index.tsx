@@ -1,5 +1,5 @@
 import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { getUserId } from "~/session.server";
@@ -13,38 +13,39 @@ export const meta: MetaFunction = () => {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await getUserId(request);
-  return json({ isLoggedIn: Boolean(userId)})
-}
+  if (userId) return redirect("/map");
+  return null;
+};
 
 export default function Index() {
-  const { isLoggedIn } = useLoaderData<{ isLoggedIn: boolean}>();
-
   return (
     <div className="h-screen grid md:grid-cols-3">
       {/* 左カラム */}
-      <div 
-        className="relative bg-cover bg-center md:bg-black flex flex-col justify-end"
-      >
+      <div className="relative bg-cover bg-center md:bg-black flex flex-col justify-end">
         {/* スマホ時だけのグラデーション背景 */}
-        <div 
+        <div
           className="absolute inset-0 md:hidden"
-          style={{ 
-            backgroundImage: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0, 0, 0, 0.85) 100%), url('/backgroundMobile.jpeg')",
+          style={{
+            backgroundImage:
+              "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0, 0, 0, 0.85) 100%), url('/backgroundMobile.jpeg')",
             backgroundSize: "cover",
-            backgroundPosition: "center"
+            backgroundPosition: "center",
           }}
         ></div>
 
         {/* コンテンツ */}
         <nav className="relative flex flex-col items-center justify-center md:h-screen z-10">
-          <img 
-            src="/Notepia-light.svg" 
+          <img
+            src="/Notepia-light.svg"
             alt="Notepia"
             className="w-[80vw] md:w-40 h-auto md:mb-40 mb-[300px]"
           />
 
-          <Link to={isLoggedIn ? "/map" : "/join"}>
-            <Button variant="ghost" className="w-[80vw] md:w-[28vw] bg-white text-black">
+          <Link to={"/join"}>
+            <Button
+              variant="ghost"
+              className="w-[80vw] md:w-[28vw] bg-white text-black"
+            >
               はじめる
             </Button>
           </Link>
@@ -59,7 +60,7 @@ export default function Index() {
       </div>
 
       {/* 右カラム */}
-      <div 
+      <div
         className="hidden md:block col-span-2 bg-cover bg-center"
         style={{ backgroundImage: "url('/background.jpeg')" }}
       ></div>
