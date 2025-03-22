@@ -2,7 +2,7 @@ import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useFetcher, Form } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
-import mapboxgl from "mapbox-gl";
+import mapboxgl, { Marker } from "mapbox-gl";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
@@ -168,17 +168,17 @@ export default function MapPage() {
 
   useEffect(() => {
     if (!mapRef.current) return;
-  
+
     const map = mapRef.current;
-  
+
     memoMarkersRef.current.forEach((marker) => {
       marker.getPopup()?.remove();
       marker.remove();
     });
     memoMarkersRef.current = [];
-  
+
     const newMarkers: mapboxgl.Marker[] = [];
-  
+
     memos.forEach((memo: Memo) => {
       if (memo.latitude != null && memo.longitude != null) {
         const markerEl = document.createElement("div");
@@ -189,30 +189,30 @@ export default function MapPage() {
         markerEl.style.borderRadius = "50%";
         markerEl.style.border = "3px solid white";
         markerEl.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
-  
+
         const marker = new mapboxgl.Marker(markerEl)
           .setLngLat([memo.longitude, memo.latitude])
           .addTo(map);
-  
+
         marker.getElement().addEventListener("click", (e) => {
           e.stopPropagation();
           setSelectedMemo(memo);
           setShowDetail(true);
         });
-  
+
         if (!memo.completed) {
           const popupContent = document.createElement("div");
           popupContent.style.backgroundColor = bgColor;
           popupContent.style.padding = "8px";
           popupContent.style.cursor = "pointer";
           popupContent.innerHTML = `<b>${memo.title}</b>`;
-  
+
           popupContent.addEventListener("click", (e) => {
             e.stopPropagation();
             setSelectedMemo(memo);
             setShowDetail(true);
           });
-  
+
           marker.setPopup(
             new mapboxgl.Popup({
               offset: 25,
@@ -220,14 +220,14 @@ export default function MapPage() {
               closeButton: false,
             }).setDOMContent(popupContent)
           );
-  
+
           marker.togglePopup();
         }
-  
+
         newMarkers.push(marker);
       }
     });
-  
+
     memoMarkersRef.current = newMarkers;
 
     return () => {
@@ -238,35 +238,44 @@ export default function MapPage() {
       memoMarkersRef.current = [];
     };
   }, [memos]);
-  
+
+  const markerRef = useRef<Marker | null>(null);
+
   useEffect(() => {
     if (!mapRef.current) return;
     const map = mapRef.current;
-  
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           setCurrentLocation([longitude, latitude]);
-          const customMarker = document.createElement("div");
-          customMarker.style.width = "20px";
-          customMarker.style.height = "20px";
-          customMarker.style.backgroundColor = "#007BFF";
-          customMarker.style.borderRadius = "50%";
-          customMarker.style.border = "3px solid white";
-          customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
-  
-          new mapboxgl.Marker(customMarker)
-            .setLngLat([longitude, latitude])
-            .addTo(map);
+
+          // マーカーが既に存在する場合は位置を更新
+          if (markerRef.current) {
+            markerRef.current.setLngLat([longitude, latitude]);
+          } else {
+            // マーカーがない場合のみ新規作成
+            const customMarker = document.createElement("div");
+            customMarker.style.width = "20px";
+            customMarker.style.height = "20px";
+            customMarker.style.backgroundColor = "#007BFF";
+            customMarker.style.borderRadius = "50%";
+            customMarker.style.border = "3px solid white";
+            customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
+
+            markerRef.current = new mapboxgl.Marker(customMarker)
+              .setLngLat([longitude, latitude])
+              .addTo(map);
+          }
         },
         (error) => console.error("Geolocation error:", error)
       );
     }
-  
+
     map.on("dblclick", (e) => {
       const coordinates = e.lngLat;
-  
+
       const customMarker = document.createElement("div");
       customMarker.style.width = "20px";
       customMarker.style.height = "20px";
@@ -274,7 +283,7 @@ export default function MapPage() {
       customMarker.style.borderRadius = "50%";
       customMarker.style.border = "3px solid white";
       customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
-  
+
       setModalLat(coordinates.lat);
       setModalLng(coordinates.lng);
       setShowModal(true);
