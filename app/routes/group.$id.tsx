@@ -418,7 +418,7 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
-      <div className="fixed top-4 left-5">
+      <div className="fixed top-6 left-5">
         <Form action="/home">
           <Button><FontAwesomeIcon icon={faHouse} />ホームに戻る</Button>
         </Form>
