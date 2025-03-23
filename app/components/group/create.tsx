@@ -7,9 +7,19 @@ type GroupCreateProps = {
   onClose: () => void;
 };
 
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  uuid: string;
+  createdAt: Date;
+  updatedAt: Date;
+  avatar: string | null;
+};
+
 export default function GroupCreateModal({ currentUserId, onClose }: GroupCreateProps) {
   const [name, setName] = useState("");
-  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const fetcher = useFetcher();
 
   const handleSubmit = () => {
@@ -17,27 +27,22 @@ export default function GroupCreateModal({ currentUserId, onClose }: GroupCreate
       alert("グループ名を入力してください");
       return;
     }
+
+    const userIds = [currentUserId, ...selectedUsers.map((u) => u.id)];
+
     fetcher.submit(
       {
         name,
-        userIds: JSON.stringify([currentUserId, ...selectedUserIds]),
+        userIds: JSON.stringify(userIds),
       },
       { method: "post", action: "/group/create" }
     );
     onClose();
   };
 
-  const handleUserAdd = (user: {
-    id: string;
-    name: string;
-    email: string;
-    uuid: string;
-    createdAt: Date;
-    updatedAt: Date;
-    avatar: string | null;
-  }) => {
-    if (!selectedUserIds.includes(user.id)) {
-      setSelectedUserIds([...selectedUserIds, user.id]);
+  const handleUserAdd = (user: User) => {
+    if (!selectedUsers.find((u) => u.id === user.id)) {
+      setSelectedUsers((prev) => [...prev, user]);
     }
   };
 
@@ -54,8 +59,11 @@ export default function GroupCreateModal({ currentUserId, onClose }: GroupCreate
             ×
           </button>
         </div>
+
         <label className="block mb-4">
-          <span className="text-sm">グループ名 <span className="text-red-500">*</span></span>
+          <span className="text-sm">
+            グループ名 <span className="text-red-500">*</span>
+          </span>
           <input
             type="text"
             className="mt-1 w-full rounded bg-gray-800 border border-gray-500 p-2"
@@ -64,16 +72,40 @@ export default function GroupCreateModal({ currentUserId, onClose }: GroupCreate
             onChange={(e) => setName(e.target.value)}
           />
         </label>
-        
 
-        <UserSearch onUserAdd={handleUserAdd} />
-        
+        <UserSearch
+          currentUserId={currentUserId}
+          selectedUsers={selectedUsers}
+          onUserAdd={handleUserAdd}
+        />
+
+        {selectedUsers.length > 0 && (
+          <div className="mt-4">
+            <p className="text-sm text-gray-300 mb-1">追加済み</p>
+            <ul className="text-sm space-y-2 pl-2">
+              {selectedUsers.map((u) => (
+                <li key={u.id} className="flex items-center gap-2">
+                  <img
+                    src={`/user/${u.uuid}/avatar`}
+                    alt={u.name}
+                    className="rounded-full border-2 border-black object-cover w-8 h-8"
+                  />
+                  <div className="flex flex-col text-left">
+                    <p className="text-sm font-medium">{u.name}</p>
+                    <p className="text-xs text-gray-400">@{u.uuid}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <button
           type="button"
           onClick={handleSubmit}
-          className="w-full py-2 bg-indigo-500 rounded text-white hover:bg-indigo-700"
+          className="w-full mt-6 py-2 bg-indigo-500 rounded text-white hover:bg-indigo-700"
         >
+          
           グループを作成する
         </button>
       </div>

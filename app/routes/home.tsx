@@ -20,7 +20,7 @@ import {
 } from "~/models/group.server";
 import GroupCreateModal from "~/components/group/create";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGear } from "@fortawesome/free-solid-svg-icons";
+import { faGear, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import GroupEditModal from "~/components/group/edit";
 import { uploadFile } from "~/utils/minio.server";
 import sharp from "sharp";
@@ -129,7 +129,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-black text-white">
-      <header className="flex items-center justify-between px-10 pt-10">
+      <header className="flex items-center justify-between px-6 pt-10">
         <h1 className="text-4xl font-bold">ホーム</h1>
         <ActionBar
           username={username!}
@@ -139,7 +139,7 @@ export default function Home() {
         />
       </header>
 
-      <main className="flex-1 px-[40px] py-5 flex flex-col">
+      <main className="flex-1 px-6 py-5 flex flex-col">
       <h2 className="md:text-[1.7vw] text-lg font-bold py-5 ">マイマップ</h2>
         <section className="w-full h-[200px] overflow-hidden rounded-xl shadow-lg border border-gray-700">
           <Link to="/mymap">
@@ -154,14 +154,6 @@ export default function Home() {
         <section className="w-full">
           <div className="w-full max-w-[800px] items-center justify-between pt-2">
             <h2 className="md:text-[1.7vw] text-lg font-bold py-3">グループ</h2>
-            {groups.length === 0 && (
-      <Button
-        className="rounded-full py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg"
-        onClick={handleOpenModal}
-      >
-        + グループ作成
-      </Button>
-    )}
           </div>
           {groups.length > 0 ? (
             <div className="flex flex-col md:flex-row gap-2 md:gap-4 space-y-2 md:space-y-0 overflow-x-auto whitespace-nowrap py-2">
@@ -206,23 +198,31 @@ export default function Home() {
                     <FontAwesomeIcon icon={faGear} />
                   </Button>
                   <Button
-                    className="w-[10vh]"
-                    variant="destructive"
+                    className="w-[5vh]"
+                    variant="ghost"
                     onClick={() => handleLeaveGroup(group.id, group.name)}
                   >
-                    脱退
+                    <FontAwesomeIcon icon={faRightFromBracket} />
                   </Button>
                 </div>
                 </div>
               ))}
 
-              <Button className="w-full md:w-auto flex items-center justify-center bg-gray-700 px-6 py-4 rounded-md md:min-w-[200px] md:h-[30vh] bg-transparent border border-4 border-dotted text-lg" 
+              <Button className="w-full md:w-auto flex items-center justify-center bg-gray-700 px-6 py-4 rounded-md md:min-w-[200px] md:h-[30vh] bg-transparent border border-2 text-lg" 
               onClick={handleOpenModal}>
                   + グループ作成
-                </Button>
+              </Button>
             </div>
           ) : (
-            <p className="text-gray-400 pt-2">参加しているグループがありません。</p>
+            <>
+            <p className="text-gray-400 pt-2 pb-6">参加しているグループがありません。</p>
+            <Button
+              className="rounded-full py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg"
+              onClick={handleOpenModal}
+            >
+              + グループ作成
+            </Button>
+            </>
           )}
         </section>
       </main>

@@ -22,7 +22,7 @@ export default function UserSearch({ onUserAdd }: UserSearchProps) {
       })
         .then((res) => res.json())
         .then((data) => {
-          setResults(data.users.slice(0, 5)); // 最大5件表示
+          setResults(data.users.slice(0, 5));
           setLoading(false);
         })
         .catch((err) => {
@@ -47,7 +47,7 @@ export default function UserSearch({ onUserAdd }: UserSearchProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="mt-1 w-full rounded bg-gray-800 border border-gray-500 p-2"
-          placeholder="ユーザーを検索（UUID）"
+          placeholder="ユーザーIDで検索"
         />
       </label>
 
@@ -63,17 +63,17 @@ export default function UserSearch({ onUserAdd }: UserSearchProps) {
                 setQuery("");
                 setResults([]);
                 }}
-                className="w-full text-left hover:bg-gray-700 px-2 py-1 rounded cursor-pointer"
+                className="w-full hover:bg-gray-700 px-2 py-1 rounded cursor-pointer flex items-center gap-2"
             >
-            
-             <img
-                key={user.id}
+                <img
                 src={`/user/${user.uuid}/avatar`}
                 alt={user.name}
                 className="rounded-full border-2 border-black object-cover w-8 h-8"
-                style={{ marginLeft: "-10px" }}
-            />
-                @{user.uuid}
+                />
+                <div className="flex flex-col text-left"> {/* ← ここで左揃え指定 */}
+                <p className="text-sm font-medium">{user.name}</p>
+                <p className="text-xs text-gray-400">@{user.uuid}</p>
+                </div>
             </button>
             </li>
         ))}
