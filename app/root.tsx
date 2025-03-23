@@ -5,7 +5,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-import type { LinksFunction } from "@remix-run/node";
+import type { LinksFunction, MetaFunction } from "@remix-run/node";
 
 import "./tailwind.css";
 import "~/popup.css"
@@ -25,6 +25,16 @@ export const links: LinksFunction = () => [
   },
   { rel: "manifest", href: "/manifest.json" },
 ];
+
+export const meta: MetaFunction = () => {
+  return [
+    { property: "og:title", content: "Notepia" },
+    { property: "og:description", content: "A memo app that lets you pin notes to locations on a map." },
+    { property: "og:image", content: "https://notepia.fly.dev/Notepia_url.jpg" },
+    { property: "og:url", content: "https://notepia.fly.dev" },
+    { property: "og:type", content: "website" },
+  ];
+};
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
