@@ -450,39 +450,83 @@ const jumpToMemo = (memo: Memo) => {
         handleGoToCurrentLocation={handleGoToCurrentLocation}
         userId={userId}
       />
-<Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
-  <DrawerContent className="h-[80vh] bg-black text-white">
-    <DrawerHeader>
-      <DrawerTitle>メモを検索</DrawerTitle>
-    </DrawerHeader>
-    <div className="px-4 pb-4">
-      <Input
-        placeholder="タイトルを入力"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="mb-4"
-      />
-      <ScrollArea className="h-[60vh] pr-2">
-        {filteredMemos.length === 0 ? (
-          <div className="text-gray-400">一致するメモがありません。</div>
-        ) : (
-          <ul className="space-y-2">
-            {filteredMemos.map((memo) => (
-              <li
-                key={memo.id}
-                className="p-3 rounded text-black cursor-pointer hover:opacity-80 transition"
-                style={{ backgroundColor: memo.color || "#ffffff" }}
-                onClick={() => jumpToMemo(memo)}
-              >
-                {memo.title}
-              </li>
-            ))}
-          </ul>
-        )}
-      </ScrollArea>
-    </div>
-  </DrawerContent>
-</Drawer>
+      <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
+
+      <DrawerContent className="h-[80vh] bg-black text-white">
+      <DrawerHeader>
+        <DrawerTitle>メモを検索</DrawerTitle>
+      </DrawerHeader>
+      <div className="px-4 pb-4">
+        <Input
+          placeholder="メモのタイトル"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="mt-1 w-full rounded bg-gray-800 border border-gray-500 p-2"
+        />
+        <br />
+        <ScrollArea className="h-[60vh] pr-2 space-y-6">
+          {/* 未完了メモ */}
+          <div>
+            <h3 className="text-sm text-gray-300 mb-2">未完了のメモ</h3>
+            {filteredMemos.filter((m) => !m.completed).length === 0 ? (
+              <div className="text-gray-500 text-sm">未完了のメモはありません。</div>
+            ) : (
+              <ul className="space-y-2">
+                {filteredMemos
+                  .filter((memo) => !memo.completed)
+                  .map((memo) => (
+                  <li
+                    key={memo.id}
+                    role="button"
+                    tabIndex={0}
+                    className="p-3 rounded text-black cursor-pointer hover:opacity-80 transition"
+                    style={{ backgroundColor: memo.color || "#ffffff" }}
+                    onClick={() => jumpToMemo(memo)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        jumpToMemo(memo);
+                      }
+                    }}
+                  >
+                    {memo.title}
+                  </li>
+                  ))}
+              </ul>
+            )}
+          </div>
+
+          <div>
+            <h3 className="text-sm text-gray-300 mt-4 mb-2">完了したメモ</h3>
+            {filteredMemos.filter((m) => m.completed).length === 0 ? (
+              <div className="text-gray-500 text-sm">完了済みのメモはありません。</div>
+            ) : (
+              <ul className="space-y-2">
+                {filteredMemos
+                  .filter((memo) => memo.completed)
+                  .map((memo) => (
+                <li
+                  key={memo.id}
+                  role="button"
+                  tabIndex={0}
+                  className="p-3 rounded text-black cursor-pointer hover:opacity-80 transition"
+                  style={{ backgroundColor: memo.color || "#ffffff" }}
+                  onClick={() => jumpToMemo(memo)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      jumpToMemo(memo);
+                    }
+                  }}
+                >
+                  {memo.title}
+                </li>
+                  ))}
+              </ul>
+            )}
+          </div>
+        </ScrollArea>
+      </div>
+    </DrawerContent>
+      </Drawer>
       {showModal && (
         <MemoCreateModal
           lat={modalLat}
