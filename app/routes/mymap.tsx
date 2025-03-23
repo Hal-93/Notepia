@@ -5,9 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl, { Marker } from "mapbox-gl";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faChevronLeft,
-} from "@fortawesome/free-solid-svg-icons";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
 import MemoCreateModal from "~/components/memo/create";
@@ -31,7 +29,7 @@ import {
 } from "~/components/ui/drawer";
 import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import "~/popup.css"
+import "~/popup.css";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -59,27 +57,27 @@ export const action: ActionFunction = async ({ request }) => {
   const file = formData.get("file") as File;
   const uuid = formData.get("uuid") as string;
   const username = formData.get("username") as string;
-    if (username && file) {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      try {
-        updateUserName(userId!, username);
-        const pngBuffer = await sharp(buffer).png().toBuffer();
-        const metadata = { "Content-Type": "image/png" };
-        await uploadFile(pngBuffer, `${uuid}.png`, metadata);
-        await updateUserAvatar(userId!, `/user/${uuid}/avatar`);
-        return json({ message: "更新しました。" }, { status: 200 });
-      } catch (error) {
-        return json({ error: "エラーが発生しました。" }, { status: 500 });
-      }
+  if (username && file) {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    try {
+      updateUserName(userId!, username);
+      const pngBuffer = await sharp(buffer).png().toBuffer();
+      const metadata = { "Content-Type": "image/png" };
+      await uploadFile(pngBuffer, `${uuid}.png`, metadata);
+      await updateUserAvatar(userId!, `/user/${uuid}/avatar`);
+      return json({ message: "更新しました。" }, { status: 200 });
+    } catch (error) {
+      return json({ error: "エラーが発生しました。" }, { status: 500 });
     }
-    if (username) {
-      try {
-        updateUserName(userId!, username);
-        return json({ message: "更新しました。" }, { status: 200 });
-      } catch (error) {
-        return json({ error: "エラーが発生しました。" }, { status: 500 });
-      }
+  }
+  if (username) {
+    try {
+      updateUserName(userId!, username);
+      return json({ message: "更新しました。" }, { status: 200 });
+    } catch (error) {
+      return json({ error: "エラーが発生しました。" }, { status: 500 });
     }
+  }
   if (file) {
     const userId = (await getUserId(request)) as string;
     if (!userId) {
@@ -281,7 +279,10 @@ export default function MapPage() {
             setShowDetail(true);
           });
 
-          const popupClass = `popup-color-${(memo.color || "#ffffff").replace("#", "")}`;
+          const popupClass = `popup-color-${(memo.color || "#ffffff").replace(
+            "#",
+            ""
+          )}`;
 
           marker.setPopup(
             new mapboxgl.Popup({
@@ -436,18 +437,22 @@ export default function MapPage() {
         }}
       />
 
-        <Link to="/home" className="fixed top-4 left-4 text-5xl font-extrabold underline">
+      <Link
+        to="/home"
+        className="fixed top-4 left-4 text-5xl font-extrabold underline"
+      >
         <FontAwesomeIcon
-                    icon={faChevronLeft}
-                    style={{ height: "2.6rem", color: "black" }}
-                    />
+          icon={faChevronLeft}
+          style={{ height: "2.6rem", color: "black" }}
+        />
         Home
-        </Link>
+      </Link>
       <ActionBar
         username={username!}
         uuid={uuid!}
         initialAvatarUrl={avatarUrl}
         publicKey={vapidPublicKey}
+        userId={userId}
       />
       <Bar
         handleSearchMemo={handleSearchMemo}

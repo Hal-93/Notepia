@@ -85,8 +85,9 @@ const Bar = ({
     const data = await response.json();
     const newUsers = [data, ...(follwingUsers || [])];
     setFollowingUsers(newUsers); // 状態を更新
-    setFollowingUser(null);
+    setFollowingUser(null); // 状態をクリア
 
+    // 状態が更新された後の確認
     console.log("Updated following users:", newUsers);
   }
   const [uuid, setUuid] = useState("");
