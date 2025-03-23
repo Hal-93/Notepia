@@ -162,7 +162,6 @@ export default function MapPage() {
       zoom: 16,
       minZoom: 5,
       pitch: 45,
-      bearing: 85,
       antialias: true,
     });
 

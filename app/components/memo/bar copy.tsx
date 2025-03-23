@@ -84,7 +84,7 @@ const Bar = ({
 
     const data = await response.json();
     const newUsers = [data, ...(follwingUsers || [])];
-    setFollowingUsers(newUsers); // 状態を更新
+    setFollowingUsers(newUsers);
     setFollowingUser(null);
 
     console.log("Updated following users:", newUsers);
@@ -176,10 +176,9 @@ const Bar = ({
                     required
                     // eslint-disable-next-line jsx-a11y/no-autofocus
                     autoFocus
-                    value={uuid} // 状態値をバインド
+                    value={uuid}
                     onChange={(e) => setUuid(e.target.value)}
                     className="w-full text-white h-14"
-                    //aria-invalid={actionData?.errors?.email ? true : undefined}
                     aria-describedby="username-error"
                     style={{ fontSize: "2rem" }}
                   />
