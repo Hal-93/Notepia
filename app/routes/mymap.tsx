@@ -1,9 +1,13 @@
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useLoaderData, useFetcher, Form } from "@remix-run/react";
+import { useLoaderData, useFetcher, Form, Link } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl, { Marker } from "mapbox-gl";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faChevronLeft,
+} from "@fortawesome/free-solid-svg-icons";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
 import MemoCreateModal from "~/components/memo/create";
@@ -428,11 +432,14 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
-      <div className="fixed top-4 left-5">
-        <Form action="/home">
-          <Button>ホームに戻る</Button>
-        </Form>
-      </div>
+
+        <Link to="/home" className="fixed top-4 left-4 text-5xl font-extrabold underline">
+        <FontAwesomeIcon
+                    icon={faChevronLeft}
+                    style={{ height: "2.6rem", color: "black" }}
+                    />
+        Home
+        </Link>
       <ActionBar
         username={username!}
         uuid={uuid!}
