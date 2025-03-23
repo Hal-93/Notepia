@@ -48,6 +48,17 @@ export async function updateUserAvatar(id: string, avatar: string) {
   });
 }
 
+export async function updateUserName(id: string, username: string) {
+  return prisma.user.update({
+    where: {
+      id,
+    },
+    data: {
+      name: username,
+    },
+  });
+}
+
 export async function deleteUserByEmail(email: User["email"]) {
   return prisma.user.delete({ where: { email } });
 }
@@ -81,7 +92,6 @@ export async function verifyLogin(
 
   return userWithoutPassword;
 }
-
 
 export async function searchUsersByUuid(query: string): Promise<User[]> {
   return prisma.user.findMany({
