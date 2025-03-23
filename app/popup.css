@@ -1,0 +1,297 @@
+.mapboxgl-popup.popup-color-ffffff .mapboxgl-popup-content {
+    background-color: #ffffff;
+    color: black;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffff.mapboxgl-popup-anchor-top .mapboxgl-popup-tip {
+    border-bottom-color: #ffffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffff.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+    border-top-color: #ffffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffff.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+    border-right-color: #ffffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffff.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+    border-left-color: #ffffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffff.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip {
+    border-bottom-color: #ffffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffff.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+    border-bottom-color: #ffffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffff.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip {
+    border-top-color: #ffffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffff.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+    border-top-color: #ffffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ffcccc .mapboxgl-popup-content {
+    background-color: #ffcccc;
+    color: black;
+  }
+  
+  .mapboxgl-popup.popup-color-ffcccc.mapboxgl-popup-anchor-top .mapboxgl-popup-tip {
+    border-bottom-color: #ffcccc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffcccc.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+    border-top-color: #ffcccc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffcccc.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+    border-right-color: #ffcccc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffcccc.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+    border-left-color: #ffcccc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffcccc.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip {
+    border-bottom-color: #ffcccc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffcccc.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+    border-bottom-color: #ffcccc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffcccc.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip {
+    border-top-color: #ffcccc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffcccc.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+    border-top-color: #ffcccc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffe8cc .mapboxgl-popup-content {
+    background-color: #ffe8cc;
+    color: black;
+  }
+  
+  .mapboxgl-popup.popup-color-ffe8cc.mapboxgl-popup-anchor-top .mapboxgl-popup-tip {
+    border-bottom-color: #ffe8cc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffe8cc.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+    border-top-color: #ffe8cc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffe8cc.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+    border-right-color: #ffe8cc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffe8cc.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+    border-left-color: #ffe8cc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffe8cc.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip {
+    border-bottom-color: #ffe8cc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffe8cc.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+    border-bottom-color: #ffe8cc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffe8cc.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip {
+    border-top-color: #ffe8cc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffe8cc.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+    border-top-color: #ffe8cc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffcc .mapboxgl-popup-content {
+    background-color: #ffffcc;
+    color: black;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffcc.mapboxgl-popup-anchor-top .mapboxgl-popup-tip {
+    border-bottom-color: #ffffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffcc.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+    border-top-color: #ffffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffcc.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+    border-right-color: #ffffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffcc.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+    border-left-color: #ffffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffcc.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip {
+    border-bottom-color: #ffffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffcc.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+    border-bottom-color: #ffffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffcc.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip {
+    border-top-color: #ffffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ffffcc.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+    border-top-color: #ffffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffcc .mapboxgl-popup-content {
+    background-color: #ccffcc;
+    color: black;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffcc.mapboxgl-popup-anchor-top .mapboxgl-popup-tip {
+    border-bottom-color: #ccffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffcc.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+    border-top-color: #ccffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffcc.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+    border-right-color: #ccffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffcc.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+    border-left-color: #ccffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffcc.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip {
+    border-bottom-color: #ccffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffcc.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+    border-bottom-color: #ccffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffcc.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip {
+    border-top-color: #ccffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffcc.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+    border-top-color: #ccffcc;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffff .mapboxgl-popup-content {
+    background-color: #ccffff;
+    color: black;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffff.mapboxgl-popup-anchor-top .mapboxgl-popup-tip {
+    border-bottom-color: #ccffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffff.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+    border-top-color: #ccffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffff.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+    border-right-color: #ccffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffff.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+    border-left-color: #ccffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffff.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip {
+    border-bottom-color: #ccffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffff.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+    border-bottom-color: #ccffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffff.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip {
+    border-top-color: #ccffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ccffff.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+    border-top-color: #ccffff;
+  }
+  
+  .mapboxgl-popup.popup-color-ccccff .mapboxgl-popup-content {
+    background-color: #ccccff;
+    color: black;
+  }
+  
+  .mapboxgl-popup.popup-color-ccccff.mapboxgl-popup-anchor-top .mapboxgl-popup-tip {
+    border-bottom-color: #ccccff;
+  }
+  
+  .mapboxgl-popup.popup-color-ccccff.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+    border-top-color: #ccccff;
+  }
+  
+  .mapboxgl-popup.popup-color-ccccff.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+    border-right-color: #ccccff;
+  }
+  
+  .mapboxgl-popup.popup-color-ccccff.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+    border-left-color: #ccccff;
+  }
+  
+  .mapboxgl-popup.popup-color-ccccff.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip {
+    border-bottom-color: #ccccff;
+  }
+  
+  .mapboxgl-popup.popup-color-ccccff.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+    border-bottom-color: #ccccff;
+  }
+  
+  .mapboxgl-popup.popup-color-ccccff.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip {
+    border-top-color: #ccccff;
+  }
+  
+  .mapboxgl-popup.popup-color-ccccff.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+    border-top-color: #ccccff;
+  }
+  
+  .mapboxgl-popup.popup-color-f3f3f3 .mapboxgl-popup-content {
+    background-color: #f3f3f3;
+    color: black;
+  }
+  
+  .mapboxgl-popup.popup-color-f3f3f3.mapboxgl-popup-anchor-top .mapboxgl-popup-tip {
+    border-bottom-color: #f3f3f3;
+  }
+  
+  .mapboxgl-popup.popup-color-f3f3f3.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+    border-top-color: #f3f3f3;
+  }
+  
+  .mapboxgl-popup.popup-color-f3f3f3.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+    border-right-color: #f3f3f3;
+  }
+  
+  .mapboxgl-popup.popup-color-f3f3f3.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+    border-left-color: #f3f3f3;
+  }
+  
+  .mapboxgl-popup.popup-color-f3f3f3.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip {
+    border-bottom-color: #f3f3f3;
+  }
+  
+  .mapboxgl-popup.popup-color-f3f3f3.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+    border-bottom-color: #f3f3f3;
+  }
+  
+  .mapboxgl-popup.popup-color-f3f3f3.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip {
+    border-top-color: #f3f3f3;
+  }
+  
+  .mapboxgl-popup.popup-color-f3f3f3.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+    border-top-color: #f3f3f3;
+  }
+  
+  

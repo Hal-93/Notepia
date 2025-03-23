@@ -27,6 +27,7 @@ import {
 } from "~/components/ui/drawer";
 import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import "~/popup.css"
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -276,8 +277,11 @@ export default function MapPage() {
             setShowDetail(true);
           });
 
+          const popupClass = `popup-color-${(memo.color || "#ffffff").replace("#", "")}`;
+
           marker.setPopup(
             new mapboxgl.Popup({
+              className: popupClass,
               offset: 25,
               closeOnClick: false,
               closeButton: false,
