@@ -166,7 +166,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-black text-white">
-      <header className="flex items-center justify-between px-6 pt-10">
+      <header className="flex items-center justify-between px-6 pt-6">
         <h1 className="text-4xl font-bold">ホーム</h1>
         <ActionBar
           username={username!}
