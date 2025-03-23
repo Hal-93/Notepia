@@ -8,6 +8,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
 import MemoCreateModal from "~/components/memo/create";
 import MemoDetailModal from "~/components/memo/detail";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getUserId } from "~/session.server";
 import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
@@ -19,6 +20,7 @@ import {
 } from "~/models/user.server";
 import sharp from "sharp";
 import { uploadFile } from "~/utils/minio.server";
+import { faHouse } from "@fortawesome/free-solid-svg-icons";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const userId = await getUserId(request);
@@ -419,9 +421,9 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
-      <div className="fixed top-4 left-5">
+      <div className="fixed top-6 left-5">
         <Form action="/home">
-          <Button>ホームに戻る</Button>
+          <Button><FontAwesomeIcon icon={faHouse} />ホームに戻る</Button>
         </Form>
       </div>
       <ActionBar

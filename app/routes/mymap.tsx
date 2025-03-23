@@ -1,11 +1,15 @@
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useLoaderData, useFetcher, Form, Link } from "@remix-run/react";
+import { useLoaderData, useFetcher, Form } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl, { Marker } from "mapbox-gl";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
+import {
+  faChevronLeft,
+  faHouse,
+} from "@fortawesome/free-solid-svg-icons";
+
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
 import MemoCreateModal from "~/components/memo/create";
@@ -14,22 +18,14 @@ import { getUserId } from "~/session.server";
 import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
 import { Memo } from "@prisma/client";
-import {
-  getUserById,
-  updateUserAvatar,
-  updateUserName,
-} from "~/models/user.server";
+import { getUserById, updateUserAvatar } from "~/models/user.server";
 import sharp from "sharp";
 import { uploadFile } from "~/utils/minio.server";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "~/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "~/components/ui/drawer";
 import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import "~/popup.css";
+
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -53,7 +49,6 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const userId = await getUserId(request);
   const file = formData.get("file") as File;
   const uuid = formData.get("uuid") as string;
   const username = formData.get("username") as string;
@@ -78,6 +73,7 @@ export const action: ActionFunction = async ({ request }) => {
       return json({ error: "エラーが発生しました。" }, { status: 500 });
     }
   }
+
   if (file) {
     const userId = (await getUserId(request)) as string;
     if (!userId) {
@@ -150,30 +146,30 @@ export default function MapPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredMemos, setFilteredMemos] = useState<Memo[]>([]);
 
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredMemos(memos);
-    } else {
-      const lower = searchQuery.toLowerCase();
-      setFilteredMemos(
-        memos.filter((memo: Memo) => memo.title.toLowerCase().includes(lower))
-      );
-    }
-  }, [searchQuery, memos]);
+useEffect(() => {
+  if (searchQuery.trim() === "") {
+    setFilteredMemos(memos);
+  } else {
+    const lower = searchQuery.toLowerCase();
+    setFilteredMemos(
+      memos.filter((memo: Memo) => memo.title.toLowerCase().includes(lower))
+    );
+  }
+}, [searchQuery, memos]);
 
-  const handleSearchMemo = () => {
-    setIsDrawerOpen(true);
-  };
+const handleSearchMemo = () => {
+  setIsDrawerOpen(true);
+};
 
-  const jumpToMemo = (memo: Memo) => {
-    if (mapRef.current) {
-      mapRef.current.flyTo({
-        center: [memo.longitude!, memo.latitude!],
-        zoom: 18,
-      });
-      setIsDrawerOpen(false);
-    }
-  };
+const jumpToMemo = (memo: Memo) => {
+  if (mapRef.current) {
+    mapRef.current.flyTo({
+      center: [memo.longitude!, memo.latitude!],
+      zoom: 18,
+    });
+    setIsDrawerOpen(false);
+  }
+};
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -187,6 +183,7 @@ export default function MapPage() {
       zoom: 16,
       minZoom: 5,
       pitch: 45,
+      bearing: 85,
       antialias: true,
     });
 
@@ -436,17 +433,11 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
-
-      <Link
-        to="/home"
-        className="fixed top-4 left-4 text-5xl font-extrabold underline"
-      >
-        <FontAwesomeIcon
-          icon={faChevronLeft}
-          style={{ height: "2.6rem", color: "black" }}
-        />
-        Home
-      </Link>
+      <div className="fixed top-6 left-5">
+        <Form action="/home">
+          <Button><FontAwesomeIcon icon={faHouse} />ホームに戻る</Button>
+        </Form>
+      </div>
       <ActionBar
         username={username!}
         uuid={uuid!}
@@ -459,31 +450,39 @@ export default function MapPage() {
         handleGoToCurrentLocation={handleGoToCurrentLocation}
         userId={userId}
       />
-      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <DrawerContent className="h-[80%] bg-black text-white">
-          <DrawerHeader>
-            <DrawerTitle>メモを検索</DrawerTitle>
-          </DrawerHeader>
-          <div className="px-4 pb-4">
-            <Input
-              placeholder="タイトルで検索"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <ScrollArea className="h-64 mt-4">
-              {filteredMemos.map((memo) => (
-                <div
-                  key={memo.id}
-                  className="p-2 bg-white text-black border-b cursor-pointer hover:bg-gray-200 transition"
-                  onClick={() => jumpToMemo(memo)}
-                >
-                  {memo.title}
-                </div>
-              ))}
-            </ScrollArea>
-          </div>
-        </DrawerContent>
-      </Drawer>
+<Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
+  <DrawerContent className="h-[80vh] bg-black text-white">
+    <DrawerHeader>
+      <DrawerTitle>メモを検索</DrawerTitle>
+    </DrawerHeader>
+    <div className="px-4 pb-4">
+      <Input
+        placeholder="タイトルを入力"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="mb-4"
+      />
+      <ScrollArea className="h-[60vh] pr-2">
+        {filteredMemos.length === 0 ? (
+          <div className="text-gray-400">一致するメモがありません。</div>
+        ) : (
+          <ul className="space-y-2">
+            {filteredMemos.map((memo) => (
+              <li
+                key={memo.id}
+                className="p-3 rounded text-black cursor-pointer hover:opacity-80 transition"
+                style={{ backgroundColor: memo.color || "#ffffff" }}
+                onClick={() => jumpToMemo(memo)}
+              >
+                {memo.title}
+              </li>
+            ))}
+          </ul>
+        )}
+      </ScrollArea>
+    </div>
+  </DrawerContent>
+</Drawer>
       {showModal && (
         <MemoCreateModal
           lat={modalLat}

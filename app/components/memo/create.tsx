@@ -1,45 +1,34 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 async function reverseGeocode(
   lat: number,
   lng: number,
   token: string
 ): Promise<string> {
-  if (!token) {
-    throw new Error("MAPBOX_TOKENエラー");
-  }
+  if (!token) throw new Error("MAPBOX_TOKENエラー");
+
   const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${token}&limit=1&language=ja`;
   const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error("リクエストに失敗しました");
-  }
+  if (!res.ok) throw new Error("リクエストに失敗しました");
+
   const data = await res.json();
-
-  if (data.features && data.features.length > 0) {
+  if (data.features?.length > 0) {
     const feature = data.features[0];
-
-    let prefecture = "";
-    let city = "";
-    let ward = "";
     const street = feature.text;
     const building = feature.properties?.address;
 
-    if (feature.context && Array.isArray(feature.context)) {
-      for (const ctx of feature.context) {
-        if (ctx.id.startsWith("region.")) {
-          prefecture = ctx.text;
-        } else if (ctx.id.startsWith("place.")) {
-          city = ctx.text;
-        } else if (ctx.id.startsWith("locality.")) {
-          ward = ctx.text;
-        }
-      }
+    let prefecture = "", city = "", ward = "";
+    for (const ctx of feature.context || []) {
+      if (ctx.id.startsWith("region.")) prefecture = ctx.text;
+      else if (ctx.id.startsWith("place.")) city = ctx.text;
+      else if (ctx.id.startsWith("locality.")) ward = ctx.text;
     }
 
     const municipality = ward || city;
     const address = `${prefecture}${municipality}${street}`;
     return building ? `${address}-${building}` : address;
   }
+
   return "住所が見つかりませんでした";
 }
 
@@ -82,12 +71,25 @@ export default function MemoCreateModal({
   const [color, setColor] = useState("#ffffff");
   const [loadingAddress, setLoadingAddress] = useState(false);
 
+  const modalRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     setLoadingAddress(true);
     reverseGeocode(lat, lng, mapboxToken)
       .then((addr) => setPlace(addr))
       .finally(() => setLoadingAddress(false));
   }, [lat, lng, mapboxToken]);
+
+  // モーダル外クリックで閉じる
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   const handleSubmit = () => {
     if (title.trim() === "") {
@@ -106,22 +108,27 @@ export default function MemoCreateModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-      <div className="relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white">
+      <div
+        ref={modalRef}
+        className="relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white overflow-hidden"
+      >
+        {/* 上部のカラーライン（かぶせ） */}
         <div
-          className="flex justify-between items-center h-3"
+          className="absolute top-0 left-0 right-0 h-6 rounded-t-lg"
           style={{ backgroundColor: color }}
-        ></div>
-        <br />
-        <div className="flex justify-between">
-          <h2 className="text-white text-lg font-bold">メモの作成</h2>
+        />
+
+        <div className="flex justify-between items-center mb-4 pt-6">
+          <h2 className="text-lg font-bold">メモの作成</h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-white hover:text-red-400"
+            className="text-white hover:text-red-400 w-8 h-8 flex items-center justify-center rounded-full text-4xl"
           >
             ×
           </button>
         </div>
+
         <label className="block mb-2">
           <span className="text-sm">
             メモ <span className="text-red-500">*</span>
@@ -134,23 +141,23 @@ export default function MemoCreateModal({
             onChange={(e) => setTitle(e.target.value)}
           />
         </label>
+
         <label className="block mb-2">
           <span className="text-sm">
             場所 <span className="text-red-500">*</span>
           </span>
-          <div className="flex gap-2 items-center">
-            <input
-              type="text"
-              className="mt-1 w-full rounded bg-gray-800 border border-gray-500 p-2"
-              placeholder="場所を入力"
-              value={place}
-              onChange={(e) => setPlace(e.target.value)}
-            />
-          </div>
+          <input
+            type="text"
+            className="mt-1 w-full rounded bg-gray-800 border border-gray-500 p-2"
+            placeholder="場所を入力"
+            value={place}
+            onChange={(e) => setPlace(e.target.value)}
+          />
           {loadingAddress && (
             <p className="text-xs text-gray-400 mt-1">住所を取得中...</p>
           )}
         </label>
+
         <label className="block mb-2">
           <span className="text-sm">内容 (省略可)</span>
           <textarea
@@ -160,6 +167,7 @@ export default function MemoCreateModal({
             onChange={(e) => setContent(e.target.value)}
           />
         </label>
+
         <div className="mb-4">
           <span className="text-sm">メモの色</span>
           <div className="flex gap-2 mt-2">
@@ -175,6 +183,7 @@ export default function MemoCreateModal({
             ))}
           </div>
         </div>
+
         <button
           type="button"
           onClick={handleSubmit}
