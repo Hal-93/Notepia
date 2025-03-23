@@ -173,6 +173,7 @@ export default function Home() {
           uuid={uuid!}
           initialAvatarUrl={avatarUrl}
           publicKey={vapidPublicKey}
+          userId={userId}
         />
       </header>
 

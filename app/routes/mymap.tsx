@@ -9,6 +9,7 @@ import {
   faChevronLeft,
   faHouse,
 } from "@fortawesome/free-solid-svg-icons";
+
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
 import MemoCreateModal from "~/components/memo/create";
@@ -23,6 +24,7 @@ import { uploadFile } from "~/utils/minio.server";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "~/components/ui/drawer";
 import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import "~/popup.css";
 
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -49,6 +51,29 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const file = formData.get("file") as File;
   const uuid = formData.get("uuid") as string;
+  const username = formData.get("username") as string;
+  if (username && file) {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    try {
+      updateUserName(userId!, username);
+      const pngBuffer = await sharp(buffer).png().toBuffer();
+      const metadata = { "Content-Type": "image/png" };
+      await uploadFile(pngBuffer, `${uuid}.png`, metadata);
+      await updateUserAvatar(userId!, `/user/${uuid}/avatar`);
+      return json({ message: "更新しました。" }, { status: 200 });
+    } catch (error) {
+      return json({ error: "エラーが発生しました。" }, { status: 500 });
+    }
+  }
+  if (username) {
+    try {
+      updateUserName(userId!, username);
+      return json({ message: "更新しました。" }, { status: 200 });
+    } catch (error) {
+      return json({ error: "エラーが発生しました。" }, { status: 500 });
+    }
+  }
+
   if (file) {
     const userId = (await getUserId(request)) as string;
     if (!userId) {
@@ -251,7 +276,10 @@ const jumpToMemo = (memo: Memo) => {
             setShowDetail(true);
           });
 
-          const popupClass = `popup-color-${(memo.color || "#ffffff").replace("#", "")}`;
+          const popupClass = `popup-color-${(memo.color || "#ffffff").replace(
+            "#",
+            ""
+          )}`;
 
           marker.setPopup(
             new mapboxgl.Popup({
@@ -415,6 +443,7 @@ const jumpToMemo = (memo: Memo) => {
         uuid={uuid!}
         initialAvatarUrl={avatarUrl}
         publicKey={vapidPublicKey}
+        userId={userId}
       />
       <Bar
         handleSearchMemo={handleSearchMemo}

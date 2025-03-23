@@ -256,7 +256,10 @@ export default function MapPage() {
             setShowDetail(true);
           });
 
-          const popupClass = `popup-color-${(memo.color || "#ffffff").replace("#", "")}`;
+          const popupClass = `popup-color-${(memo.color || "#ffffff").replace(
+            "#",
+            ""
+          )}`;
 
           marker.setPopup(
             new mapboxgl.Popup({
@@ -428,6 +431,7 @@ export default function MapPage() {
         uuid={uuid!}
         initialAvatarUrl={avatarUrl}
         publicKey={vapidPublicKey}
+        userId={userId}
       />
       <Bar
         handleMakeFriend={handleMakeFriend}
