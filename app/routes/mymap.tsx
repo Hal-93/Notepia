@@ -18,6 +18,7 @@ import { uploadFile } from "~/utils/minio.server";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "~/components/ui/drawer";
 import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import "~/popup.css"
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -245,8 +246,11 @@ const jumpToMemo = (memo: Memo) => {
             setShowDetail(true);
           });
 
+          const popupClass = `popup-color-${(memo.color || "#ffffff").replace("#", "")}`;
+
           marker.setPopup(
             new mapboxgl.Popup({
+              className: popupClass,
               offset: 25,
               closeOnClick: false,
               closeButton: false,
