@@ -31,5 +31,22 @@ export const action: ActionFunction = async ({ request }) => {
     return json({ success: true });
   }
 
+  if (intent === "updateGroup") {
+    const newName = formData.get("newName") as string;
+    const userIds = JSON.parse(formData.get("userIds") as string) as string[];
+  
+    if (!newName) {
+      return json({ error: "グループ名が必要です" }, { status: 400 });
+    }
+  
+    await updateGroupName(groupId, newName);
+  
+    for (const userId of userIds) {
+      await addUserToGroup(groupId, userId);
+    }
+  
+    return json({ success: true });
+  }
+
   return json({ error: "Invalid intent" }, { status: 400 });
 };
