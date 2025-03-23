@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 async function reverseGeocode(
   lat: number,
@@ -81,6 +81,7 @@ export default function MemoCreateModal({
   const [content, setContent] = useState("");
   const [color, setColor] = useState("#ffffff");
   const [loadingAddress, setLoadingAddress] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setLoadingAddress(true);
@@ -88,6 +89,16 @@ export default function MemoCreateModal({
       .then((addr) => setPlace(addr))
       .finally(() => setLoadingAddress(false));
   }, [lat, lng, mapboxToken]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   const handleSubmit = () => {
     if (title.trim() === "") {
@@ -106,18 +117,20 @@ export default function MemoCreateModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-      <div className="relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white">
+      <div
+        ref={modalRef}
+        className="relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white overflow-hidden"
+      >
         <div
-          className="flex justify-between items-center h-3"
+          className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[120%] h-6 rounded-b-full"
           style={{ backgroundColor: color }}
         ></div>
-        <br />
-        <div className="flex justify-between">
+        <div className="flex justify-between items-center mt-6">
           <h2 className="text-white text-lg font-bold">メモの作成</h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-white hover:text-red-400"
+            className="text-white hover:text-red-400 text-2xl"
           >
             ×
           </button>
