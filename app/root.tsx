@@ -8,6 +8,7 @@ import {
 import type { LinksFunction } from "@remix-run/node";
 
 import "./tailwind.css";
+import "~/popup.css"
 import { useEffect } from "react";
 import { registerServiceWorker } from "./utils/pushNotification";
 
