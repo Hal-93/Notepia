@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Link,
   redirect,
@@ -28,6 +28,7 @@ import { faGear, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import GroupEditModal from "~/components/group/edit";
 import { uploadFile } from "~/utils/minio.server";
 import sharp from "sharp";
+import Avatar from "boring-avatars";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -135,6 +136,7 @@ export default function Home() {
   const { userId, username, uuid, avatarUrl, groups, vapidPublicKey } =
     useLoaderData<typeof loader>();
   const [showModal, setShowModal] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const [editingGroup, setEditingGroup] = useState<{
     id: string;
     name: string;
@@ -155,6 +157,12 @@ export default function Home() {
       fetcher.submit({ intent: "leaveGroup", groupId }, { method: "post" });
     }
   };
+
+  useEffect(() => {
+      setIsClient(true);
+  }, []);
+  
+  if (!isClient) return null;
 
   return (
     <div className="flex flex-col min-h-screen bg-black text-white">
@@ -191,6 +199,7 @@ export default function Home() {
                   key={group.id}
                   className="relative flex flex-col justify-between bg-gray-800 px-4 py-3 rounded-md md:h-[30vh] md:w-[20vw]"
                 >
+
                   <Link
                     to={`/group/${group.id}`}
                     className="flex flex-col hover:text-gray-300"
@@ -200,16 +209,24 @@ export default function Home() {
                     </span>
                     <div className="flex mt-2">
                       {group.users.slice(0, 3).map((user, index) => (
-                        <img
+                        <div
                           key={user.id}
-                          src={`/user/${user.uuid}/avatar`}
-                          alt={user.name}
-                          className="rounded-full border-2 border-black object-cover w-8 h-8"
+                          className="rounded-full border-2 border-black w-8 h-8 overflow-hidden"
                           style={{
                             marginLeft: index === 0 ? 0 : "-20px",
                             zIndex: group.users.length - index,
                           }}
-                        />
+                        >
+                          {user.avatar ? (
+                            <img
+                              src={`/user/${user.uuid}/avatar`}
+                              alt={user.name}
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            <Avatar name={user.uuid} size={32} variant="beam" />
+                          )}
+                        </div>
                       ))}
                       {group.users.length > 3 && (
                         <div className="ml-2 text-sm text-gray-300">

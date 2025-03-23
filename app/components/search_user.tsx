@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
+import Avatar from "boring-avatars"; // ← 忘れずにインポート
 import type { User } from "@prisma/client";
 
 type UserSearchProps = {
-    onUserAdd: (user: User) => void;
-    currentUserId: string;
-    selectedUsers: User[];
-  };
+  onUserAdd: (user: User) => void;
+  currentUserId: string;
+  selectedUsers: User[];
+};
 
-export default function UserSearch({ onUserAdd }: UserSearchProps) {
+export default function UserSearch({ onUserAdd, currentUserId, selectedUsers }: UserSearchProps) {
   const [query, setQuery] = useState("");
+  const [isClient, setIsClient] = useState(false);
   const [results, setResults] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +24,10 @@ export default function UserSearch({ onUserAdd }: UserSearchProps) {
       })
         .then((res) => res.json())
         .then((data) => {
-          setResults(data.users.slice(0, 5));
+          const filtered = data.users.filter(
+            (u: User) => u.id !== currentUserId && !selectedUsers.find((s) => s.id === u.id)
+          );
+          setResults(filtered.slice(0, 5));
           setLoading(false);
         })
         .catch((err) => {
@@ -36,7 +41,13 @@ export default function UserSearch({ onUserAdd }: UserSearchProps) {
     }
 
     return () => controller.abort();
-  }, [query]);
+  }, [query, currentUserId, selectedUsers]);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) return null;
 
   return (
     <div className="mb-6">
@@ -51,32 +62,34 @@ export default function UserSearch({ onUserAdd }: UserSearchProps) {
         />
       </label>
 
-      {loading}
-
       {results.length > 0 && (
         <ul className="bg-gray-900 border border-gray-700 rounded-md p-2 space-y-1">
-        {results.map((user) => (
+          {results.map((user) => (
             <li key={user.id}>
-            <button
+              <button
                 onClick={() => {
-                onUserAdd(user);
-                setQuery("");
-                setResults([]);
+                  onUserAdd(user);
+                  setQuery("");
+                  setResults([]);
                 }}
-                className="w-full hover:bg-gray-700 px-2 py-1 rounded cursor-pointer flex items-center gap-2"
-            >
-                <img
-                src={`/user/${user.uuid}/avatar`}
-                alt={user.name}
-                className="rounded-full border-2 border-black object-cover w-8 h-8"
-                />
-                <div className="flex flex-col text-left"> {/* ← ここで左揃え指定 */}
-                <p className="text-sm font-medium">{user.name}</p>
-                <p className="text-xs text-gray-400">@{user.uuid}</p>
+                className="w-full hover:bg-gray-700 px-2 py-1 rounded cursor-pointer flex items-center gap-3"
+              >
+                {user.avatar ? (
+                  <img
+                    src={`/user/${user.uuid}/avatar`}
+                    alt={user.name}
+                    className="rounded-full object-cover w-8 h-8"
+                  />
+                ) : (
+                  <Avatar size={32} name={user.uuid} variant="beam" />
+                )}
+                <div className="flex flex-col text-left">
+                  <p className="text-sm font-medium">{user.name}</p>
+                  <p className="text-xs text-gray-400">@{user.uuid}</p>
                 </div>
-            </button>
+              </button>
             </li>
-        ))}
+          ))}
         </ul>
       )}
     </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useFetcher } from "@remix-run/react";
+import Avatar from "boring-avatars";
 import UserSearch from "../search_user";
 
 type GroupCreateProps = {
@@ -49,7 +50,7 @@ export default function GroupCreateModal({ currentUserId, onClose }: GroupCreate
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
       <div className="relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white">
-        <div className="flex justify-between">
+        <div className="flex justify-between mb-4">
           <h2 className="text-white text-lg font-bold">グループの作成</h2>
           <button
             type="button"
@@ -82,17 +83,26 @@ export default function GroupCreateModal({ currentUserId, onClose }: GroupCreate
         {selectedUsers.length > 0 && (
           <div className="mt-4">
             <p className="text-sm text-gray-300 mb-1">追加済み</p>
-            <ul className="text-sm space-y-2 pl-2">
+            <ul className="space-y-2">
               {selectedUsers.map((u) => (
-                <li key={u.id} className="flex items-center gap-2">
-                  <img
-                    src={`/user/${u.uuid}/avatar`}
-                    alt={u.name}
-                    className="rounded-full border-2 border-black object-cover w-8 h-8"
-                  />
+                <li key={u.id} className="flex items-center gap-3">
+                  {u.avatar ? (
+                    <img
+                      src={`/user/${u.uuid}/avatar`}
+                      alt={u.name}
+                      className="rounded-full border-2 border-black object-cover w-8 h-8"
+                    />
+                  ) : (
+                    <Avatar
+                      size={32}
+                      name={u.uuid}
+                      variant="beam"
+                      colors={["#92A1C6", "#146A7C", "#F0AB3D", "#C271B4", "#C20D90"]}
+                    />
+                  )}
                   <div className="flex flex-col text-left">
-                    <p className="text-sm font-medium">{u.name}</p>
-                    <p className="text-xs text-gray-400">@{u.uuid}</p>
+                    <span className="text-sm font-medium">{u.name}</span>
+                    <span className="text-xs text-gray-400">@{u.uuid}</span>
                   </div>
                 </li>
               ))}
@@ -105,7 +115,6 @@ export default function GroupCreateModal({ currentUserId, onClose }: GroupCreate
           onClick={handleSubmit}
           className="w-full mt-6 py-2 bg-indigo-500 rounded text-white hover:bg-indigo-700"
         >
-          
           グループを作成する
         </button>
       </div>
