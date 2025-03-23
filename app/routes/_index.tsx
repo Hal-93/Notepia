@@ -4,13 +4,6 @@ import { Link } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { getUserId } from "~/session.server";
 
-export const meta: MetaFunction = () => {
-  return [
-    { title: "Notepia" },
-    { name: "description", content: "Welcome to Notepia" },
-  ];
-};
-
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await getUserId(request);
   if (userId) return redirect("/home");
