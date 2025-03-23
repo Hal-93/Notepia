@@ -72,7 +72,7 @@ export const action: ActionFunction = async ({ request }) => {
       const pngBuffer = await sharp(buffer).png().toBuffer();
       const metadata = { "Content-Type": "image/png" };
       await uploadFile(pngBuffer, `${uuid}.png`, metadata);
-      await updateUserAvatar(userId!, `user/${uuid}/avatar`);
+      await updateUserAvatar(userId!, `/user/${uuid}/avatar`);
       return json({ message: "更新しました。" }, { status: 200 });
     } catch (error) {
       return json({ error: "エラーが発生しました。" }, { status: 500 });
