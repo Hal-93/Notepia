@@ -7,6 +7,7 @@ import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronLeft,
+  faHouse,
 } from "@fortawesome/free-solid-svg-icons";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
@@ -436,13 +437,11 @@ export default function MapPage() {
         }}
       />
 
-        <Link to="/home" className="fixed top-4 left-4 text-5xl font-extrabold underline">
-        <FontAwesomeIcon
-                    icon={faChevronLeft}
-                    style={{ height: "2.6rem", color: "black" }}
-                    />
-        Home
-        </Link>
+      <div className="fixed top-4 left-5">
+        <Form action="/home">
+          <Button><FontAwesomeIcon icon={faHouse} />ホームに戻る</Button>
+        </Form>
+      </div>
       <ActionBar
         username={username!}
         uuid={uuid!}
