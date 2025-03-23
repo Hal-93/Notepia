@@ -4,6 +4,11 @@ import { useLoaderData, useFetcher, Form } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl, { Marker } from "mapbox-gl";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faChevronLeft,
+  faHouse,
+} from "@fortawesome/free-solid-svg-icons";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
 import MemoCreateModal from "~/components/memo/create";
@@ -402,7 +407,7 @@ const jumpToMemo = (memo: Memo) => {
       />
       <div className="fixed top-4 left-5">
         <Form action="/home">
-          <Button>ホームに戻る</Button>
+          <Button><FontAwesomeIcon icon={faHouse} />ホームに戻る</Button>
         </Form>
       </div>
       <ActionBar
