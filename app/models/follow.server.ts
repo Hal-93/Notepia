@@ -57,17 +57,17 @@ export async function unfollow(
 // フォロワー削除関数
 // 自分のフォロワーリストから特定のフォロワーを削除
 export async function removeFollower(
-    followingId: string,
-    followerId: string
-  ): Promise<Follow> {
-    const followers = await getFollowers(followingId);
-    const followRecord = followers.find((f) => f.followerId === followerId);
-    if (!followRecord) {
-      throw new Error("フォローされていません");
-    }
-    return await prisma.follow.delete({
-      where: { id: followRecord.id },
-    });
+  followingId: string,
+  followerId: string
+): Promise<Follow> {
+  const followers = await getFollowers(followingId);
+  const followRecord = followers.find((f) => f.followerId === followerId);
+  if (!followRecord) {
+    throw new Error("フォローされていません");
+  }
+  return await prisma.follow.delete({
+    where: { id: followRecord.id },
+  });
 }
 
 // フォロー中一覧取得関数
@@ -106,6 +106,15 @@ export async function getAllFollowers(userId: string): Promise<Follow[]> {
   return await prisma.follow.findMany({
     where: {
       followingId: userId,
+    },
+  });
+}
+
+export async function getFollowersByTwo(following: string, follower: string) {
+  return await prisma.follow.findFirst({
+    where: {
+      followingId: following,
+      followerId: follower,
     },
   });
 }
