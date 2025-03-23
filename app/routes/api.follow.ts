@@ -23,7 +23,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const subscriptions = await getSubscriptionByUserId(userId);
     const payload = JSON.stringify({
       title: `${user.name}さんからのフレンド申請`,
-      body: "${user.name}さんからのフレンド申請が届いています！",
+      body: `${user.name}さんからのフレンド申請が届いています！`,
       icon: "/favicon.ico",
     });
     if (subscriptions) {

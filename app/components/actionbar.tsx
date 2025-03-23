@@ -39,6 +39,8 @@ export default function ActionBar({
   const [isProfileChange, setIsProfileChange] = useState(false);
   const [isSetting, setIsSetting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [copied, setCopied] = useState(false);
+  const [uname, setUname] = useState(username);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -110,6 +112,7 @@ export default function ActionBar({
       formData.append("file", selectedFile);
       formData.append("uuid", uuid);
     }
+    formData.append("username", uname);
 
     try {
       const res = await fetch(window.location.pathname, {
@@ -140,8 +143,14 @@ export default function ActionBar({
 
   if (!isClient) return null;
 
-  const handleButtonClick = () => {
-    fileInputRef.current?.click();
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(uuid);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("コピーに失敗しました:", err);
+    }
   };
 
   return (
@@ -173,23 +182,14 @@ export default function ActionBar({
           <DrawerHeader className="w-full flex justify-between items-center">
             <div>
               {isProfileChange || isSetting ? (
-                <Button
+                <FontAwesomeIcon
                   onClick={() => {
                     setIsProfileChange(false);
                     setIsSetting(false);
                   }}
-                  className="p-5"
-                  style={{
-                    backgroundColor: "black",
-                    width: "5rem",
-                    height: "2rem",
-                  }}
-                >
-                  <FontAwesomeIcon
-                    icon={faChevronLeft}
-                    style={{ height: "3rem" }}
-                  />
-                </Button>
+                  icon={faChevronLeft}
+                  style={{ height: "3rem", width: "5rem", color: "white" }}
+                />
               ) : (
                 <DrawerClose
                   style={{
@@ -252,38 +252,33 @@ export default function ActionBar({
                     id="fileInput"
                     accept="image/*"
                     ref={fileInputRef}
-                    style={{ display: "none" }}
+                    className="opacity-0 absolute w-0 h-0"
                     onChange={handleFileChange}
                   />
                 )}
+
                 {previewUrl ? (
-                  <button
-                    onClick={handleButtonClick}
-                    className="p-0 border-0 bg-transparent"
-                    style={{ display: "inline-flex" }}
-                  >
+                  <label htmlFor="fileInput" className="cursor-pointer">
                     <img
                       src={previewUrl}
                       alt={username}
-                      className="rounded-full cursor-pointer"
+                      className="rounded-full"
                       style={{ height: "7rem", width: "7rem" }}
                     />
-                  </button>
+                  </label>
                 ) : avatarUrl ? (
-                  <button
-                    onClick={handleButtonClick}
-                    className="p-0 border-0 bg-transparent"
-                    style={{ display: "inline-flex" }}
-                  >
+                  <label htmlFor="fileInput" className="cursor-pointer">
                     <img
                       src={avatarUrl}
                       alt={username}
-                      className="rounded-full cursor-pointer"
+                      className="rounded-full"
                       style={{ height: "7rem", width: "7rem" }}
                     />
-                  </button>
+                  </label>
                 ) : (
-                  <Avatar size="7rem" name={uuid} variant="beam" />
+                  <label htmlFor="fileInput" className="cursor-pointer">
+                    <Avatar size="7rem" name={uuid} variant="beam" />
+                  </label>
                 )}
 
                 {isProfileChange ? (
@@ -293,10 +288,31 @@ export default function ActionBar({
                   />
                 ) : null}
               </div>
-              <div className="text-white " style={{ fontSize: "2rem" }}>
-                {username}
+
+              {isProfileChange ? (
+                <div className="flex flex-col">
+                  <Input
+                    id="username"
+                    name="username"
+                    type="text"
+                    value={uname}
+                    onChange={(e) => setUname(e.target.value)} // 状態更新のためのハンドラー
+                    style={{ width: "90%" }}
+                    className="text-white bg-gray-800 border border-gray-600 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              ) : (
+                <div className="text-white text-2xl">{uname}</div>
+              )}
+
+              <div>
+                <button className="text-white p-2 rounded" onClick={handleCopy}>
+                  @{uuid}
+                </button>
+                {copied && (
+                  <span className="ml-2 text-green-400">コピーしました！</span>
+                )}
               </div>
-              <div className="text-white p-2">@{uuid}</div>
               {isProfileChange ? (
                 <div
                   className="w-full "
@@ -306,29 +322,6 @@ export default function ActionBar({
                     flexFlow: "column",
                   }}
                 >
-                  <div className="p-0 ali" style={{ width: "90%" }}>
-                    <Label htmlFor="email" className="text-white">
-                      ユーザー名
-                    </Label>
-                    <Input
-                      id="username"
-                      name="username"
-                      type="username"
-                      autoComplete="username"
-                      required
-                      // eslint-disable-next-line jsx-a11y/no-autofocus
-                      autoFocus
-                      //ref={emailRef}
-                      className="w-full text-white"
-                      //aria-invalid={actionData?.errors?.email ? true : undefined}
-                      aria-describedby="username-error"
-                    />
-                    {/*actionData?.errors?.email && (
-                <p className="text-red-600 text-sm" id="email-error">
-                  {actionData.errors.email}
-                </p>
-              )*/}
-                  </div>
                   <Button
                     onClick={() => {
                       setIsProfileChange(true);
