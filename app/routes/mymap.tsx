@@ -3,10 +3,9 @@ import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useFetcher, Form } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl, { Marker } from "mapbox-gl";
-import MapboxLanguage from "@mapbox/mapbox-gl-language";
+// import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faChevronLeft,
   faHouse,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -176,9 +175,30 @@ const jumpToMemo = (memo: Memo) => {
 
     mapboxgl.accessToken = mapboxToken;
 
+    const getMapStyle = () => {
+      const hours = new Date().getHours();
+    
+      if (hours >= 20 && hours < 0) {
+        return "mapbox://styles/so03jp/cm8q4hwxg00bs01rc8u2iemed"; // Night
+      }
+      else if (hours >= 0 && hours < 4) {
+        return "mapbox://styles/so03jp/cm8q4hwxg00bs01rc8u2iemed"; // Night
+      }
+      else if (hours >= 4 && hours < 8) {
+        return "mapbox://styles/so03jp/cm8q4cycp00d201rd9i026h1g"; // Dawn
+      }
+      else if (hours >= 8 && hours < 16) {
+        return "mapbox://styles/so03jp/cm8q4fqii00cp01sneoqucgne"; // Day
+      }
+      else {
+        return "mapbox://styles/so03jp/cm8k8mtga018g01so5gl9b8w1"; // Dusk
+      }
+    };
+    
+
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: "mapbox://styles/so03jp/cm8k8mtga018g01so5gl9b8w1",
+      style: getMapStyle(),
       center: [139.759, 35.684],
       zoom: 16,
       minZoom: 5,
@@ -187,32 +207,13 @@ const jumpToMemo = (memo: Memo) => {
       antialias: true,
     });
 
-    map.addControl(new MapboxLanguage({ defaultLanguage: "ja" }));
+    // map.addControl(new MapboxLanguage({ defaultLanguage: "ja" }));
     map.doubleClickZoom.disable();
 
     map.on("load", () => {
-      map.addSource("mapbox-dem", {
-        type: "raster-dem",
-        url: "mapbox://mapbox.terrain-rgb",
-        tileSize: 512,
-        maxzoom: 16,
-      });
-
-      map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
-
-      map.addLayer({
-        id: "3d-buildings",
-        source: "composite",
-        "source-layer": "building",
-        type: "fill-extrusion",
-        minzoom: 16,
-        paint: {
-          "fill-extrusion-color": "#aaa",
-          "fill-extrusion-height": ["get", "height"],
-          "fill-extrusion-base": ["get", "min_height"],
-          "fill-extrusion-opacity": 0.6,
-        },
-      });
+      if (map.getTerrain()) {
+        map.setTerrain(null);
+      }
     });
 
     if (navigator.geolocation) {
@@ -449,6 +450,8 @@ const jumpToMemo = (memo: Memo) => {
         handleSearchMemo={handleSearchMemo}
         handleGoToCurrentLocation={handleGoToCurrentLocation}
         userId={userId}
+        groupeId="defaultGroupId" // Replace with the actual group ID
+        groupeName="defaultGroupName" // Replace with the actual group name
       />
       <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
 
