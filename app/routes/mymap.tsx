@@ -191,7 +191,7 @@ const jumpToMemo = (memo: Memo) => {
         return "mapbox://styles/so03jp/cm8q4fqii00cp01sneoqucgne"; // Day
       }
       else {
-        return "mapbox://styles/so03jp/cm8k8mtga018g01so5gl9b8w1"; // Dusk
+        return "mapbox://styles/so03jp/cm8qukfop00f701sn2kmtf5ov"; // Dusk
       }
     };
     
