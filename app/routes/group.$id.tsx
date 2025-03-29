@@ -19,6 +19,10 @@ import {
   updateUserName,
 } from "~/models/user.server";
 import sharp from "sharp";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "~/components/ui/drawer";
+import { Input } from "~/components/ui/input";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
+import { ScrollArea } from "~/components/ui/scroll-area";
 import { uploadFile } from "~/utils/minio.server";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
 
@@ -142,6 +146,9 @@ export default function MapPage() {
 
   const [selectedMemo, setSelectedMemo] = useState<Memo | null>(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredMemos, setFilteredMemos] = useState<Memo[]>([]);
 
   const [showModal, setShowModal] = useState(false);
   const [modalLat, setModalLat] = useState(0);
@@ -149,6 +156,17 @@ export default function MapPage() {
   const [currentLocation, setCurrentLocation] = useState<
     [number, number] | null
   >(null);
+
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredMemos(memos);
+    } else {
+      const lower = searchQuery.toLowerCase();
+      setFilteredMemos(
+        memos.filter((memo: Memo) => memo.title.toLowerCase().includes(lower))
+      );
+    }
+  }, [searchQuery, memos]);
 
   const memoMarkersRef = useRef<mapboxgl.Marker[]>([]);
 
@@ -301,11 +319,9 @@ export default function MapPage() {
           const { latitude, longitude } = position.coords;
           setCurrentLocation([longitude, latitude]);
 
-          // マーカーが既に存在する場合は位置を更新
           if (markerRef.current) {
             markerRef.current.setLngLat([longitude, latitude]);
           } else {
-            // マーカーがない場合のみ新規作成
             const customMarker = document.createElement("div");
             customMarker.style.width = "20px";
             customMarker.style.height = "20px";
@@ -349,7 +365,17 @@ export default function MapPage() {
   };
 
   const handleSearchMemo = () => {
-    /*メモの検索機能 */
+    setIsDrawerOpen(true);
+  };
+
+  const jumpToMemo = (memo: Memo) => {
+    if (mapRef.current) {
+      mapRef.current.flyTo({
+        center: [memo.longitude!, memo.latitude!],
+        zoom: 18,
+      });
+      setIsDrawerOpen(false);
+    }
   };
 
   const handleGoToCurrentLocation = () => {
@@ -442,6 +468,103 @@ export default function MapPage() {
         groupeId={groupId}
         groupeName={"Group Name"}
       />
+
+      <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
+        <DrawerContent className="h-[80vh] bg-black text-white">
+          <DrawerHeader>
+            <DrawerTitle>メモを検索</DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-4">
+            <Input
+              placeholder="メモのタイトル"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="mt-1 w-full rounded bg-gray-800 border border-gray-500 p-2"
+            />
+
+            {/* 黒基調のタブコンポーネント */}
+            <Tabs defaultValue="incomplete" className="mt-4">
+              <TabsList className="flex space-x-2 bg-black border-b border-gray-600">
+                <TabsTrigger 
+                  value="incomplete" 
+                  className="px-4 py-2 text-white focus:outline-none transition-all data-[state=active]:bg-gray-800 data-[state=active]:text-blue-400"
+                >
+                  未完了
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="complete" 
+                  className="px-4 py-2 text-white focus:outline-none transition-all data-[state=active]:bg-gray-800 data-[state=active]:text-blue-400"
+                >
+                  完了済み
+                </TabsTrigger>
+              </TabsList>
+
+              {/* 未完了タブ */}
+              <TabsContent value="incomplete">
+                <ScrollArea className="h-[50vh] pr-2 mt-2">
+                  {filteredMemos.filter((m) => !m.completed).length === 0 ? (
+                    <div className="text-gray-500 text-sm">未完了のメモはありません。</div>
+                  ) : (
+                    <ul className="space-y-2">
+                      {filteredMemos
+                        .filter((memo) => !memo.completed)
+                        .map((memo) => (
+                          <li
+                            key={memo.id}
+                            role="button"
+                            tabIndex={0}
+                            className="p-3 rounded text-black cursor-pointer hover:opacity-80 transition"
+                            style={{ backgroundColor: memo.color || "#ffffff" }}
+                            onClick={() => jumpToMemo(memo)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                jumpToMemo(memo);
+                              }
+                            }}
+                          >
+                            {memo.title}
+                          </li>
+                        ))}
+                    </ul>
+                  )}
+                </ScrollArea>
+              </TabsContent>
+
+              {/* 完了済みタブ */}
+              <TabsContent value="complete">
+                <ScrollArea className="h-[50vh] pr-2 mt-2">
+                  {filteredMemos.filter((m) => m.completed).length === 0 ? (
+                    <div className="text-gray-500 text-sm">完了済みのメモはありません。</div>
+                  ) : (
+                    <ul className="space-y-2">
+                      {filteredMemos
+                        .filter((memo) => memo.completed)
+                        .map((memo) => (
+                          <li
+                            key={memo.id}
+                            role="button"
+                            tabIndex={0}
+                            className="p-3 rounded text-black cursor-pointer hover:opacity-80 transition"
+                            style={{ backgroundColor: memo.color || "#ffffff" }}
+                            onClick={() => jumpToMemo(memo)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                jumpToMemo(memo);
+                              }
+                            }}
+                          >
+                            {memo.title}
+                          </li>
+                        ))}
+                    </ul>
+                  )}
+                </ScrollArea>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
       {showModal && (
         <MemoCreateModal
           lat={modalLat}

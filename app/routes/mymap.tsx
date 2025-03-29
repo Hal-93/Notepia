@@ -17,11 +17,12 @@ import { getUserId } from "~/session.server";
 import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
 import { Memo } from "@prisma/client";
-import { getUserById, updateUserAvatar } from "~/models/user.server";
+import { getUserById, updateUserAvatar, updateUserName } from "~/models/user.server";
 import sharp from "sharp";
 import { uploadFile } from "~/utils/minio.server";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "~/components/ui/drawer";
 import { Input } from "~/components/ui/input";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import "~/popup.css";
 
@@ -321,11 +322,9 @@ const jumpToMemo = (memo: Memo) => {
           const { latitude, longitude } = position.coords;
           setCurrentLocation([longitude, latitude]);
 
-          // マーカーが既に存在する場合は位置を更新
           if (markerRef.current) {
             markerRef.current.setLngLat([longitude, latitude]);
           } else {
-            // マーカーがない場合のみ新規作成
             const customMarker = document.createElement("div");
             customMarker.style.width = "20px";
             customMarker.style.height = "20px";
@@ -450,86 +449,106 @@ const jumpToMemo = (memo: Memo) => {
         handleSearchMemo={handleSearchMemo}
         handleGoToCurrentLocation={handleGoToCurrentLocation}
         userId={userId}
-        groupeId="defaultGroupId" // Replace with the actual group ID
-        groupeName="defaultGroupName" // Replace with the actual group name
+        groupeId="defaultGroupId"
+        groupeName="defaultGroupName"
       />
+
       <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
+        <DrawerContent className="h-[80vh] bg-black text-white">
+          <DrawerHeader>
+            <DrawerTitle>メモを検索</DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-4">
+            <Input
+              placeholder="メモのタイトル"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="mt-1 w-full rounded bg-gray-800 border border-gray-500 p-2"
+            />
 
-      <DrawerContent className="h-[80vh] bg-black text-white">
-      <DrawerHeader>
-        <DrawerTitle>メモを検索</DrawerTitle>
-      </DrawerHeader>
-      <div className="px-4 pb-4">
-        <Input
-          placeholder="メモのタイトル"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="mt-1 w-full rounded bg-gray-800 border border-gray-500 p-2"
-        />
-        <br />
-        <ScrollArea className="h-[60vh] pr-2 space-y-6">
-          {/* 未完了メモ */}
-          <div>
-            <h3 className="text-sm text-gray-300 mb-2">未完了のメモ</h3>
-            {filteredMemos.filter((m) => !m.completed).length === 0 ? (
-              <div className="text-gray-500 text-sm">未完了のメモはありません。</div>
-            ) : (
-              <ul className="space-y-2">
-                {filteredMemos
-                  .filter((memo) => !memo.completed)
-                  .map((memo) => (
-                  <li
-                    key={memo.id}
-                    role="button"
-                    tabIndex={0}
-                    className="p-3 rounded text-black cursor-pointer hover:opacity-80 transition"
-                    style={{ backgroundColor: memo.color || "#ffffff" }}
-                    onClick={() => jumpToMemo(memo)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        jumpToMemo(memo);
-                      }
-                    }}
-                  >
-                    {memo.title}
-                  </li>
-                  ))}
-              </ul>
-            )}
-          </div>
-
-          <div>
-            <h3 className="text-sm text-gray-300 mt-4 mb-2">完了したメモ</h3>
-            {filteredMemos.filter((m) => m.completed).length === 0 ? (
-              <div className="text-gray-500 text-sm">完了済みのメモはありません。</div>
-            ) : (
-              <ul className="space-y-2">
-                {filteredMemos
-                  .filter((memo) => memo.completed)
-                  .map((memo) => (
-                <li
-                  key={memo.id}
-                  role="button"
-                  tabIndex={0}
-                  className="p-3 rounded text-black cursor-pointer hover:opacity-80 transition"
-                  style={{ backgroundColor: memo.color || "#ffffff" }}
-                  onClick={() => jumpToMemo(memo)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      jumpToMemo(memo);
-                    }
-                  }}
+            {/* 黒基調のタブコンポーネント */}
+            <Tabs defaultValue="incomplete" className="mt-4">
+              <TabsList className="flex space-x-2 bg-black border-b border-gray-600">
+                <TabsTrigger 
+                  value="incomplete" 
+                  className="px-4 py-2 text-white focus:outline-none transition-all data-[state=active]:bg-gray-800 data-[state=active]:text-blue-400"
                 >
-                  {memo.title}
-                </li>
-                  ))}
-              </ul>
-            )}
+                  未完了
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="complete" 
+                  className="px-4 py-2 text-white focus:outline-none transition-all data-[state=active]:bg-gray-800 data-[state=active]:text-blue-400"
+                >
+                  完了済み
+                </TabsTrigger>
+              </TabsList>
+
+              {/* 未完了タブ */}
+              <TabsContent value="incomplete">
+                <ScrollArea className="h-[50vh] pr-2 mt-2">
+                  {filteredMemos.filter((m) => !m.completed).length === 0 ? (
+                    <div className="text-gray-500 text-sm">未完了のメモはありません。</div>
+                  ) : (
+                    <ul className="space-y-2">
+                      {filteredMemos
+                        .filter((memo) => !memo.completed)
+                        .map((memo) => (
+                          <li
+                            key={memo.id}
+                            role="button"
+                            tabIndex={0}
+                            className="p-3 rounded text-black cursor-pointer hover:opacity-80 transition"
+                            style={{ backgroundColor: memo.color || "#ffffff" }}
+                            onClick={() => jumpToMemo(memo)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                jumpToMemo(memo);
+                              }
+                            }}
+                          >
+                            {memo.title}
+                          </li>
+                        ))}
+                    </ul>
+                  )}
+                </ScrollArea>
+              </TabsContent>
+
+              {/* 完了済みタブ */}
+              <TabsContent value="complete">
+                <ScrollArea className="h-[50vh] pr-2 mt-2">
+                  {filteredMemos.filter((m) => m.completed).length === 0 ? (
+                    <div className="text-gray-500 text-sm">完了済みのメモはありません。</div>
+                  ) : (
+                    <ul className="space-y-2">
+                      {filteredMemos
+                        .filter((memo) => memo.completed)
+                        .map((memo) => (
+                          <li
+                            key={memo.id}
+                            role="button"
+                            tabIndex={0}
+                            className="p-3 rounded text-black cursor-pointer hover:opacity-80 transition"
+                            style={{ backgroundColor: memo.color || "#ffffff" }}
+                            onClick={() => jumpToMemo(memo)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                jumpToMemo(memo);
+                              }
+                            }}
+                          >
+                            {memo.title}
+                          </li>
+                        ))}
+                    </ul>
+                  )}
+                </ScrollArea>
+              </TabsContent>
+            </Tabs>
           </div>
-        </ScrollArea>
-      </div>
-    </DrawerContent>
+        </DrawerContent>
       </Drawer>
+
       {showModal && (
         <MemoCreateModal
           lat={modalLat}

@@ -478,6 +478,8 @@ export default function ActionBar({
                   <span className="ml-2 text-green-400">コピーしました！</span>
                 )}
               </div>
+              <p className="text-white">フォロワー0 フォロー0</p>
+              <br />
               {isProfileChange ? (
                 <div
                   className="w-full "
@@ -504,7 +506,7 @@ export default function ActionBar({
                     onClick={() => {
                       setIsProfileChange(true);
                     }}
-                    className="p-5 bg-white text-black"
+                    className="p-5 bg-white hover:bg-gray-400 text-black"
                     style={{ width: "90%" }}
                   >
                     プロフィールを編集
@@ -513,10 +515,10 @@ export default function ActionBar({
                     onClick={() => {
                       setIsFollow(true);
                     }}
-                    className="p-5 mt-5 bg-indigo-500 text-black"
+                    className="p-5 mt-5 bg-indigo-500 hover:bg-indigo-700 text-black"
                     style={{ width: "90%" }}
                   >
-                    フォロワー
+                    フレンド
                   </Button>
                   <Form
                     method="post"
@@ -525,7 +527,7 @@ export default function ActionBar({
                   >
                     <Button
                       type="submit"
-                      className="p-5 bg-red-500 text-white"
+                      className="p-5 bg-red-500 hover:bg-red-700 text-white"
                       style={{ width: "90%" }}
                     >
                       ログアウト
