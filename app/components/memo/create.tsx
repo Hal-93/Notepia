@@ -80,7 +80,6 @@ export default function MemoCreateModal({
       .finally(() => setLoadingAddress(false));
   }, [lat, lng, mapboxToken]);
 
-  // モーダル外クリックで閉じる
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
@@ -112,7 +111,6 @@ export default function MemoCreateModal({
         ref={modalRef}
         className="relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white overflow-hidden"
       >
-        {/* 上部のカラーライン（かぶせ） */}
         <div
           className="absolute top-0 left-0 right-0 h-6 rounded-t-lg"
           style={{ backgroundColor: color }}
@@ -144,18 +142,15 @@ export default function MemoCreateModal({
 
         <label className="block mb-2">
           <span className="text-sm">
-            場所 <span className="text-red-500">*</span>
+            場所 (省略可)
           </span>
           <input
             type="text"
             className="mt-1 w-full rounded bg-gray-800 border border-gray-500 p-2"
-            placeholder="場所を入力"
+            placeholder={loadingAddress ? "住所を取得中..." : "場所を入力"}
             value={place}
             onChange={(e) => setPlace(e.target.value)}
           />
-          {loadingAddress && (
-            <p className="text-xs text-gray-400 mt-1">住所を取得中...</p>
-          )}
         </label>
 
         <label className="block mb-2">
