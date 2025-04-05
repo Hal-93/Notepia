@@ -25,6 +25,7 @@ import { Input } from "~/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import "~/popup.css";
+import { MapBoxSearch } from "~/components/searchbar";
 
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -204,7 +205,6 @@ const jumpToMemo = (memo: Memo) => {
       zoom: 16,
       minZoom: 5,
       pitch: 45,
-      bearing: 85,
       antialias: true,
     });
 
@@ -438,6 +438,18 @@ const jumpToMemo = (memo: Memo) => {
           <Button><FontAwesomeIcon icon={faHouse} />ホームに戻る</Button>
         </Form>
       </div>
+      <MapBoxSearch
+        api={mapboxToken}
+        onSelect={(place) => {
+          if (mapRef.current) {
+            mapRef.current.flyTo({
+              center: place.center,
+              zoom: 16,
+              essential: true,
+            });
+          }
+        }}
+      />
       <ActionBar
         username={username!}
         uuid={uuid!}
