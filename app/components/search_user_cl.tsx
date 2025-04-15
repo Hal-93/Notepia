@@ -8,7 +8,7 @@ type UserSearchProps = {
   selectedUsers: User[];
 };
 
-export default function UserSearch({ onUserAdd, currentUserId, selectedUsers }: UserSearchProps) {
+export default function UserSearchCL({ onUserAdd, currentUserId, selectedUsers }: UserSearchProps) {
   const [query, setQuery] = useState("");
   const [isClient, setIsClient] = useState(false);
   const [results, setResults] = useState<User[]>([]);
@@ -57,14 +57,14 @@ export default function UserSearch({ onUserAdd, currentUserId, selectedUsers }: 
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="mt-1 w-full rounded bg-gray-800 border border-gray-500 p-2"
+          className="mt-1 w-full rounded text-black border border-gray-500 p-2"
           placeholder="ユーザーIDで検索"
           
         />
       </label>
 
       {results.length > 0 && (
-        <ul className="bg-gray-900 border border-gray-700 rounded-md p-2 space-y-1">
+        <ul className="border rounded-md p-2 space-y-1">
           {results.map((user) => (
             <li key={user.id}>
               <button
