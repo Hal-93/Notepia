@@ -6,7 +6,7 @@ export default function Index() {
   return (
     <div className="min-h-screen flex flex-col pt-16 bg-black">
       <Header />
-      <main className="relative bg-[url('backimage.png')] bg-cover bg-center py-60 flex-1 flex flex-col items-center justify-center text-center text-white">
+      <main className="relative bg-[url('/backimage.png')] bg-cover bg-center py-60 flex-1 flex flex-col items-center justify-center text-center text-white">
         <div className="absolute inset-0"></div>
         <div className="relative z-10 max-w-2xl px-4">
           <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">記憶と場所を結ぶ</h1>
