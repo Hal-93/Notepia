@@ -1,0 +1,4 @@
+[change/#169-app-icon 16fa78f] fileSize-193=
+ 3 files changed, 2 insertions(+), 2 deletions(-)
+ create mode 100644 public/favicon-192x192.png
+ delete mode 100644 public/favicon-193x193.png
