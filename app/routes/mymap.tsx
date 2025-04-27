@@ -177,27 +177,26 @@ const jumpToMemo = (memo: Memo) => {
 
     mapboxgl.accessToken = mapboxToken;
 
+    //Design マップのスタイル
     const getMapStyle = () => {
       const hours = new Date().getHours();
     
-      if (hours >= 20 && hours < 0) {
-        return "mapbox://styles/so03jp/cm8q4hwxg00bs01rc8u2iemed"; // Night
-      }
-      else if (hours >= 0 && hours < 4) {
-        return "mapbox://styles/so03jp/cm8q4hwxg00bs01rc8u2iemed"; // Night
+      if (hours >= 20 || hours < 4) {
+        return "mapbox://styles/so03jp/cm9zurz3t004e01sp63ke1ngh"; // Night
       }
       else if (hours >= 4 && hours < 8) {
-        return "mapbox://styles/so03jp/cm8q4cycp00d201rd9i026h1g"; // Dawn
+        return "mapbox://styles/so03jp/cm9zu6y0h00py01ssf79y7lkr"; // Dawn
       }
       else if (hours >= 8 && hours < 16) {
-        return "mapbox://styles/so03jp/cm8q4fqii00cp01sneoqucgne"; // Day
+        return "mapbox://styles/so03jp/cm9zu55nn004a01spbkjbf94v"; // Day
       }
       else {
-        return "mapbox://styles/so03jp/cm8qukfop00f701sn2kmtf5ov"; // Dusk
+        return "mapbox://styles/so03jp/cm9zu7s4700yi01rmgn9p75xi"; // Dusk
       }
     };
     
 
+    //Design マップの設定
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: getMapStyle(),
@@ -208,7 +207,6 @@ const jumpToMemo = (memo: Memo) => {
       antialias: true,
     });
 
-    // map.addControl(new MapboxLanguage({ defaultLanguage: "ja" }));
     map.doubleClickZoom.disable();
 
     map.on("load", () => {
