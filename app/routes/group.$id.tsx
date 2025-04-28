@@ -13,17 +13,16 @@ import { getUserId } from "~/session.server";
 import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
 import { Memo } from "@prisma/client";
+import { getUserById } from "~/models/user.server";
 import {
-  getUserById,
-  updateUserAvatar,
-  updateUserName,
-} from "~/models/user.server";
-import sharp from "sharp";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "~/components/ui/drawer";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "~/components/ui/drawer";
 import { Input } from "~/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import { uploadFile } from "~/utils/minio.server";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -57,74 +56,28 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 export const action: ActionFunction = async ({ request, params }) => {
   const formData = await request.formData();
-  const userId = await getUserId(request);
-  const file = formData.get("file") as File;
-  const uuid = formData.get("uuid") as string;
-  const username = formData.get("username") as string;
-  if (username && file) {
-    const buffer = Buffer.from(await file.arrayBuffer());
-    try {
-      updateUserName(userId!, username);
-      const pngBuffer = await sharp(buffer).png().toBuffer();
-      const metadata = { "Content-Type": "image/png" };
-      await uploadFile(pngBuffer, `${uuid}.png`, metadata);
-      await updateUserAvatar(userId!, `/user/${uuid}/avatar`);
-      return json({ message: "更新しました。" }, { status: 200 });
-    } catch (error) {
-      return json({ error: "エラーが発生しました。" }, { status: 500 });
-    }
-  }
-  if (username) {
-    try {
-      updateUserName(userId!, username);
-      return json({ message: "更新しました。" }, { status: 200 });
-    } catch (error) {
-      return json({ error: "エラーが発生しました。" }, { status: 500 });
-    }
-  }
-  if (file) {
-    const userId = (await getUserId(request)) as string;
-    if (!userId) {
-      return json({ error: "エラーが発生しました。" }, { status: 500 });
-    }
-    const buffer = Buffer.from(await file.arrayBuffer());
-    try {
-      const pngBuffer = await sharp(buffer).png().toBuffer();
-      const metadata = { "Content-Type": "image/png" };
-      await uploadFile(pngBuffer, `${uuid}.png`, metadata);
-      await updateUserAvatar(userId, `/user/${uuid}/avatar`);
+  const title = formData.get("title") as string;
+  const content = formData.get("content") as string;
+  const place = formData.get("place") as string;
+  const lat = parseFloat(formData.get("lat") as string);
+  const lng = parseFloat(formData.get("lng") as string);
+  const createdById = formData.get("createdById") as string;
+  const color = formData.get("color") as string;
+  const groupId = params.id;
 
-      return json(
-        { message: "アイコンをアップロードしました。" },
-        { status: 200 }
-      );
-    } catch (error) {
-      return json({ error: "エラーが発生しました。" }, { status: 500 });
-    }
-  } else {
-    const title = formData.get("title") as string;
-    const content = formData.get("content") as string;
-    const place = formData.get("place") as string;
-    const lat = parseFloat(formData.get("lat") as string);
-    const lng = parseFloat(formData.get("lng") as string);
-    const createdById = formData.get("createdById") as string;
-    const color = formData.get("color") as string;
-    const groupId = params.id;
+  const { createMemo } = await import("~/models/memo.server");
+  const memo = await createMemo({
+    title,
+    content,
+    place,
+    createdById,
+    latitude: lat,
+    longitude: lng,
+    color,
+    groupId,
+  });
 
-    const { createMemo } = await import("~/models/memo.server");
-    const memo = await createMemo({
-      title,
-      content,
-      place,
-      createdById,
-      latitude: lat,
-      longitude: lng,
-      color,
-      groupId,
-    });
-
-    return json({ memo });
-  }
+  return json({ memo });
 };
 
 export default function MapPage() {
@@ -178,17 +131,14 @@ export default function MapPage() {
     //Design マップのスタイル
     const getMapStyle = () => {
       const hours = new Date().getHours();
-    
+
       if (hours >= 20 || hours < 4) {
         return "mapbox://styles/so03jp/cm9zurz3t004e01sp63ke1ngh"; // Night
-      }
-      else if (hours >= 4 && hours < 8) {
+      } else if (hours >= 4 && hours < 8) {
         return "mapbox://styles/so03jp/cm9zu6y0h00py01ssf79y7lkr"; // Dawn
-      }
-      else if (hours >= 8 && hours < 16) {
+      } else if (hours >= 8 && hours < 16) {
         return "mapbox://styles/so03jp/cm9zu55nn004a01spbkjbf94v"; // Day
-      }
-      else {
+      } else {
         return "mapbox://styles/so03jp/cm9zu7s4700yi01rmgn9p75xi"; // Dusk
       }
     };
@@ -449,7 +399,10 @@ export default function MapPage() {
       />
       <div className="fixed top-6 left-5">
         <Form action="/home">
-          <Button><FontAwesomeIcon icon={faHouse} />ホームに戻る</Button>
+          <Button>
+            <FontAwesomeIcon icon={faHouse} />
+            ホームに戻る
+          </Button>
         </Form>
       </div>
       <ActionBar
@@ -484,14 +437,14 @@ export default function MapPage() {
             {/* 黒基調のタブコンポーネント */}
             <Tabs defaultValue="incomplete" className="mt-4">
               <TabsList className="flex space-x-2 bg-black border-b border-gray-600">
-                <TabsTrigger 
-                  value="incomplete" 
+                <TabsTrigger
+                  value="incomplete"
                   className="px-4 py-2 text-white focus:outline-none transition-all data-[state=active]:bg-gray-800 data-[state=active]:text-blue-400"
                 >
                   未完了
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="complete" 
+                <TabsTrigger
+                  value="complete"
                   className="px-4 py-2 text-white focus:outline-none transition-all data-[state=active]:bg-gray-800 data-[state=active]:text-blue-400"
                 >
                   完了済み
@@ -502,7 +455,9 @@ export default function MapPage() {
               <TabsContent value="incomplete">
                 <ScrollArea className="h-[50vh] pr-2 mt-2">
                   {filteredMemos.filter((m) => !m.completed).length === 0 ? (
-                    <div className="text-gray-500 text-sm">未完了のメモはありません。</div>
+                    <div className="text-gray-500 text-sm">
+                      未完了のメモはありません。
+                    </div>
                   ) : (
                     <ul className="space-y-2">
                       {filteredMemos
@@ -533,7 +488,9 @@ export default function MapPage() {
               <TabsContent value="complete">
                 <ScrollArea className="h-[50vh] pr-2 mt-2">
                   {filteredMemos.filter((m) => m.completed).length === 0 ? (
-                    <div className="text-gray-500 text-sm">完了済みのメモはありません。</div>
+                    <div className="text-gray-500 text-sm">
+                      完了済みのメモはありません。
+                    </div>
                   ) : (
                     <ul className="space-y-2">
                       {filteredMemos

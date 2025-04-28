@@ -5,9 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl, { Marker } from "mapbox-gl";
 // import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faHouse,
-} from "@fortawesome/free-solid-svg-icons";
+import { faHouse } from "@fortawesome/free-solid-svg-icons";
 
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
@@ -17,16 +15,21 @@ import { getUserId } from "~/session.server";
 import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
 import { Memo } from "@prisma/client";
-import { getUserById, updateUserAvatar, updateUserName } from "~/models/user.server";
-import sharp from "sharp";
-import { uploadFile } from "~/utils/minio.server";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "~/components/ui/drawer";
+import {
+  getUserById,
+} from "~/models/user.server";
+
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "~/components/ui/drawer";
 import { Input } from "~/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import "~/popup.css";
 import { MapBoxSearch } from "~/components/searchbar";
-
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -50,72 +53,26 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const file = formData.get("file") as File;
-  const uuid = formData.get("uuid") as string;
-  const username = formData.get("username") as string;
-  if (username && file) {
-    const buffer = Buffer.from(await file.arrayBuffer());
-    try {
-      updateUserName(userId!, username);
-      const pngBuffer = await sharp(buffer).png().toBuffer();
-      const metadata = { "Content-Type": "image/png" };
-      await uploadFile(pngBuffer, `${uuid}.png`, metadata);
-      await updateUserAvatar(userId!, `/user/${uuid}/avatar`);
-      return json({ message: "更新しました。" }, { status: 200 });
-    } catch (error) {
-      return json({ error: "エラーが発生しました。" }, { status: 500 });
-    }
-  }
-  if (username) {
-    try {
-      updateUserName(userId!, username);
-      return json({ message: "更新しました。" }, { status: 200 });
-    } catch (error) {
-      return json({ error: "エラーが発生しました。" }, { status: 500 });
-    }
-  }
+  const title = formData.get("title") as string;
+  const content = formData.get("content") as string;
+  const place = formData.get("place") as string;
+  const lat = parseFloat(formData.get("lat") as string);
+  const lng = parseFloat(formData.get("lng") as string);
+  const createdById = formData.get("createdById") as string;
+  const color = formData.get("color") as string;
 
-  if (file) {
-    const userId = (await getUserId(request)) as string;
-    if (!userId) {
-      return json({ error: "エラーが発生しました。" }, { status: 500 });
-    }
-    const buffer = Buffer.from(await file.arrayBuffer());
-    try {
-      const pngBuffer = await sharp(buffer).png().toBuffer();
-      const metadata = { "Content-Type": "image/png" };
-      await uploadFile(pngBuffer, `${uuid}.png`, metadata);
-      await updateUserAvatar(userId, `/user/${uuid}/avatar`);
+  const { createMemo } = await import("~/models/memo.server");
+  const memo = await createMemo({
+    title,
+    content,
+    place,
+    createdById,
+    latitude: lat,
+    longitude: lng,
+    color,
+  });
 
-      return json(
-        { message: "アイコンをアップロードしました。" },
-        { status: 200 }
-      );
-    } catch (error) {
-      return json({ error: "エラーが発生しました。" }, { status: 500 });
-    }
-  } else {
-    const title = formData.get("title") as string;
-    const content = formData.get("content") as string;
-    const place = formData.get("place") as string;
-    const lat = parseFloat(formData.get("lat") as string);
-    const lng = parseFloat(formData.get("lng") as string);
-    const createdById = formData.get("createdById") as string;
-    const color = formData.get("color") as string;
-
-    const { createMemo } = await import("~/models/memo.server");
-    const memo = await createMemo({
-      title,
-      content,
-      place,
-      createdById,
-      latitude: lat,
-      longitude: lng,
-      color,
-    });
-
-    return json({ memo });
-  }
+  return json({ memo });
 };
 
 export default function MapPage() {
@@ -147,30 +104,30 @@ export default function MapPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredMemos, setFilteredMemos] = useState<Memo[]>([]);
 
-useEffect(() => {
-  if (searchQuery.trim() === "") {
-    setFilteredMemos(memos);
-  } else {
-    const lower = searchQuery.toLowerCase();
-    setFilteredMemos(
-      memos.filter((memo: Memo) => memo.title.toLowerCase().includes(lower))
-    );
-  }
-}, [searchQuery, memos]);
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredMemos(memos);
+    } else {
+      const lower = searchQuery.toLowerCase();
+      setFilteredMemos(
+        memos.filter((memo: Memo) => memo.title.toLowerCase().includes(lower))
+      );
+    }
+  }, [searchQuery, memos]);
 
-const handleSearchMemo = () => {
-  setIsDrawerOpen(true);
-};
+  const handleSearchMemo = () => {
+    setIsDrawerOpen(true);
+  };
 
-const jumpToMemo = (memo: Memo) => {
-  if (mapRef.current) {
-    mapRef.current.flyTo({
-      center: [memo.longitude!, memo.latitude!],
-      zoom: 18,
-    });
-    setIsDrawerOpen(false);
-  }
-};
+  const jumpToMemo = (memo: Memo) => {
+    if (mapRef.current) {
+      mapRef.current.flyTo({
+        center: [memo.longitude!, memo.latitude!],
+        zoom: 18,
+      });
+      setIsDrawerOpen(false);
+    }
+  };
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -180,21 +137,17 @@ const jumpToMemo = (memo: Memo) => {
     //Design マップのスタイル
     const getMapStyle = () => {
       const hours = new Date().getHours();
-    
+
       if (hours >= 20 || hours < 4) {
         return "mapbox://styles/so03jp/cm9zurz3t004e01sp63ke1ngh"; // Night
-      }
-      else if (hours >= 4 && hours < 8) {
+      } else if (hours >= 4 && hours < 8) {
         return "mapbox://styles/so03jp/cm9zu6y0h00py01ssf79y7lkr"; // Dawn
-      }
-      else if (hours >= 8 && hours < 16) {
+      } else if (hours >= 8 && hours < 16) {
         return "mapbox://styles/so03jp/cm9zu55nn004a01spbkjbf94v"; // Day
-      }
-      else {
+      } else {
         return "mapbox://styles/so03jp/cm9zu7s4700yi01rmgn9p75xi"; // Dusk
       }
     };
-    
 
     //Design マップの設定
     const map = new mapboxgl.Map({
@@ -433,7 +386,10 @@ const jumpToMemo = (memo: Memo) => {
       />
       <div className="fixed top-6 left-5">
         <Form action="/home">
-          <Button><FontAwesomeIcon icon={faHouse} />ホームに戻る</Button>
+          <Button>
+            <FontAwesomeIcon icon={faHouse} />
+            ホームに戻る
+          </Button>
         </Form>
       </div>
       <MapBoxSearch
@@ -479,14 +435,14 @@ const jumpToMemo = (memo: Memo) => {
             {/* 黒基調のタブコンポーネント */}
             <Tabs defaultValue="incomplete" className="mt-4">
               <TabsList className="flex space-x-2 bg-black border-b border-gray-600">
-                <TabsTrigger 
-                  value="incomplete" 
+                <TabsTrigger
+                  value="incomplete"
                   className="px-4 py-2 text-white focus:outline-none transition-all data-[state=active]:bg-gray-800 data-[state=active]:text-blue-400"
                 >
                   未完了
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="complete" 
+                <TabsTrigger
+                  value="complete"
                   className="px-4 py-2 text-white focus:outline-none transition-all data-[state=active]:bg-gray-800 data-[state=active]:text-blue-400"
                 >
                   完了済み
@@ -497,7 +453,9 @@ const jumpToMemo = (memo: Memo) => {
               <TabsContent value="incomplete">
                 <ScrollArea className="h-[50vh] pr-2 mt-2">
                   {filteredMemos.filter((m) => !m.completed).length === 0 ? (
-                    <div className="text-gray-500 text-sm">未完了のメモはありません。</div>
+                    <div className="text-gray-500 text-sm">
+                      未完了のメモはありません。
+                    </div>
                   ) : (
                     <ul className="space-y-2">
                       {filteredMemos
@@ -528,7 +486,9 @@ const jumpToMemo = (memo: Memo) => {
               <TabsContent value="complete">
                 <ScrollArea className="h-[50vh] pr-2 mt-2">
                   {filteredMemos.filter((m) => m.completed).length === 0 ? (
-                    <div className="text-gray-500 text-sm">完了済みのメモはありません。</div>
+                    <div className="text-gray-500 text-sm">
+                      完了済みのメモはありません。
+                    </div>
                   ) : (
                     <ul className="space-y-2">
                       {filteredMemos
