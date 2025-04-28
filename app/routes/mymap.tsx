@@ -158,6 +158,7 @@ export default function MapPage() {
       minZoom: 5,
       pitch: 45,
       antialias: true,
+      attributionControl: false,
     });
 
     map.doubleClickZoom.disable();
