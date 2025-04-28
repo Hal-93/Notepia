@@ -184,13 +184,16 @@ export default function ActionBar({
     formData.append("username", uname);
 
     try {
-      const res = await fetch(window.location.pathname, {
+      const res = await fetch("api/profile", {
         method: "POST",
         body: formData,
       });
 
       if (res.ok) {
-        refreshImage();
+        const data = await res.json();
+        if (data.updatedAvatar) {
+          refreshImage();
+        }
         setIsProfileChange(false);
         alert("保存しました。");
         setSelectedFile(null);
