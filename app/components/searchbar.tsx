@@ -19,8 +19,6 @@ interface MapBoxSearchProps {
   onSelect?: (place: MapBoxPlace) => void;
 }
 
-interface IconDefinition {
-}
 
 export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => {
   const [query, setQuery] = useState("");
@@ -138,14 +136,14 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
   const displayedPredictions = predictions.slice(0, 8);
 
   return (
-    <div className="w-full max-w-md relative z-50 mx-auto">
+    <div className="w-full max-w-md relative z-50 mx-auto pr-16">
       <div className="relative">
         <input
           type="text"
           value={query}
           onChange={(e) => { setQuery(e.target.value); setShowDropdown(true); }}
-          placeholder="建物名・郵便番号で検索"
-          className="w-full px-4 py-2 pr-10 bg-white text-black border border-gray-300 rounded-full shadow-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          placeholder="建物名で検索"
+          className="w-full px-6 py-2 pr-16 bg-white text-black border border-gray-300 rounded-full shadow-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
         />
         {query && (
           <button

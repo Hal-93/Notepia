@@ -3,10 +3,6 @@ import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useFetcher, Form } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl, { Marker } from "mapbox-gl";
-// import MapboxLanguage from "@mapbox/mapbox-gl-language";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHouse } from "@fortawesome/free-solid-svg-icons";
-
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
 import MemoCreateModal from "~/components/memo/create";
@@ -15,14 +11,9 @@ import { getUserId } from "~/session.server";
 import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
 import { Memo } from "@prisma/client";
-import { getUserById, updateUserAvatar, updateUserName } from "~/models/user.server";
-import sharp from "sharp";
-import { uploadFile } from "~/utils/minio.server";
+import { getUserById } from "~/models/user.server";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "~/components/ui/drawer";
 import MemoList from "~/components/memo/memolist";
-import {
-  getUserById,
-} from "~/models/user.server";
 import "~/popup.css";
 import { MapBoxSearch } from "~/components/searchbar";
 
@@ -380,33 +371,36 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
-      <div className="fixed top-6 left-5">
-        <Form action="/home">
-          <Button>
-            <FontAwesomeIcon icon={faHouse} />
-            ホームに戻る
+      <div className="fixed top-4 inset-x-5 flex flex-wrap items-center gap-2 z-50">
+        <Form action="/home" className="flex-none">
+          <Button className="px-2 py-1">
+            &lt;
           </Button>
         </Form>
+        <div className="relative flex-1 min-w-0">
+          <MapBoxSearch
+            api={mapboxToken}
+            onSelect={(place) => {
+              if (mapRef.current) {
+                mapRef.current.flyTo({
+                  center: place.center,
+                  zoom: 16,
+                  essential: true,
+                });
+              }
+            }}
+          />
+        </div>
+        <div className="flex-none">
+          <ActionBar
+            username={username!}
+            uuid={uuid!}
+            initialAvatarUrl={avatarUrl}
+            publicKey={vapidPublicKey}
+            userId={userId}
+          />
+        </div>
       </div>
-      <MapBoxSearch
-        api={mapboxToken}
-        onSelect={(place) => {
-          if (mapRef.current) {
-            mapRef.current.flyTo({
-              center: place.center,
-              zoom: 16,
-              essential: true,
-            });
-          }
-        }}
-      />
-      <ActionBar
-        username={username!}
-        uuid={uuid!}
-        initialAvatarUrl={avatarUrl}
-        publicKey={vapidPublicKey}
-        userId={userId}
-      />
       <Bar
         handleSearchMemo={handleSearchMemo}
         handleGoToCurrentLocation={handleGoToCurrentLocation}

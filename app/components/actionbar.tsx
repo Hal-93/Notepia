@@ -235,8 +235,7 @@ export default function ActionBar({
             <img
               src={`${avatarUrl}`}
               alt={username}
-              className="rounded-full"
-              style={{ height: "4rem", width: "4rem" }}
+              className="rounded-full w-8 h-8"
             />
           ) : (
             <Avatar size={"4rem"} name={uuid} variant="beam" />
@@ -481,7 +480,6 @@ export default function ActionBar({
                   <span className="ml-2 text-green-400">コピーしました！</span>
                 )}
               </div>
-              <p className="text-white">フォロワー0 フォロー0</p>
               <br />
               {isProfileChange ? (
                 <div
