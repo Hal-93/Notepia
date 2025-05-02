@@ -2,6 +2,8 @@ import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { Link } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { getUserId } from "~/session.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -43,14 +45,29 @@ export default function Index() {
             </Button>
           </Link>
 
+          {/*
+          <Link to="/auth/google">
+            <Button
+              variant="outline"
+              className="disabled w-[80vw] md:w-[28vw] border border-gray-300 text-black text-md mt-4 flex items-center justify-center"
+            >
+              <FontAwesomeIcon icon={faGoogle} className="mr-2" />
+              Googleアカウントで始める
+            </Button>
+          </Link>
+          */}
+
           <p className="text-white mt-2 md:mt-4 px-3 md:font-semibold font-bold">
-            すでに Notepia のアカウントをお持ちですか？
+            または
           </p>
           <p className="text-indigo-700 md:font-semibold font-extrabold mt-0 mb-[80px]">
-            <Link to="/login">ログイン</Link>
+            <Link to="/login" className="flex items-center justify-center">
+              すでにアカウントをお持ちですか？
+            </Link>
           </p>
         </nav>
       </div>
+
 
       {/* 右カラム */}
       <div
