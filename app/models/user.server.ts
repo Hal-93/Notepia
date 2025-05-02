@@ -59,6 +59,43 @@ export async function updateUserName(id: string, username: string) {
   });
 }
 
+export async function getUserTheme(id: User["id"]): Promise<User["theme"] | null> {
+  const record = await prisma.user.findUnique({
+    where: { id },
+    select: { theme: true },
+  });
+  return record?.theme ?? null;
+}
+
+export async function updateUserTheme(
+  id: User["id"],
+  theme: User["theme"]
+): Promise<User> {
+  return prisma.user.update({
+    where: { id },
+    data: { theme },
+  });
+}
+
+export async function getUserBar(id: User["id"]): Promise<User["bar"] | null> {
+  const record = await prisma.user.findUnique({
+    where: { id },
+    select: { bar: true },
+  });
+  return record?.bar ?? null;
+}
+
+
+export async function updateUserBar(
+  id: User["id"],
+  bar: User["bar"]
+): Promise<User> {
+  return prisma.user.update({
+    where: { id },
+    data: { bar },
+  });
+}
+
 export async function deleteUserByEmail(email: User["email"]) {
   return prisma.user.delete({ where: { email } });
 }

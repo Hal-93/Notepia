@@ -16,6 +16,9 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "~/components/u
 import MemoList from "~/components/memo/memolist";
 import "~/popup.css";
 import { MapBoxSearch } from "~/components/searchbar";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ArrowLeft } from "lucide-react";
+import { faArrowsLeftRight, faHome } from "@fortawesome/free-solid-svg-icons";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -373,8 +376,11 @@ export default function MapPage() {
       />
       <div className="fixed top-4 inset-x-5 flex flex-wrap items-center gap-2 z-50">
         <Form action="/home" className="flex-none">
-          <Button className="px-2 py-1">
-            &lt;
+          <Button
+            onClick={handleSearchMemo}
+            className="rounded-full w-12 h-12 flex items-center justify-center shadow-md"
+          >
+            <FontAwesomeIcon icon={faHome}></FontAwesomeIcon>
           </Button>
         </Form>
         <div className="relative flex-1 min-w-0">

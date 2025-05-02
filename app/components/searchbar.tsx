@@ -4,10 +4,24 @@ import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMapMarkerAlt, faXmark, faLandmark, faPlane, faTrain, faUtensils, faCartShopping } from "@fortawesome/free-solid-svg-icons";
 import { v4 as uuidv4 } from "uuid";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+
+// Define suggestion type
+interface Suggestion {
+  mapbox_id: string;
+  name?: string;
+  full_address?: string;
+  place_formatted?: string;
+  center?: number[];
+  poi_category?: string[];
+  context?: { postcode?: { name: string } };
+  geometry?: { coordinates?: number[] };
+}
 
 export interface MapBoxPlace {
   id: string;
   place_name: string;
+  full_address?: string;
   center: [number, number];
   place_type: string[];
   postcode?: string;
@@ -47,13 +61,23 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
           `&access_token=${api}`
         );
         const data = await response.json();
-        setPredictions((data.suggestions ?? []).map((f: any) => ({
-          id: f.mapbox_id,
-          place_name: f.name || f.full_address || f.place_formatted,
-          center: [0, 0] as [number, number], // placeholder
-          place_type: f.poi_category ?? [],
-          postcode: f.context?.postcode?.name,
-        })));
+        const raw = (data.suggestions ?? []) as Suggestion[];
+        // Exclude entire non-building categories
+        const deny = ["レストラン", "幼稚園", "ショップ", "カフェ", "ホテル"];
+        const filtered = raw.filter(f =>
+          !(f.poi_category ?? []).some(cat => deny.includes(cat))
+        );
+        setPredictions(
+          filtered.map(f => ({
+            id: f.mapbox_id,
+            place_name: f.name ?? f.full_address ?? f.place_formatted ?? "",
+            full_address: f.full_address,
+            // placeholder center; real coords fetched on selection
+            center: [0, 0] as [number, number],
+            place_type: f.poi_category ?? [],
+            postcode: f.context?.postcode?.name,
+          }))
+        );
       } catch (error) {
         console.error("Error fetching predictions:", error);
       } finally {
@@ -77,51 +101,40 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
     return faMapMarkerAlt;
   };
 
+
   const handleSelect = async (place: MapBoxPlace) => {
+    // Fallback geocoding sequence: full_address → postcode → place_name
     let coords: [number, number] | undefined;
-
-    try {
-      const idRes = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          place.id
-        )}.json?access_token=${api}&limit=1`
-      );
-      const idData = await idRes.json();
-      coords = idData.features?.[0]?.center as [number, number];
-    } catch (e) {
-      console.error("Error geocoding by ID:", e);
-    }
-
-    if (!coords && place.postcode) {
+    const queries: (string | undefined)[] = [
+      place.full_address,
+      place.postcode,
+      place.place_name
+    ];
+    for (const q of queries) {
+      if (!q) continue;
       try {
-        const pcRes = await fetch(
+        const res = await fetch(
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-            place.postcode
-          )}.json?access_token=${api}&limit=1&types=postcode`
+            q
+          )}.json?access_token=${api}&limit=1&country=JP`
         );
-        const pcData = await pcRes.json();
-        coords = pcData.features?.[0]?.center as [number, number];
-      } catch (e) {
-        console.error("Error geocoding postcode:", e);
+        const data = await res.json();
+        const feat = data.features?.[0];
+        if (feat && Array.isArray(feat.center) && feat.center.length === 2) {
+          coords = [feat.center[0], feat.center[1]];
+          break;
+        }
+      } catch (err) {
+        console.error(`Geocoding error for "${q}":`, err);
       }
     }
-
     if (!coords) {
-      try {
-        const geocodeRes = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-            place.place_name
-          )}.json?access_token=${api}&limit=1&language=ja`
-        );
-        const geocodeData = await geocodeRes.json();
-        coords = geocodeData.features?.[0]?.center as [number, number];
-      } catch (e) {
-        console.error("Error geocoding place name:", e);
-      }
+      console.error("Failed to geocode with full_address, postcode, or place_name");
+      coords = place.center; // fallback
     }
-
-    if (coords && onSelect) onSelect({ ...place, center: coords, zoom: 16 });
-    else if (onSelect) onSelect({ ...place, zoom: 16 });
+    if (onSelect) {
+      onSelect({ ...place, center: coords, zoom: place.zoom ?? 16 });
+    }
     setQuery(place.place_name);
     setPredictions([]);
     setShowDropdown(false);

@@ -114,6 +114,42 @@ export default function ActionBar({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  const [barPosition, setBarPosition] = useState<'left' | 'right' | 'bottom'>('bottom');
+  const [barColor, setBarColor] = useState<string>('#4F46E5');
+  // Track when initial settings load completes
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+  // Load saved user settings on mount
+  useEffect(() => {
+    async function loadSettings() {
+      const res = await fetch("/api/user-settings");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.bar) setBarPosition(data.bar);
+        if (data.theme) setBarColor(data.theme);
+        setSettingsLoaded(true);
+      }
+    }
+    loadSettings();
+  }, []);
+
+  // Persist user settings when changed
+  useEffect(() => {
+    if (!settingsLoaded) return;
+    async function saveSettings() {
+      await fetch("/api/user-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bar: barPosition, theme: barColor }),
+      });
+      // Notify Bar component to update immediately
+      window.dispatchEvent(new CustomEvent("user-settings-updated", {
+        detail: { bar: barPosition, theme: barColor },
+      }));
+    }
+    saveSettings();
+  }, [barPosition, barColor, settingsLoaded]);
+
   async function checkSubscription() {
     const endpoint = await getPushEndpoint();
     const formData = new FormData();
@@ -395,19 +431,50 @@ export default function ActionBar({
           ) : isSetting ? (
             <div className="flex">
               <div className="p-4 flex flex-col">
-                <div className="text-white" style={{ fontSize: "2rem" }}>
-                  通知
-                </div>
-                <div className="text-gray-500" style={{ fontSize: "1rem" }}>
-                  通知の有無を切り替えられます。
-                </div>
+            {/* 通知設定 */}
+            <div className="flex items-center p-4">
+              <div className="flex-1">
+                <div className="text-white text-2xl">プッシュ通知</div>
+                <div className="text-gray-500">プッシュ通知の有無を切り替え</div>
               </div>
-              <div className="p-7">
-                <Switch
-                  checked={isSubscribed}
-                  onClick={toggleSubscription}
-                  className="relative inline-flex items-center h-10 w-16 bg-gray-200 rounded-full p-1"
-                ></Switch>
+              <Switch
+                checked={isSubscribed}
+                onClick={toggleSubscription}
+                className="relative inline-flex items-center h-10 w-16 bg-gray-200 rounded-full p-1"
+              />
+            </div>
+
+            {/* Bar表示位置設定 */}
+            <div className="flex items-center p-4">
+              <div className="flex-1">
+                <div className="text-white text-2xl">バー表示位置</div>
+                <div className="text-gray-500">アクションバーの位置</div>
+              </div>
+              <select
+                value={barPosition}
+                onChange={e => setBarPosition(e.target.value as any)}
+                className="bg-gray-800 text-white p-2 rounded"
+              >
+                <option value="bottom">下</option>
+                <option value="left">左</option>
+                <option value="right">右</option>
+              </select>
+            </div>
+
+            {/* Barボタンカラー設定 */}
+            <div className="flex items-center p-4">
+              <div className="flex-1">
+                <div className="text-white text-2xl">テーマカラー</div>
+                <div className="text-gray-500">テーマ色を選択</div>
+              </div>
+              <input
+                type="color"
+                value={barColor}
+                onChange={e => setBarColor(e.target.value)}
+                className="w-12 h-8 p-0 border-0"
+              />
+            </div>
+                
               </div>
             </div>
           ) : (

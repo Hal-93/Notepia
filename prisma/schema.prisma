@@ -16,6 +16,8 @@ model User {
   updatedAt    DateTime       @updatedAt
   password     Password?
   avatar       String?
+  theme        String         @default("#4F46E5")
+  bar          String         @default("bottom")
   files        File[]
   memos        Memo[]
   groupRequests GroupRequest[]
