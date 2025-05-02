@@ -3,12 +3,11 @@ import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useFetcher, Form } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl, { Marker } from "mapbox-gl";
-// import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
 import MemoCreateModal from "~/components/memo/create";
 import MemoDetailModal from "~/components/memo/detail";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { MapBoxSearch } from "~/components/searchbar";
 import { getUserId } from "~/session.server";
 import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
@@ -20,10 +19,9 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "~/components/ui/drawer";
-import { Input } from "~/components/ui/input";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
-import { ScrollArea } from "~/components/ui/scroll-area";
-import { faHouse } from "@fortawesome/free-solid-svg-icons";
+import MemoList from "~/components/memo/memolist";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHome } from "@fortawesome/free-solid-svg-icons";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const userId = await getUserId(request);
@@ -398,21 +396,40 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
-      <div className="fixed top-6 left-5">
-        <Form action="/home">
-          <Button>
-            <FontAwesomeIcon icon={faHouse} />
-            ホームに戻る
+      <div className="fixed top-4 inset-x-5 flex flex-wrap items-center gap-2 z-50">
+        <Form action="/home" className="flex-none">
+          <Button
+            onClick={handleSearchMemo}
+            className="rounded-full w-12 h-12 flex items-center justify-center shadow-md"
+          >
+            <FontAwesomeIcon icon={faHome}></FontAwesomeIcon>
           </Button>
         </Form>
+        <div className="relative flex-1 min-w-0">
+          <MapBoxSearch
+            api={mapboxToken}
+            onSelect={(place) => {
+              if (mapRef.current) {
+                mapRef.current.flyTo({
+                  center: place.center,
+                  zoom: 16,
+                  essential: true,
+                });
+              }
+            }}
+          />
+        </div>
+        <div className="flex-none">
+          <ActionBar
+            username={username!}
+            uuid={uuid!}
+            initialAvatarUrl={avatarUrl}
+            publicKey={vapidPublicKey}
+            userId={userId}
+          />
+        </div>
       </div>
-      <ActionBar
-        username={username!}
-        uuid={uuid!}
-        initialAvatarUrl={avatarUrl}
-        publicKey={vapidPublicKey}
-        userId={userId}
-      />
+
       <Bar
         handleMakeFriend={handleMakeFriend}
         handleSearchMemo={handleSearchMemo}
@@ -423,102 +440,16 @@ export default function MapPage() {
       />
 
       <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
-        <DrawerContent className="h-[80vh] bg-black text-white">
+        <DrawerContent className="mx-auto h-[80vh] bg-black text-white w-full max-w-[768px]">
           <DrawerHeader>
             <DrawerTitle>メモを検索</DrawerTitle>
           </DrawerHeader>
-          <div className="px-4 pb-4">
-            <Input
-              placeholder="メモのタイトル"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="mt-1 w-full rounded bg-gray-800 border border-gray-500 p-2"
-            />
-
-            {/* 黒基調のタブコンポーネント */}
-            <Tabs defaultValue="incomplete" className="mt-4">
-              <TabsList className="flex space-x-2 bg-black border-b border-gray-600">
-                <TabsTrigger
-                  value="incomplete"
-                  className="px-4 py-2 text-white focus:outline-none transition-all data-[state=active]:bg-gray-800 data-[state=active]:text-blue-400"
-                >
-                  未完了
-                </TabsTrigger>
-                <TabsTrigger
-                  value="complete"
-                  className="px-4 py-2 text-white focus:outline-none transition-all data-[state=active]:bg-gray-800 data-[state=active]:text-blue-400"
-                >
-                  完了済み
-                </TabsTrigger>
-              </TabsList>
-
-              {/* 未完了タブ */}
-              <TabsContent value="incomplete">
-                <ScrollArea className="h-[50vh] pr-2 mt-2">
-                  {filteredMemos.filter((m) => !m.completed).length === 0 ? (
-                    <div className="text-gray-500 text-sm">
-                      未完了のメモはありません。
-                    </div>
-                  ) : (
-                    <ul className="space-y-2">
-                      {filteredMemos
-                        .filter((memo) => !memo.completed)
-                        .map((memo) => (
-                          <li
-                            key={memo.id}
-                            role="button"
-                            tabIndex={0}
-                            className="p-3 rounded text-black cursor-pointer hover:opacity-80 transition"
-                            style={{ backgroundColor: memo.color || "#ffffff" }}
-                            onClick={() => jumpToMemo(memo)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                jumpToMemo(memo);
-                              }
-                            }}
-                          >
-                            {memo.title}
-                          </li>
-                        ))}
-                    </ul>
-                  )}
-                </ScrollArea>
-              </TabsContent>
-
-              {/* 完了済みタブ */}
-              <TabsContent value="complete">
-                <ScrollArea className="h-[50vh] pr-2 mt-2">
-                  {filteredMemos.filter((m) => m.completed).length === 0 ? (
-                    <div className="text-gray-500 text-sm">
-                      完了済みのメモはありません。
-                    </div>
-                  ) : (
-                    <ul className="space-y-2">
-                      {filteredMemos
-                        .filter((memo) => memo.completed)
-                        .map((memo) => (
-                          <li
-                            key={memo.id}
-                            role="button"
-                            tabIndex={0}
-                            className="p-3 rounded text-black cursor-pointer hover:opacity-80 transition"
-                            style={{ backgroundColor: memo.color || "#ffffff" }}
-                            onClick={() => jumpToMemo(memo)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                jumpToMemo(memo);
-                              }
-                            }}
-                          >
-                            {memo.title}
-                          </li>
-                        ))}
-                    </ul>
-                  )}
-                </ScrollArea>
-              </TabsContent>
-            </Tabs>
-          </div>
+          <MemoList
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            filteredMemos={filteredMemos}
+            jumpToMemo={jumpToMemo}
+          />
         </DrawerContent>
       </Drawer>
 
