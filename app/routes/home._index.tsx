@@ -12,8 +12,6 @@ import ActionBar from "~/components/actionbar";
 import { getUserId } from "~/session.server";
 import {
   getUserById,
-  updateUserAvatar,
-  updateUserName,
 } from "~/models/user.server";
 import {
   createGroup,
@@ -26,8 +24,7 @@ import GroupCreateModal from "~/components/group/create";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGear, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import GroupEditModal from "~/components/group/edit";
-import { uploadFile } from "~/utils/minio.server";
-import sharp from "sharp";
+
 import Avatar from "boring-avatars";
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -63,50 +60,6 @@ export const action: ActionFunction = async ({ request }) => {
   const userId = await getUserId(request);
   const formData = await request.formData();
   const intent = formData.get("intent") as string;
-  const file = formData.get("file") as File;
-  const uuid = formData.get("uuid") as string;
-  const username = formData.get("username") as string;
-  if (username && file) {
-    const buffer = Buffer.from(await file.arrayBuffer());
-    try {
-      updateUserName(userId!, username);
-      const pngBuffer = await sharp(buffer).png().toBuffer();
-      const metadata = { "Content-Type": "image/png" };
-      await uploadFile(pngBuffer, `${uuid}.png`, metadata);
-      await updateUserAvatar(userId!, `/user/${uuid}/avatar`);
-      return json({ message: "更新しました。" }, { status: 200 });
-    } catch (error) {
-      return json({ error: "エラーが発生しました。" }, { status: 500 });
-    }
-  }
-  if (username) {
-    try {
-      updateUserName(userId!, username);
-      return json({ message: "更新しました。" }, { status: 200 });
-    } catch (error) {
-      return json({ error: "エラーが発生しました。" }, { status: 500 });
-    }
-  }
-  if (file) {
-    const userId = (await getUserId(request)) as string;
-    if (!userId) {
-      return json({ error: "エラーが発生しました。" }, { status: 500 });
-    }
-    const buffer = Buffer.from(await file.arrayBuffer());
-    try {
-      const pngBuffer = await sharp(buffer).png().toBuffer();
-      const metadata = { "Content-Type": "image/png" };
-      await uploadFile(pngBuffer, `${uuid}.png`, metadata);
-      await updateUserAvatar(userId, `/user/${uuid}/avatar`);
-
-      return json(
-        { message: "アイコンをアップロードしました。" },
-        { status: 200 }
-      );
-    } catch (error) {
-      return json({ error: "エラーが発生しました。" }, { status: 500 });
-    }
-  }
 
   if (!userId) throw new Response("認証されていません", { status: 401 });
 
