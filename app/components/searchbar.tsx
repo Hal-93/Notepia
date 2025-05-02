@@ -19,6 +19,9 @@ interface MapBoxSearchProps {
   onSelect?: (place: MapBoxPlace) => void;
 }
 
+interface IconDefinition {
+}
+
 export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => {
   const [query, setQuery] = useState("");
   const [predictions, setPredictions] = useState<MapBoxPlace[]>([]);
@@ -78,7 +81,20 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
 
   const handleSelect = async (place: MapBoxPlace) => {
     let coords: [number, number] | undefined;
-    if (place.postcode) {
+
+    try {
+      const idRes = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          place.id
+        )}.json?access_token=${api}&limit=1`
+      );
+      const idData = await idRes.json();
+      coords = idData.features?.[0]?.center as [number, number];
+    } catch (e) {
+      console.error("Error geocoding by ID:", e);
+    }
+
+    if (!coords && place.postcode) {
       try {
         const pcRes = await fetch(
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
@@ -105,6 +121,7 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
         console.error("Error geocoding place name:", e);
       }
     }
+
     if (coords && onSelect) onSelect({ ...place, center: coords, zoom: 16 });
     else if (onSelect) onSelect({ ...place, zoom: 16 });
     setQuery(place.place_name);
