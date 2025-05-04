@@ -144,7 +144,7 @@ export default function Join() {
         {/* コンテンツ */}
         <nav className="relative flex flex-col px-8 z-10">
           <div className="h-screen justify-center">
-            <Link to={"/"}>
+            <Link to={"/start"}>
               <img
                 src="/Notepia-light.svg"
                 alt="Notepia"

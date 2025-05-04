@@ -29,17 +29,17 @@ export default function Index() {
         ></div>
 
         {/* コンテンツ */}
-        <nav className="relative flex flex-col items-center justify-center md:h-screen z-10">
+        <nav className="relative flex flex-col items-center md:h-screen md:w-full z-10 justify-center">
           <img
             src="/Notepia-light.svg"
             alt="Notepia"
-            className="w-[80vw] md:w-40 h-auto md:mb-40 mb-[300px]"
+            className="w-full md:w-90px h-[70vh] md:mb-40 px-10 md:px-[10vw]"
           />
 
-          <Link to={"/join"}>
+          <Link to={"/join"} className="w-full flex justify-center">
             <Button
               variant="ghost"
-              className="w-[80vw] md:w-[28vw] bg-white text-black text-md"
+              className="w-full md:w-[80%] bg-white text-black text-md mx-10"
             >
               はじめる
             </Button>
@@ -57,7 +57,7 @@ export default function Index() {
           </Link>
           */}
 
-          <p className="text-white mt-2 md:mt-4 px-3 md:font-semibold font-bold">
+          <p className="text-white mt-3 md:mt-4 md:font-semibold font-bold">
             または
           </p>
           <p className="text-indigo-700 md:font-semibold font-extrabold mt-0 mb-[80px]">
