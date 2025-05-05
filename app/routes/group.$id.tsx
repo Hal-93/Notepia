@@ -17,6 +17,7 @@ import type { User } from "@prisma/client";
 
 import Avatar from "boring-avatars";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import UserProfile from "~/components/userprofile";
 
 type LoaderData = {
   vapidPublicKey: string;
@@ -135,12 +136,31 @@ export default function MapPage() {
   >(null);
 
   const [showGroupDetailModal, setShowGroupDetailModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const profileModalRef = useRef<HTMLDivElement>(null);
+
+  // Click outside to close profile modal
+  useEffect(() => {
+    if (!showProfileModal) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        profileModalRef.current &&
+        !profileModalRef.current.contains(e.target as Node)
+      ) {
+        setShowProfileModal(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showProfileModal]);
 
   // Click outside to close group modal
   useEffect(() => {
     if (!showGroupDetailModal) return;
     function handleClickOutside(event: MouseEvent) {
+      if (showProfileModal) return;
       if (
         modalRef.current &&
         !modalRef.current.contains(event.target as Node)
@@ -152,7 +172,7 @@ export default function MapPage() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showGroupDetailModal]);
+  }, [showGroupDetailModal, showProfileModal]);
 
   useEffect(() => {
     if (searchQuery.trim() === "") {
@@ -431,6 +451,7 @@ export default function MapPage() {
   };
 
   return (
+    <>
     <div style={{ position: "relative" }}>
       <div
         ref={mapContainerRef}
@@ -517,30 +538,45 @@ export default function MapPage() {
           }}
         />
       )}
-      <Drawer open={showGroupDetailModal} onOpenChange={setShowGroupDetailModal}>
+      <Drawer
+        open={showGroupDetailModal}
+        onOpenChange={(open: boolean) => {
+          if (!showProfileModal) {
+            setShowGroupDetailModal(open);
+          }
+        }}
+      >
         <DrawerContent className="mx-auto h-[80vh] w-full max-w-[768px] bg-black text-white px-4 pb-4 z-[1100]">
           <DrawerHeader>
             <DrawerTitle>グループのユーザー一覧</DrawerTitle>
           </DrawerHeader>
-          <ScrollArea className="h-[80vh] pr-2 mt-2">
-            <ul className="space-y-2">
+          <ScrollArea className="w-full h-[80vh] pr-2 mt-2">
+            <ul className="w-full space-y-2">
               {groupUsers.map((user: User) => (
                 <li key={user.id}>
-                  <div className="flex items-center gap-3 px-2 py-1 bg-gray-900 hover:bg-gray-800 rounded">
+                  <Button
+                    onClick={() => {
+                      setSelectedProfileUser(user);
+                      setShowProfileModal(true);
+                    }}
+                    className="block w-full h-18 flex items-center justify-start gap-8 px-4 bg-gray-900 hover:bg-gray-800 rounded text-left [&_svg]:w-16 [&_svg]:h-16"
+                  >
                     {user.avatar ? (
                       <img
                         src={user.avatar}
                         alt={user.name}
-                        className="rounded-full object-cover w-8 h-8"
+                        className="flex-shrink-0 rounded-full object-cover w-16 h-16"
                       />
                     ) : (
-                      <Avatar size={32} name={user.uuid} variant="beam" />
+                      <div className="flex-shrink-0">
+                        <Avatar size={64} name={user.uuid} variant="beam" />
+                      </div>
                     )}
                     <div className="flex flex-col text-left">
-                      <p className="text-sm font-medium text-white">{user.name}</p>
-                      <p className="text-xs text-gray-400">@{user.uuid}</p>
+                      <p className="text-lg font-medium text-white">{user.name}</p>
+                      <p className="text-md text-gray-400">@{user.uuid}</p>
                     </div>
-                  </div>
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -548,5 +584,41 @@ export default function MapPage() {
         </DrawerContent>
       </Drawer>
     </div>
+
+    {showProfileModal && selectedProfileUser && (
+      <div
+        role="dialog"
+        aria-modal="true"
+        tabIndex={0}
+        className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/60 pointer-events-auto"
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={() => setShowProfileModal(false)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " " || e.key === "Escape") {
+            setShowProfileModal(false);
+          }
+        }}
+      >
+        <div
+          ref={profileModalRef}
+          onClick={(e) => e.stopPropagation()}
+          className="bg-gray-900 relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white overflow-hidden"
+        >
+          <button
+            type="button"
+            onClick={() => setShowProfileModal(false)}
+            className="absolute top-2 right-2 text-white hover:text-red-400 w-8 h-8 flex items-center justify-center rounded-full text-4xl"
+          >
+            ×
+          </button>
+          <UserProfile
+            username={selectedProfileUser.name}
+            avatarUrl={selectedProfileUser.avatar}
+            uuid={selectedProfileUser.uuid}
+          />
+        </div>
+      </div>
+    )}
+    </>
   );
 }
