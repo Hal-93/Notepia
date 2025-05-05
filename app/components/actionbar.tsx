@@ -271,10 +271,10 @@ export default function ActionBar({
             <img
               src={`${avatarUrl}`}
               alt={username}
-              className="rounded-full w-8 h-8"
+              className="rounded-full w-12 h-12 object-cover"
             />
           ) : (
-            <Avatar size={"4rem"} name={uuid} variant="beam" />
+            <Avatar size={48} name={uuid} variant="beam" />
           )}
         </DrawerTrigger>
         <DrawerContent
