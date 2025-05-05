@@ -103,14 +103,13 @@ export async function getAllFriend(userId: string): Promise<Friend[]> {
   return await prisma.friend.findMany({
     where: {
       fromId: userId,
+      status: "ACCEPTED",
     },
   });
 }
 
 // 保留中のフォローリクエスト取得関数
-export async function getPendingFriendRequests(
-  userId: string
-): Promise<Friend[]> {
+export async function getAllFriendRequests(userId: string): Promise<Friend[]> {
   return await prisma.friend.findMany({
     where: {
       toId: userId,
