@@ -399,7 +399,6 @@ export default function MapPage() {
       <div className="fixed top-4 inset-x-5 flex-nowrap flex items-center gap-2 z-50">
         <Form action="/home" className="flex-none">
           <Button
-            onClick={handleSearchMemo}
             className="rounded-full w-12 h-12 flex items-center justify-center shadow-md"
           >
             <FontAwesomeIcon icon={faHome}></FontAwesomeIcon>

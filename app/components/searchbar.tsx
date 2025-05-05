@@ -149,7 +149,7 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
   const displayedPredictions = predictions.slice(0, 8);
 
   return (
-    <div className="w-full max-w-md relative z-50 mx-auto pr-16">
+    <div className="w-full max-w-md relative z-50 mx-auto">
       <div className="relative">
         <input
           type="text"
