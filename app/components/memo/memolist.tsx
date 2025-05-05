@@ -53,8 +53,8 @@ export default function MemoList({
 
   const handleCompleteClick = (memo: Memo) => {
     fetcher.submit(
-      { memoId: memo.id, action: "complete" },
-      { method: "post", action: "/api/memos" }
+      { memoId: memo.id, intent: "complete" },
+      { method: "post", action: "/memo/detail" }
     );
     setLocalMemos(prev =>
       prev.map(m => m.id === memo.id ? { ...m, completed: true } : m)
@@ -63,16 +63,16 @@ export default function MemoList({
 
   const handleDeleteClick = (memo: Memo) => {
     fetcher.submit(
-      { memoId: memo.id, action: "delete" },
-      { method: "post", action: "/api/memos" }
+      { memoId: memo.id, intent: "delete" },
+      { method: "post", action: "/memo/detail" }
     );
     setLocalMemos(prev => prev.filter(m => m.id !== memo.id));
   };
 
   const handleUncompleteClick = (memo: Memo) => {
     fetcher.submit(
-      { memoId: memo.id, action: "uncomplete" },
-      { method: "post", action: "/api/memos" }
+      { memoId: memo.id, intent: "uncomplete" },
+      { method: "post", action: "/memo/detail" }
     );
     setLocalMemos(prev =>
       prev.map(m => m.id === memo.id ? { ...m, completed: false } : m)
