@@ -124,3 +124,11 @@ export async function completeMemo(memoId: string): Promise<Memo> {
     data: { completed: true },
   });
 }
+
+// メモの完了を取り消す関数
+export async function uncompleteMemo(memoId: string): Promise<Memo> {
+  return await prisma.memo.update({
+    where: { id: memoId },
+    data: { completed: false },
+  });
+}

@@ -9,7 +9,7 @@ import {
 } from "~/components/ui/tabs";
 import { useFetcher, useRevalidator } from "@remix-run/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTrash, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 
 const MEMO_COLORS = [
   "#ffffff",
@@ -36,6 +36,10 @@ export default function MemoList({
   jumpToMemo,
 }: MemoListProps) {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [localMemos, setLocalMemos] = useState<Memo[]>(filteredMemos);
+  useEffect(() => {
+    setLocalMemos(filteredMemos);
+  }, [filteredMemos]);
 
   const fetcher = useFetcher<{ success: boolean }>();
   const revalidator = useRevalidator();
@@ -52,6 +56,9 @@ export default function MemoList({
       { memoId: memo.id, action: "complete" },
       { method: "post", action: "/api/memos" }
     );
+    setLocalMemos(prev =>
+      prev.map(m => m.id === memo.id ? { ...m, completed: true } : m)
+    );
   };
 
   const handleDeleteClick = (memo: Memo) => {
@@ -59,10 +66,21 @@ export default function MemoList({
       { memoId: memo.id, action: "delete" },
       { method: "post", action: "/api/memos" }
     );
+    setLocalMemos(prev => prev.filter(m => m.id !== memo.id));
+  };
+
+  const handleUncompleteClick = (memo: Memo) => {
+    fetcher.submit(
+      { memoId: memo.id, action: "uncomplete" },
+      { method: "post", action: "/api/memos" }
+    );
+    setLocalMemos(prev =>
+      prev.map(m => m.id === memo.id ? { ...m, completed: false } : m)
+    );
   };
 
   // Filter by selected color
-  const displayedMemos = filteredMemos.filter(memo =>
+  const displayedMemos = localMemos.filter(memo =>
     selectedColor ? memo.color === selectedColor : true
   );
 
@@ -129,14 +147,14 @@ export default function MemoList({
                         <button
                           type="button"
                           onClick={() => jumpToMemo(memo)}
-                          className="flex-1 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          className="flex-1 text-left cursor-pointer"
                         >
                           {memo.title}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleCompleteClick(memo)}
-                          className="ml-2 focus:outline-none focus:ring-2 focus:ring-green-400"
+                          className="ml-2"
                           style={{ touchAction: 'manipulation' }}
                         >
                           <FontAwesomeIcon icon={faCheck} />
@@ -174,8 +192,16 @@ export default function MemoList({
                         </button>
                         <button
                           type="button"
+                          onClick={() => handleUncompleteClick(memo)}
+                          className="ml-4"
+                          style={{ touchAction: 'manipulation' }}
+                        >
+                          <FontAwesomeIcon icon={faRotateLeft} />
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => handleDeleteClick(memo)}
-                          className="ml-2 focus:outline-none focus:ring-2 focus:ring-red-400"
+                          className="ml-4"
                           style={{ touchAction: 'manipulation' }}
                         >
                           <FontAwesomeIcon icon={faTrash} />

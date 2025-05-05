@@ -1,6 +1,6 @@
 import type { ActionFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { completeMemo, deleteMemo } from "~/models/memo.server";
+import { completeMemo, deleteMemo, uncompleteMemo } from "~/models/memo.server";
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
@@ -16,6 +16,8 @@ export const action: ActionFunction = async ({ request }) => {
       await completeMemo(memoId);
     } else if (actionType === "delete") {
       await deleteMemo(memoId);
+    } else if (actionType === "uncomplete") {
+      await uncompleteMemo(memoId);
     } else {
       return json({ error: "Unknown action" }, { status: 400 });
     }
