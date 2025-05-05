@@ -1,6 +1,22 @@
 import { Link } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import type { MetaFunction } from "@remix-run/node";
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Notepia - 記憶と場所を結ぶ地図メモアプリ" },
+    { name: "description", content: "Notepiaは、個人やグループで場所にメモを置ける革新的な地図メモアプリです。" },
+    { name: "viewport", content: "width=device-width,initial-scale=1" },
+    { name: "theme-color", content: "#000000" },
+    { property: "og:title", content: "Notepia - 記憶と場所を結ぶ地図メモアプリ" },
+    { property: "og:description", content: "場所にメモを残し、友人やチームと共有。地図で記憶を可視化する新しい体験を。" },
+    { property: "og:image", content: "/Notepia_url.jpg" },
+    { property: "og:type", content: "website" },
+    { property: "og:url", content: "https://notepia.cyberhub.jp/start" },
+    { name: "twitter:card", content: "summary_large_image" }
+  ];
+};
 
 export default function Index() {
   return (
