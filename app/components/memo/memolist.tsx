@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Memo } from "@prisma/client";
 import { Input } from "~/components/ui/input";
 import {
@@ -8,6 +8,9 @@ import {
   TabsContent,
 } from "~/components/ui/tabs";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import { useFetcher, useRevalidator } from "@remix-run/react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheck, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 const MEMO_COLORS = [
   "#ffffff",
@@ -34,6 +37,30 @@ export default function MemoList({
   jumpToMemo,
 }: MemoListProps) {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+
+  const fetcher = useFetcher<{ success: boolean }>();
+  const revalidator = useRevalidator();
+
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      // Revalidate loader data instead of full reload
+      revalidator.revalidate();
+    }
+  }, [fetcher.data, revalidator]);
+
+  const handleCompleteClick = (memo: Memo) => {
+    fetcher.submit(
+      { memoId: memo.id, action: "complete" },
+      { method: "post", action: "/api/memos" }
+    );
+  };
+
+  const handleDeleteClick = (memo: Memo) => {
+    fetcher.submit(
+      { memoId: memo.id, action: "delete" },
+      { method: "post", action: "/api/memos" }
+    );
+  };
 
   // Filter by selected color
   const displayedMemos = filteredMemos.filter(memo =>
@@ -96,14 +123,25 @@ export default function MemoList({
                   .filter((memo) => !memo.completed)
                   .map((memo) => (
                     <li key={memo.id}>
-                      <button
-                        type="button"
-                        onClick={() => jumpToMemo(memo)}
-                        className="w-full text-left p-3 rounded bg-gray-900 hover:bg-gray-800 text-white flex items-center transition focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      <div
+                        className="w-full flex justify-between items-center p-3 rounded bg-gray-900 hover:bg-gray-800 text-white transition"
                         style={{ borderLeft: `4px solid ${memo.color || '#3b82f6'}` }}
                       >
-                        {memo.title}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => jumpToMemo(memo)}
+                          className="flex-1 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        >
+                          {memo.title}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleCompleteClick(memo)}
+                          className="ml-2 focus:outline-none focus:ring-2 focus:ring-green-400"
+                        >
+                          <FontAwesomeIcon icon={faCheck} />
+                        </button>
+                      </div>
                     </li>
                   ))
               )}
@@ -123,14 +161,25 @@ export default function MemoList({
                   .filter((memo) => memo.completed)
                   .map((memo) => (
                     <li key={memo.id}>
-                      <button
-                        type="button"
-                        onClick={() => jumpToMemo(memo)}
-                        className="w-full text-left p-3 rounded bg-gray-900 hover:bg-gray-800 text-white flex items-center transition focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      <div
+                        className="w-full flex justify-between items-center p-3 rounded bg-gray-900 hover:bg-gray-800 text-white transition"
                         style={{ borderLeft: `4px solid ${memo.color || '#3b82f6'}` }}
                       >
-                        {memo.title}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => jumpToMemo(memo)}
+                          className="flex-1 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        >
+                          {memo.title}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteClick(memo)}
+                          className="ml-2 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                        </button>
+                      </div>
                     </li>
                   ))
               )}
