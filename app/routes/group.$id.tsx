@@ -486,7 +486,7 @@ export default function MapPage() {
       />
 
       <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
-        <DrawerContent className="mx-auto h-[80vh] bg-black text-white w-full max-w-[768px]">
+        <DrawerContent className="mx-auto h-[80vh] bg-black text-white w-full max-w-[768px] z-[1100]">
           <DrawerHeader>
             <DrawerTitle>メモを検索</DrawerTitle>
           </DrawerHeader>
@@ -518,7 +518,7 @@ export default function MapPage() {
         />
       )}
       <Drawer open={showGroupDetailModal} onOpenChange={setShowGroupDetailModal}>
-        <DrawerContent className="mx-auto h-[80vh] w-full max-w-[768px] bg-black text-white px-4 pb-4">
+        <DrawerContent className="mx-auto h-[80vh] w-full max-w-[768px] bg-black text-white px-4 pb-4 z-[1100]">
           <DrawerHeader>
             <DrawerTitle>グループのユーザー一覧</DrawerTitle>
           </DrawerHeader>
