@@ -8,23 +8,23 @@ generator client {
 }
 
 model User {
-  id           String         @id @default(cuid())
-  uuid         String         @unique
-  name         String         @default("名称未設定")
-  email        String         @unique
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  password     Password?
-  avatar       String?
-  theme        String         @default("#4F46E5")
-  bar          String         @default("bottom")
-  files        File[]
-  memos        Memo[]
+  id            String         @id @default(cuid())
+  uuid          String         @unique
+  name          String         @default("名称未設定")
+  email         String         @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  password      Password?
+  avatar        String?
+  theme         String         @default("#4F46E5")
+  bar           String         @default("bottom")
+  files         File[]
+  memos         Memo[]
   groupRequests GroupRequest[]
-  groups       Group[]        @relation("UserGroups")
-  following    Follow[]       @relation("UserFollowing")
-  followers    Follow[]       @relation("UserFollowers")
-  Subscription Subscription[]
+  groups        Group[]        @relation("UserGroups")
+  Subscription  Subscription[]
+  from          Friend[]       @relation("From")
+  to            Friend[]       @relation("To")
 }
 
 model Memo {
@@ -45,39 +45,41 @@ model Memo {
 }
 
 model Group {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  memos     Memo[]
-  users     User[]   @relation("UserGroups")
+  id            String         @id @default(cuid())
+  name          String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  memos         Memo[]
+  users         User[]         @relation("UserGroups")
   groupRequests GroupRequest[]
 }
 
 model GroupRequest {
-  id          String   @id @default(cuid())
-  userId      String
-  groupId     String
-  status      String   @default("PENDING") // "PENDING", "ACCEPTED", "REJECTED"
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  groupId   String
+  status    String   @default("PENDING") // "PENDING", "ACCEPTED", "REJECTED"
+  createdAt DateTime @default(now())
 
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@unique([userId, groupId])
 }
 
-model Follow {
-  id          String @id @default(cuid())
-  followerId  String
-  followingId String
-  follower    User   @relation("UserFollowing", fields: [followerId], references: [id])
-  following   User   @relation("UserFollowers", fields: [followingId], references: [id])
+model Friend {
+  id     String @id @default(cuid())
+  fromId String
+  toId   String
+  from   User   @relation("From", fields: [fromId], references: [id], onDelete: Cascade)
+  to     User   @relation("To", fields: [toId], references: [id], onDelete: Cascade)
 
   // "PENDING", "ACCEPTED", "REJECTED"でフォロリク状態を管理
   status String @default("PENDING")
 
   createdAt DateTime @default(now())
+
+  @@unique([fromId, toId])
 }
 
 model File {
