@@ -22,8 +22,7 @@ import MemoList from "~/components/memo/memolist";
 import "~/popup.css";
 import { MapBoxSearch } from "~/components/searchbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ArrowLeft } from "lucide-react";
-import { faArrowsLeftRight, faHome } from "@fortawesome/free-solid-svg-icons";
+import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { useAtom } from "jotai/react";
 import { locationAtom, zoomAtom } from "~/atoms/locationAtom";
 
