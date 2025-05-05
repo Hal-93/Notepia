@@ -463,10 +463,11 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
-      <div className="fixed top-4 inset-x-5 flex flex-wrap items-center gap-2 z-50">
+
+
+      <div className="fixed top-4 inset-x-5 flex-nowrap flex items-center gap-2 z-50">
         <Form action="/home" className="flex-none">
           <Button
-            onClick={handleSearchMemo}
             className="rounded-full w-12 h-12 flex items-center justify-center shadow-md"
           >
             <FontAwesomeIcon icon={faHome}></FontAwesomeIcon>
@@ -486,7 +487,7 @@ export default function MapPage() {
             }}
           />
         </div>
-        <div className="flex-none">
+        <div className="flex-none flex-shrink-0 w-12 h-12 flex items-center justify-center">
           <ActionBar
             username={username!}
             uuid={uuid!}
