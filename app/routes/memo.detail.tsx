@@ -1,6 +1,6 @@
 import type { ActionFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { completeMemo, deleteMemo } from "~/models/memo.server"; // サーバー専用OK
+import { completeMemo, deleteMemo, uncompleteMemo } from "~/models/memo.server"; // サーバー専用OK
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
@@ -14,6 +14,11 @@ export const action: ActionFunction = async ({ request }) => {
   if (intent === "complete") {
     await completeMemo(memoId);
     return json({ success: true, completed: true });
+  }
+
+  if (intent === "uncomplete") {
+    await uncompleteMemo(memoId);
+    return json({ success: true, uncompleted: true });
   }
 
   if (intent === "delete") {
