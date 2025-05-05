@@ -4,12 +4,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faLocationDot,
   faNoteSticky,
-  faUserPlus,
+  faUsers,
 } from "@fortawesome/free-solid-svg-icons";
-import GroupEditModal from "../group/edit";
 
 interface BarProps {
-  handleMakeFriend?: () => void;
+  handleGroupDetail?: () => void;
   handleSearchMemo: () => void;
   handleGoToCurrentLocation: () => void;
   groupeId: string;
@@ -18,14 +17,10 @@ interface BarProps {
 }
 
 const Bar = ({
-  handleMakeFriend,
+  handleGroupDetail,
   handleSearchMemo,
   handleGoToCurrentLocation,
-  groupeId,
-  groupeName,
-  userId,
 }: BarProps) => {
-  const [onClose, setOnClose] = useState(false);
 
   const [position, setPosition] = useState<'left' | 'right' | 'bottom'>('bottom');
   const [buttonColor, setButtonColor] = useState<string>('#4F46E5');
@@ -71,9 +66,6 @@ const Bar = ({
 
   const buttonClass = "rounded-full w-12 h-12 flex items-center justify-center shadow-md";
 
-  const closer = () => {
-    setOnClose(false);
-  };
   return (
     <div
       style={{
@@ -88,27 +80,14 @@ const Bar = ({
         ...positionStyle,
       }}
     >
-      {handleMakeFriend && (
-        <>
-          {onClose ? (
-            <GroupEditModal
-              groupId={groupeId}
-              currentName={groupeName}
-              currentUserId={userId}
-              onClose={closer}
-            />
-          ) : (
-            <Button
-              onClick={() => {
-                setOnClose(true);
-              }}
-              className={buttonClass}
-              style={buttonStyle}
-            >
-              <FontAwesomeIcon icon={faUserPlus} />
-            </Button>
-          )}
-        </>
+      {handleGroupDetail && (
+        <Button
+          onClick={handleGroupDetail}
+          className={buttonClass}
+          style={buttonStyle}
+        >
+          <FontAwesomeIcon icon={faUsers} />
+        </Button>
       )}
       <Button
         onClick={handleSearchMemo}

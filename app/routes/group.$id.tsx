@@ -2,6 +2,7 @@ import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useFetcher, Form } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
+import { getUsersByGroup } from "~/models/group.server";
 import mapboxgl, { Marker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
@@ -12,6 +13,22 @@ import { getUserId } from "~/session.server";
 import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
 import { Memo } from "@prisma/client";
+import type { User } from "@prisma/client";
+
+import Avatar from "boring-avatars";
+import { ScrollArea } from "~/components/ui/scroll-area";
+
+type LoaderData = {
+  vapidPublicKey: string;
+  mapboxToken: string;
+  memos: Memo[];
+  userId: string;
+  username: string;
+  uuid: string;
+  avatarUrl: string | null;
+  groupId: string;
+  groupUsers: User[];
+};
 import { getUserById } from "~/models/user.server";
 import {
   Drawer,
@@ -40,7 +57,14 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const mapboxToken = process.env.MAPBOX_TOKEN;
   if (!mapboxToken) throw new Response("サーバー設定エラー", { status: 500 });
 
-  return json({
+  const groupUsers = await getUsersByGroup(groupId);
+
+  // グループ所属チェック
+  if (!groupUsers.some(u => u.id === userId)) {
+    throw redirect(`/mymap`);
+  }
+
+  return json<LoaderData>({
     vapidPublicKey: process.env.VAPID_PUBLIC_KEY!,
     mapboxToken,
     memos: groupMemos,
@@ -49,6 +73,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     uuid: user.uuid,
     avatarUrl: user.avatar,
     groupId,
+    groupUsers,
   });
 };
 
@@ -88,7 +113,8 @@ export default function MapPage() {
     avatarUrl,
     groupId,
     vapidPublicKey,
-  } = useLoaderData<typeof loader>();
+    groupUsers,
+  } = useLoaderData<LoaderData>();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -107,6 +133,26 @@ export default function MapPage() {
   const [currentLocation, setCurrentLocation] = useState<
     [number, number] | null
   >(null);
+
+  const [showGroupDetailModal, setShowGroupDetailModal] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Click outside to close group modal
+  useEffect(() => {
+    if (!showGroupDetailModal) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        setShowGroupDetailModal(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showGroupDetailModal]);
 
   useEffect(() => {
     if (searchQuery.trim() === "") {
@@ -308,8 +354,8 @@ export default function MapPage() {
     };
   }, [memos, setModalLat, setModalLng, setShowModal]);
 
-  const handleMakeFriend = () => {
-    /*フレンド追加機能 */
+  const handleGroupDetail = () => {
+    setShowGroupDetailModal(true);
   };
 
   const handleSearchMemo = () => {
@@ -431,7 +477,7 @@ export default function MapPage() {
       </div>
 
       <Bar
-        handleMakeFriend={handleMakeFriend}
+        handleGroupDetail={handleGroupDetail}
         handleSearchMemo={handleSearchMemo}
         handleGoToCurrentLocation={handleGoToCurrentLocation}
         userId={userId}
@@ -471,6 +517,36 @@ export default function MapPage() {
           }}
         />
       )}
+      <Drawer open={showGroupDetailModal} onOpenChange={setShowGroupDetailModal}>
+        <DrawerContent className="mx-auto h-[80vh] w-full max-w-[768px] bg-black text-white px-4 pb-4">
+          <DrawerHeader>
+            <DrawerTitle>グループのユーザー一覧</DrawerTitle>
+          </DrawerHeader>
+          <ScrollArea className="h-[80vh] pr-2 mt-2">
+            <ul className="space-y-2">
+              {groupUsers.map((user: User) => (
+                <li key={user.id}>
+                  <div className="flex items-center gap-3 px-2 py-1 bg-gray-900 hover:bg-gray-800 rounded">
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.name}
+                        className="rounded-full object-cover w-8 h-8"
+                      />
+                    ) : (
+                      <Avatar size={32} name={user.uuid} variant="beam" />
+                    )}
+                    <div className="flex flex-col text-left">
+                      <p className="text-sm font-medium text-white">{user.name}</p>
+                      <p className="text-xs text-gray-400">@{user.uuid}</p>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </ScrollArea>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
