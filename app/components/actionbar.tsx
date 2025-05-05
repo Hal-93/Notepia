@@ -39,7 +39,7 @@ export default function ActionBar({
     getUsers();
   }, []);
   async function getUsers() {
-    const response = await fetch("/api/follow", {
+    const response = await fetch("/api/friend", {
       method: "GET",
     });
     if (!response.ok) {
@@ -48,34 +48,37 @@ export default function ActionBar({
     const data = await response.json();
     const usersArray = data.users.map((user) => ({
       username: user.username,
-      uuid: user.fId,
+      uuid: user.uuid,
       avatar: user.avatar,
     }));
+    const requests = data.requests;
+    setFriendRequests(requests);
     setFollowingUsers(usersArray);
   }
-  async function handleGetUser(fId: string) {
+  async function handleGetUser(toUUID: string) {
     const formData = new FormData();
-    formData.append("followingId", fId!);
-    formData.append("userId", userId);
+    formData.append("toUUID", toUUID!);
+    formData.append("fromId", userId);
 
-    const response = await fetch("/api/follow", {
+    const response = await fetch("/api/friend", {
       method: "POST",
       body: formData,
     });
     if (!response.ok) {
       throw new Error("Failed to check subscription status");
     }
+    setFollowingUser(null);
     const data = await response.json();
     if (data.status !== "notfound") setFollowingUser(data);
   }
 
-  async function handleFollw(uuid: string) {
+  async function handleFriend(toUUID: string) {
     const formData = new FormData();
-    formData.append("followingId", uuid!);
-    formData.append("submitFollow", "true");
-    formData.append("userId", userId);
+    formData.append("toUUID", toUUID);
+    formData.append("_action", "submitFriend");
+    formData.append("fromId", userId);
 
-    const response = await fetch("/api/follow", {
+    const response = await fetch("/api/friend", {
       method: "POST",
       body: formData,
     });
@@ -85,14 +88,63 @@ export default function ActionBar({
     }
 
     const data = await response.json();
-    const newUsers = [data, ...(follwingUsers || [])];
-    setFollowingUsers(newUsers); // 状態を更新
+    if (data.status == "ACCEPTED") {
+      const newUsers = [data, ...(follwingUsers || [])];
+      setFollowingUsers(newUsers); // 状態を更新
+    }
     setFollowingUser(null);
-
-    console.log("Updated following users:", newUsers);
   }
-  const [isFollow, setIsFollow] = useState(false);
-  const [fId, setFId] = useState("");
+
+  async function handleAccept(fromId: string) {
+    const formData = new FormData();
+    formData.append("toUUID", uuid);
+    formData.append("_action", "acceptFriend");
+    formData.append("fromId", fromId);
+
+    const response = await fetch("/api/friend", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to send friend request");
+    }
+
+    const data = await response.json();
+    
+    if (data.status == "ACCEPTED") {
+      await getUsers()
+      setFriendRequests((prev) =>
+        prev.filter((request) => request.id !== data.id)
+      );
+    }
+  }
+
+  async function handleReject(fromId: string) {
+    const formData = new FormData();
+    formData.append("toUUID", uuid);
+    formData.append("_action", "rejectFriend");
+    formData.append("fromId", fromId);
+
+    const response = await fetch("/api/friend", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to send friend request");
+    }
+
+    const data = await response.json();
+    if (data.status === "REJECTED") {
+      setFriendRequests((prev) =>
+        prev.filter((request) => request.id !== data.id)
+      );
+    }
+  }
+
+  const [isFriend, setIsFriend] = useState(false);
+  const [toId, setToId] = useState("");
   const [follwingUser, setFollowingUser] = useState<{
     username: string;
     uuid: string;
@@ -100,6 +152,15 @@ export default function ActionBar({
   } | null>(null);
   const [follwingUsers, setFollowingUsers] = useState<
     { username: string; uuid: string; avatar: string; status: string }[]
+  >([]);
+  const [friendRequests, setFriendRequests] = useState<
+    {
+      id: string;
+      fromId: string;
+      toId: string;
+      status: string;
+      createdAt: Date;
+    }[]
   >([]);
 
   const [isClient, setIsClient] = useState(false);
@@ -114,8 +175,10 @@ export default function ActionBar({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const [barPosition, setBarPosition] = useState<'left' | 'right' | 'bottom'>('bottom');
-  const [barColor, setBarColor] = useState<string>('#4F46E5');
+  const [barPosition, setBarPosition] = useState<"left" | "right" | "bottom">(
+    "bottom"
+  );
+  const [barColor, setBarColor] = useState<string>("#4F46E5");
   // Track when initial settings load completes
   const [settingsLoaded, setSettingsLoaded] = useState(false);
 
@@ -143,9 +206,11 @@ export default function ActionBar({
         body: JSON.stringify({ bar: barPosition, theme: barColor }),
       });
       // Notify Bar component to update immediately
-      window.dispatchEvent(new CustomEvent("user-settings-updated", {
-        detail: { bar: barPosition, theme: barColor },
-      }));
+      window.dispatchEvent(
+        new CustomEvent("user-settings-updated", {
+          detail: { bar: barPosition, theme: barColor },
+        })
+      );
     }
     saveSettings();
   }, [barPosition, barColor, settingsLoaded]);
@@ -266,15 +331,15 @@ export default function ActionBar({
       <Drawer>
         <DrawerTitle></DrawerTitle>
         <DrawerDescription></DrawerDescription>
-        <DrawerTrigger asChild>
+        <DrawerTrigger>
           {avatarUrl ? (
             <img
               src={`${avatarUrl}`}
               alt={username}
-              className="rounded-full w-8 h-8"
+              className="rounded-full w-12 h-12"
             />
           ) : (
-            <Avatar size={"4rem"} name={uuid} variant="beam" />
+            <Avatar size={"3rem"} name={uuid} variant="beam" />
           )}
         </DrawerTrigger>
         <DrawerContent
@@ -288,16 +353,23 @@ export default function ActionBar({
         >
           <DrawerHeader className="w-full flex justify-between items-center">
             <div>
-              {isProfileChange || isSetting || isFollow ? (
-                <FontAwesomeIcon
-                  onClick={() => {
-                    setIsProfileChange(false);
-                    setIsSetting(false);
-                    setIsFollow(false);
+              {isProfileChange || isSetting || isFriend ? (
+                <button
+                  style={{
+                    width: "5rem",
+                    height: "3rem",
                   }}
-                  icon={faChevronLeft}
-                  style={{ height: "3rem", width: "5rem", color: "white" }}
-                />
+                >
+                  <FontAwesomeIcon
+                    onClick={() => {
+                      setIsProfileChange(false);
+                      setIsSetting(false);
+                      setIsFriend(false);
+                    }}
+                    icon={faChevronLeft}
+                    style={{ height: "2rem", width: "5rem", color: "white" }}
+                  />
+                </button>
               ) : (
                 <DrawerClose
                   style={{
@@ -307,13 +379,13 @@ export default function ActionBar({
                 >
                   <FontAwesomeIcon
                     icon={faChevronLeft}
-                    style={{ height: "3rem", color: "white" }}
+                    style={{ height: "2rem", color: "white" }}
                   />
                 </DrawerClose>
               )}
             </div>
 
-            {isProfileChange || isSetting ? (
+            {isProfileChange || isSetting || isFriend ? (
               <div className="p-5"></div>
             ) : (
               <div>
@@ -332,7 +404,7 @@ export default function ActionBar({
               </div>
             )}
           </DrawerHeader>
-          {isFollow ? (
+          {isFriend ? (
             <div className="min-h-screen w-full flex justify-center  bg-black">
               <div className="w-full p-6 rounded-lg shadow-lg text-white">
                 <h2 className="text-2xl text-center mb-4">フレンド追加</h2>
@@ -346,8 +418,8 @@ export default function ActionBar({
                   type="text"
                   autoComplete="username"
                   required
-                  value={fId}
-                  onChange={(e) => setFId(e.target.value)}
+                  value={toId}
+                  onChange={(e) => setToId(e.target.value)}
                   className="w-full text-white h-14 bg-gray-800 p-2 text-xl rounded-md"
                 />
 
@@ -368,7 +440,7 @@ export default function ActionBar({
                     )}
                     <div className="ml-4 text-xl">{follwingUser.username}</div>
                     <Button
-                      onClick={() => handleFollw(uuid)}
+                      onClick={() => handleFriend(follwingUser.uuid)}
                       className="ml-auto p-2 bg-indigo-500 text-white rounded-md"
                     >
                       フレンド申請
@@ -377,11 +449,61 @@ export default function ActionBar({
                 )}
 
                 <Button
-                  onClick={() => handleGetUser(uuid)}
+                  onClick={() => handleGetUser(toId)}
                   className="w-full mt-4 p-3 bg-indigo-500 text-white rounded-md text-lg"
                 >
                   検索
                 </Button>
+
+                <div className="overflow-y-auto max-h-96">
+                  {friendRequests?.length ? (
+                    <>
+                      <h3 className="text-2xl text-center mt-6">
+                        フレンドリクエスト
+                      </h3>
+                      {friendRequests.map((user) => (
+                        <div
+                          key={user.uuid}
+                          className="p-3 mt-3 flex items-center justify-between border rounded-md bg-gray-800"
+                        >
+                          <div className="flex items-center">
+                            {user.avatar ? (
+                              <img
+                                src={user.avatar}
+                                alt={user.username}
+                                className="rounded-full h-12 w-12"
+                              />
+                            ) : (
+                              <Avatar
+                                size="3rem"
+                                name={user.uuid}
+                                variant="beam"
+                              />
+                            )}
+                            <div className="ml-4">
+                              <div className="text-xl">{user.username}</div>
+                              <div className="text-gray-500 text-sm">
+                                @{user.uuid}
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            onClick={() => handleAccept(user.fromId)}
+                            className="ml-auto p-2 bg-green-600 text-white rounded-md"
+                          >
+                            承認
+                          </Button>
+                          <Button
+                            onClick={() => handleReject(user.fromId)}
+                            className="ml-2 p-2 bg-red-500 text-white rounded-md"
+                          >
+                            拒否
+                          </Button>
+                        </div>
+                      ))}
+                    </>
+                  ) : null}
+                </div>
 
                 <h3 className="text-2xl text-center mt-6">フレンド一覧</h3>
                 <div className="overflow-y-auto max-h-96">
@@ -412,12 +534,6 @@ export default function ActionBar({
                             </div>
                           </div>
                         </div>
-                        <Button
-                          onClick={() => handleFollw(user.uuid)}
-                          className="bg-indigo-500 text-white p-2 rounded-md"
-                        >
-                          フレンド申請
-                        </Button>
                       </div>
                     ))
                   ) : (
@@ -431,50 +547,51 @@ export default function ActionBar({
           ) : isSetting ? (
             <div className="flex">
               <div className="p-4 flex flex-col">
-            {/* 通知設定 */}
-            <div className="flex items-center p-4">
-              <div className="flex-1">
-                <div className="text-white text-2xl">プッシュ通知</div>
-                <div className="text-gray-500">プッシュ通知の有無を切り替え</div>
-              </div>
-              <Switch
-                checked={isSubscribed}
-                onClick={toggleSubscription}
-                className="relative inline-flex items-center h-10 w-16 bg-gray-200 rounded-full p-1"
-              />
-            </div>
+                {/* 通知設定 */}
+                <div className="flex items-center p-4">
+                  <div className="flex-1">
+                    <div className="text-white text-2xl">プッシュ通知</div>
+                    <div className="text-gray-500">
+                      プッシュ通知の有無を切り替え
+                    </div>
+                  </div>
+                  <Switch
+                    checked={isSubscribed}
+                    onClick={toggleSubscription}
+                    className="relative inline-flex items-center h-10 w-16 bg-gray-200 rounded-full p-1"
+                  />
+                </div>
 
-            {/* Bar表示位置設定 */}
-            <div className="flex items-center p-4">
-              <div className="flex-1">
-                <div className="text-white text-2xl">バー表示位置</div>
-                <div className="text-gray-500">アクションバーの位置</div>
-              </div>
-              <select
-                value={barPosition}
-                onChange={e => setBarPosition(e.target.value as any)}
-                className="bg-gray-800 text-white p-2 rounded"
-              >
-                <option value="bottom">下</option>
-                <option value="left">左</option>
-                <option value="right">右</option>
-              </select>
-            </div>
+                {/* Bar表示位置設定 */}
+                <div className="flex items-center p-4">
+                  <div className="flex-1">
+                    <div className="text-white text-2xl">バー表示位置</div>
+                    <div className="text-gray-500">アクションバーの位置</div>
+                  </div>
+                  <select
+                    value={barPosition}
+                    onChange={(e) => setBarPosition(e.target.value as any)}
+                    className="bg-gray-800 text-white p-2 rounded"
+                  >
+                    <option value="bottom">下</option>
+                    <option value="left">左</option>
+                    <option value="right">右</option>
+                  </select>
+                </div>
 
-            {/* Barボタンカラー設定 */}
-            <div className="flex items-center p-4">
-              <div className="flex-1">
-                <div className="text-white text-2xl">テーマカラー</div>
-                <div className="text-gray-500">テーマ色を選択</div>
-              </div>
-              <input
-                type="color"
-                value={barColor}
-                onChange={e => setBarColor(e.target.value)}
-                className="w-12 h-8 p-0 border-0"
-              />
-            </div>
-                
+                {/* Barボタンカラー設定 */}
+                <div className="flex items-center p-4">
+                  <div className="flex-1">
+                    <div className="text-white text-2xl">テーマカラー</div>
+                    <div className="text-gray-500">テーマ色を選択</div>
+                  </div>
+                  <input
+                    type="color"
+                    value={barColor}
+                    onChange={(e) => setBarColor(e.target.value)}
+                    className="w-12 h-8 p-0 border-0"
+                  />
+                </div>
               </div>
             </div>
           ) : (
@@ -562,7 +679,7 @@ export default function ActionBar({
                       setIsProfileChange(true);
                       handleUpload();
                     }}
-                    className="p-5 mt-5 bg-white text-black bg-indigo-500"
+                    className="p-5 mt-5 text-black bg-indigo-500"
                     style={{ width: "90%" }}
                   >
                     保存
@@ -581,7 +698,7 @@ export default function ActionBar({
                   </Button>
                   <Button
                     onClick={() => {
-                      setIsFollow(true);
+                      setIsFriend(true);
                     }}
                     className="p-5 mt-5 bg-indigo-500 hover:bg-indigo-700 text-black"
                     style={{ width: "90%" }}

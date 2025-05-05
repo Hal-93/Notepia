@@ -37,8 +37,8 @@ export async function acceptFriendRequestById(
   const updatedFriend = await prisma.friend.update({
     where: {
       fromId_toId: {
-        fromId: toId,
-        toId: fromId,
+        fromId,
+        toId,
       },
     },
     data: { status: "ACCEPTED" },
@@ -46,8 +46,8 @@ export async function acceptFriendRequestById(
 
   await prisma.friend.create({
     data: {
-      fromId,
-      toId,
+      fromId:toId,
+      toId:fromId,
       status: "ACCEPTED",
     },
   });
