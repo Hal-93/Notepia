@@ -137,6 +137,7 @@ export default function MemoList({
                           type="button"
                           onClick={() => handleCompleteClick(memo)}
                           className="ml-2 focus:outline-none focus:ring-2 focus:ring-green-400"
+                          style={{ touchAction: 'manipulation' }}
                         >
                           <FontAwesomeIcon icon={faCheck} />
                         </button>
@@ -175,6 +176,7 @@ export default function MemoList({
                           type="button"
                           onClick={() => handleDeleteClick(memo)}
                           className="ml-2 focus:outline-none focus:ring-2 focus:ring-red-400"
+                          style={{ touchAction: 'manipulation' }}
                         >
                           <FontAwesomeIcon icon={faTrash} />
                         </button>
