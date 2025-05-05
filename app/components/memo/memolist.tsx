@@ -54,10 +54,9 @@ export default function MemoList({
         <button
           type="button"
           onClick={() => setSelectedColor(null)}
-          className="px-2 py-1 bg-gray-700 text-white rounded"
-        >
-          リセット
-        </button>
+          className="w-6 h-6 rounded-full border-2 border-dashed border-gray-400"
+          title="透明 (リセット)"
+        />
         {MEMO_COLORS.map((c) => (
           <button
             key={c}
@@ -70,7 +69,7 @@ export default function MemoList({
       </div>
 
       <Tabs defaultValue="incomplete" className="mt-4">
-        <TabsList className="flex space-x-2 bg-black border-b border-gray-600 shadow-none">
+        <TabsList className="flex space-x-2 bg-black ">
           <TabsTrigger
             value="incomplete"
             className="px-4 py-2 text-white focus:outline-none transition-all data-[state=active]:bg-gray-800 data-[state=active]:text-blue-400"
@@ -90,7 +89,7 @@ export default function MemoList({
             <ul className="space-y-2">
               {displayedMemos.filter((memo) => !memo.completed).length === 0 ? (
                 <div className="text-gray-500 text-sm">
-                  条件に合う未完了のメモはありません。
+                  条件に合うメモがありません。
                 </div>
               ) : (
                 displayedMemos
@@ -117,7 +116,7 @@ export default function MemoList({
             <ul className="space-y-2">
               {displayedMemos.filter((memo) => memo.completed).length === 0 ? (
                 <div className="text-gray-500 text-sm">
-                  条件に合う完了済みのメモはありません。
+                  条件に合うメモがありません。
                 </div>
               ) : (
                 displayedMemos
