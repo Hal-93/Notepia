@@ -336,7 +336,7 @@ export default function ActionBar({
             <img
               src={`${avatarUrl}`}
               alt={username}
-              className="rounded-full w-12 h-12"
+              className="rounded-full w-12 h-12 object-cover"
             />
           ) : (
             <Avatar size={"3rem"} name={uuid} variant="beam" />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Memo } from "@prisma/client";
 import { Input } from "~/components/ui/input";
 import {
@@ -7,7 +7,9 @@ import {
   TabsTrigger,
   TabsContent,
 } from "~/components/ui/tabs";
-import { ScrollArea } from "~/components/ui/scroll-area";
+import { useFetcher, useRevalidator } from "@remix-run/react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheck, faTrash, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 
 const MEMO_COLORS = [
   "#ffffff",
@@ -34,9 +36,51 @@ export default function MemoList({
   jumpToMemo,
 }: MemoListProps) {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [localMemos, setLocalMemos] = useState<Memo[]>(filteredMemos);
+  useEffect(() => {
+    setLocalMemos(filteredMemos);
+  }, [filteredMemos]);
+
+  const fetcher = useFetcher<{ success: boolean }>();
+  const revalidator = useRevalidator();
+
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      // Revalidate loader data instead of full reload
+      revalidator.revalidate();
+    }
+  }, [fetcher.data, revalidator]);
+
+  const handleCompleteClick = (memo: Memo) => {
+    fetcher.submit(
+      { memoId: memo.id, intent: "complete" },
+      { method: "post", action: "/memo/detail" }
+    );
+    setLocalMemos(prev =>
+      prev.map(m => m.id === memo.id ? { ...m, completed: true } : m)
+    );
+  };
+
+  const handleDeleteClick = (memo: Memo) => {
+    fetcher.submit(
+      { memoId: memo.id, intent: "delete" },
+      { method: "post", action: "/memo/detail" }
+    );
+    setLocalMemos(prev => prev.filter(m => m.id !== memo.id));
+  };
+
+  const handleUncompleteClick = (memo: Memo) => {
+    fetcher.submit(
+      { memoId: memo.id, intent: "uncomplete" },
+      { method: "post", action: "/memo/detail" }
+    );
+    setLocalMemos(prev =>
+      prev.map(m => m.id === memo.id ? { ...m, completed: false } : m)
+    );
+  };
 
   // Filter by selected color
-  const displayedMemos = filteredMemos.filter(memo =>
+  const displayedMemos = localMemos.filter(memo =>
     selectedColor ? memo.color === selectedColor : true
   );
 
@@ -85,7 +129,7 @@ export default function MemoList({
         </TabsList>
 
         <TabsContent value="incomplete">
-          <ScrollArea className="h-[50vh] pr-2 mt-2">
+          <div className="overflow-y-auto h-[50vh] pr-2 mt-2" style={{ WebkitOverflowScrolling: "touch" }}>
             <ul className="space-y-2">
               {displayedMemos.filter((memo) => !memo.completed).length === 0 ? (
                 <div className="text-gray-500 text-sm">
@@ -96,23 +140,35 @@ export default function MemoList({
                   .filter((memo) => !memo.completed)
                   .map((memo) => (
                     <li key={memo.id}>
-                      <button
-                        type="button"
-                        onClick={() => jumpToMemo(memo)}
-                        className="w-full text-left p-3 rounded bg-gray-900 hover:bg-gray-800 text-white flex items-center transition focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      <div
+                        className="w-full flex justify-between items-center p-3 rounded bg-gray-900 hover:bg-gray-800 text-white transition"
                         style={{ borderLeft: `4px solid ${memo.color || '#3b82f6'}` }}
                       >
-                        {memo.title}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => jumpToMemo(memo)}
+                          className="flex-1 text-left cursor-pointer"
+                        >
+                          {memo.title}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleCompleteClick(memo)}
+                          className="ml-2"
+                          style={{ touchAction: 'manipulation' }}
+                        >
+                          <FontAwesomeIcon icon={faCheck} />
+                        </button>
+                      </div>
                     </li>
                   ))
               )}
             </ul>
-          </ScrollArea>
+          </div>
         </TabsContent>
 
         <TabsContent value="complete">
-          <ScrollArea className="h-[50vh] pr-2 mt-2">
+          <div className="overflow-y-auto h-[50vh] pr-2 mt-2" style={{ WebkitOverflowScrolling: "touch" }}>
             <ul className="space-y-2">
               {displayedMemos.filter((memo) => memo.completed).length === 0 ? (
                 <div className="text-gray-500 text-sm">
@@ -123,19 +179,39 @@ export default function MemoList({
                   .filter((memo) => memo.completed)
                   .map((memo) => (
                     <li key={memo.id}>
-                      <button
-                        type="button"
-                        onClick={() => jumpToMemo(memo)}
-                        className="w-full text-left p-3 rounded bg-gray-900 hover:bg-gray-800 text-white flex items-center transition focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      <div
+                        className="w-full flex justify-between items-center p-3 rounded bg-gray-900 hover:bg-gray-800 text-white transition"
                         style={{ borderLeft: `4px solid ${memo.color || '#3b82f6'}` }}
                       >
-                        {memo.title}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => jumpToMemo(memo)}
+                          className="flex-1 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        >
+                          {memo.title}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleUncompleteClick(memo)}
+                          className="ml-4"
+                          style={{ touchAction: 'manipulation' }}
+                        >
+                          <FontAwesomeIcon icon={faRotateLeft} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteClick(memo)}
+                          className="ml-4"
+                          style={{ touchAction: 'manipulation' }}
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                        </button>
+                      </div>
                     </li>
                   ))
               )}
             </ul>
-          </ScrollArea>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
