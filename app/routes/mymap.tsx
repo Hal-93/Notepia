@@ -12,13 +12,20 @@ import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
 import { Memo } from "@prisma/client";
 import { getUserById } from "~/models/user.server";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "~/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "~/components/ui/drawer";
 import MemoList from "~/components/memo/memolist";
 import "~/popup.css";
 import { MapBoxSearch } from "~/components/searchbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ArrowLeft } from "lucide-react";
 import { faArrowsLeftRight, faHome } from "@fortawesome/free-solid-svg-icons";
+import { useAtom } from "jotai/react";
+import { locationAtom, zoomAtom } from "~/atoms/locationAtom";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -93,6 +100,9 @@ export default function MapPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredMemos, setFilteredMemos] = useState<Memo[]>([]);
 
+  const [location, setLocation] = useAtom(locationAtom);
+  const [zoom, setZoom] = useAtom(zoomAtom);
+
   useEffect(() => {
     if (searchQuery.trim() === "") {
       setFilteredMemos(memos);
@@ -116,6 +126,13 @@ export default function MapPage() {
       });
       setIsDrawerOpen(false);
     }
+  };
+
+  const handleMoveEnd = (map:mapboxgl.Map) => {
+    const center = map.getCenter();
+    const zoom = map.getZoom();
+    setZoom(zoom);
+    setLocation([center.lng, center.lat]);
   };
 
   useEffect(() => {
@@ -142,8 +159,8 @@ export default function MapPage() {
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: getMapStyle(),
-      center: [139.759, 35.684],
-      zoom: 16,
+      center: location,
+      zoom: zoom,
       minZoom: 5,
       pitch: 45,
       antialias: true,
@@ -158,15 +175,20 @@ export default function MapPage() {
       }
     });
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const { latitude, longitude } = position.coords;
-        map.flyTo({
-          center: [longitude, latitude],
-          zoom: 16,
-        });
-      });
-    }
+    map.on("moveend", () => {
+      handleMoveEnd(map);
+    });
+
+    // if (navigator.geolocation) {
+    //   navigator.geolocation.getCurrentPosition((position) => {
+    //     const { latitude, longitude } = position.coords;
+    //     setLocation([longitude, latitude]);
+    //     map.flyTo({
+    //       center: [longitude, latitude],
+    //       zoom: 16,
+    //     });
+    //   });
+    // }
 
     mapRef.current = map;
     return () => map.remove();
