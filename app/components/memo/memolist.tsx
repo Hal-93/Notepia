@@ -7,7 +7,6 @@ import {
   TabsTrigger,
   TabsContent,
 } from "~/components/ui/tabs";
-import { ScrollArea } from "~/components/ui/scroll-area";
 import { useFetcher, useRevalidator } from "@remix-run/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -112,7 +111,7 @@ export default function MemoList({
         </TabsList>
 
         <TabsContent value="incomplete">
-          <ScrollArea className="h-[50vh] pr-2 mt-2">
+          <div className="overflow-y-auto h-[50vh] pr-2 mt-2" style={{ WebkitOverflowScrolling: "touch" }}>
             <ul className="space-y-2">
               {displayedMemos.filter((memo) => !memo.completed).length === 0 ? (
                 <div className="text-gray-500 text-sm">
@@ -146,11 +145,11 @@ export default function MemoList({
                   ))
               )}
             </ul>
-          </ScrollArea>
+          </div>
         </TabsContent>
 
         <TabsContent value="complete">
-          <ScrollArea className="h-[50vh] pr-2 mt-2">
+          <div className="overflow-y-auto h-[50vh] pr-2 mt-2" style={{ WebkitOverflowScrolling: "touch" }}>
             <ul className="space-y-2">
               {displayedMemos.filter((memo) => memo.completed).length === 0 ? (
                 <div className="text-gray-500 text-sm">
@@ -184,7 +183,7 @@ export default function MemoList({
                   ))
               )}
             </ul>
-          </ScrollArea>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
