@@ -372,6 +372,7 @@ export default function ActionBar({
                     setIsFriend(false);
                     setIsSetting(false);
                     setPreviewUrl(null);
+                    setSelectedFile(null);
                   }}
                   className="absolute top-4 left-4 text-white hover:text-red-400"
                   aria-label="戻る"
