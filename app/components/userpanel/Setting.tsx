@@ -16,9 +16,10 @@ export default function Setting({
   setBarColor: (v: string) => void;
 }) {
   return (
-    <div className="flex flex-col bg-black min-h-screen text-white p-4">
+    <div className="w-full max-h-[65vh] overflow-y-auto px-1">
+      <div className="w-full p-2 rounded-lg text-white"></div>
       {/* プッシュ通知 */}
-      <div className="flex items-center mb-6">
+      <div className="flex items-center mb-6 bg-gray-800 p-3 rounded-md">
         <div className="flex-1">
           <div className="text-2xl">プッシュ通知</div>
           <div className="text-gray-500 text-sm">
@@ -33,7 +34,7 @@ export default function Setting({
       </div>
 
       {/* バー位置設定 */}
-      <div className="flex items-center mb-6">
+      <div className="flex items-center mb-6 bg-gray-800 p-3 rounded-md">
         <div className="flex-1">
           <div className="text-2xl">バー表示位置</div>
           <div className="text-gray-500 text-sm">アクションバーの位置</div>
@@ -52,7 +53,7 @@ export default function Setting({
       </div>
 
       {/* テーマカラー設定 */}
-      <div className="flex items-center">
+      <div className="flex items-center bg-gray-800 p-3 rounded-md">
         <div className="flex-1">
           <div className="text-2xl">テーマカラー</div>
           <div className="text-gray-500 text-sm">テーマ色を選択</div>

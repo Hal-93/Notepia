@@ -37,6 +37,7 @@ export default function ProfileSection({
 }: Props) {
   return (
     <>
+    <div className="flex flex-col items-center justify-center mb-6">
       <div className="p-4 relative inline-block">
         {isProfileChange && (
           <input
@@ -76,7 +77,6 @@ export default function ProfileSection({
       </div>
 
       {isProfileChange ? (
-        <div className="flex flex-col">
           <Input
             id="username"
             name="username"
@@ -86,7 +86,6 @@ export default function ProfileSection({
             style={{ width: "90%" }}
             className="text-white bg-gray-800 border border-gray-600 focus:ring-blue-500 focus:border-blue-500"
           />
-        </div>
       ) : (
         <div className="text-white text-2xl">{uname}</div>
       )}
@@ -99,30 +98,23 @@ export default function ProfileSection({
           <span className="ml-2 text-green-400">コピーしました！</span>
         )}
       </div>
+    
 
       <br />
-      {isProfileChange ? (
+      {isProfileChange && (
         <div className="w-full flex flex-col items-center">
           <Button
             onClick={() => {
-              setIsProfileChange(true);
               handleUpload();
             }}
-            className="p-5 mt-5 text-black bg-indigo-500"
+            className="w-full mt-5 bg-indigo-500 hover:bg-indigo-700 text-black"
             style={{ width: "90%" }}
           >
             保存
           </Button>
         </div>
-      ) : (
-        <Button
-          onClick={() => setIsProfileChange(true)}
-          className="p-5 bg-white hover:bg-gray-400 text-black"
-          style={{ width: "90%" }}
-        >
-          プロフィールを編集
-        </Button>
       )}
+      </div>
     </>
   );
 }

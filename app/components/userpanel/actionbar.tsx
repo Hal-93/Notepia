@@ -342,26 +342,26 @@ export default function ActionBar({
 
   return (
     <>
-    <div className="fixed top-4 right-5 z-50">
-    <button onClick={() => setOpen(true)}>
-      {avatarUrl ? (
-        <img
-          src={avatarUrl}
-          alt={username}
-          className="rounded-full w-12 h-12 object-cover"
-        />
-      ) : (
-        <Avatar size="3rem" name={uuid} variant="beam" />
-        )}
+      <div className="fixed top-4 right-5 z-50">
+        <button onClick={() => setOpen(true)}>
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={username}
+              className="rounded-full w-12 h-12 object-cover"
+            />
+          ) : (
+            <Avatar size="3rem" name={uuid} variant="beam" />
+          )}
         </button>
       </div>
       {open && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60">
           <div
             ref={modalRef}
-            className="relative w-full max-w-md bg-black rounded-lg shadow-lg p-6 text-white"
+            className="relative w-full max-w-md h-[40rem] bg-black rounded-lg shadow-lg p-6 text-white flex flex-col"
           >
-          {isProfileChange || isFriend || isSetting ? (
+            {isProfileChange || isFriend || isSetting ? (
               <button
                 onClick={() => {
                   setIsProfileChange(false);
@@ -373,8 +373,8 @@ export default function ActionBar({
               >
                 <FontAwesomeIcon icon={faChevronLeft} className="text-3xl" />
               </button>
-              ) : (
-                <button
+            ) : (
+              <button
                 onClick={() => setOpen(false)}
                 className="absolute top-4 left-4 text-white text-5xl hover:text-red-400"
                 aria-label="閉じる"
@@ -382,70 +382,78 @@ export default function ActionBar({
                 &times;
               </button>
             )}
-            <div className="mt-10">
-              {isFriend ? (
-                <FriendSection
-                toId={toId}
-                follwingUser={follwingUser}
-                friendRequests={friendRequests}
-                follwingUsers={follwingUsers}
-                setToId={setToId}
-                handleFriend={handleFriend}
-                handleGetUser={handleGetUser}
-                handleAccept={handleAccept}
-                handleReject={handleReject}
-                 />
-              ) : isSetting ? (
-                <Setting 
-                isSubscribed={isSubscribed}
-                toggleSubscription={toggleSubscription}
-                barPosition={barPosition}
-                setBarPosition={setBarPosition}
-                barColor={barColor}
-                setBarColor={setBarColor}
-                 />
-              ) : (
-                <>
-                <ProfileSection
-                uuid={uuid}
-                username={username}
-                avatarUrl={avatarUrl}
-                previewUrl={previewUrl}
-                uname={uname}
-                isProfileChange={isProfileChange}
-                copied={copied}
-                fileInputRef={fileInputRef}
-                setUname={setUname}
-                handleFileChange={handleFileChange}
-                handleCopy={handleCopy}
-                handleUpload={handleUpload}
-                setIsProfileChange={setIsProfileChange}
-                />
-                  {!isProfileChange && (
-                    <>
-                      <Button
-                        className="w-full mt-5 bg-indigo-500 hover:bg-indigo-700 text-black"
-                        onClick={() => setIsFriend(true)}
-                      >
-                        フレンド
-                      </Button>
-                      <Button
-                        className="w-full mt-3 bg-indigo-500 hover:bg-indigo-700 text-black"
-                        onClick={() => setIsSetting(true)}
-                      >
-                        設定
-                      </Button>
-                      <Form method="post" action="/logout" className="w-full mt-4">
-                        <Button
-                          type="submit"
-                          className="w-full bg-red-500 hover:bg-red-700 text-white"
-                        >
-                          ログアウト
-                        </Button>
-                      </Form>
-                    </>
-                  )}
-                </>
+
+            <div className="flex flex-col justify-between h-full pt-10">
+              <div className="overflow-y-auto pb-4">
+                {isFriend ? (
+                  <FriendSection
+                    toId={toId}
+                    follwingUser={follwingUser}
+                    friendRequests={friendRequests}
+                    follwingUsers={follwingUsers}
+                    setToId={setToId}
+                    handleFriend={handleFriend}
+                    handleGetUser={handleGetUser}
+                    handleAccept={handleAccept}
+                    handleReject={handleReject}
+                  />
+                ) : isSetting ? (
+                  <Setting
+                    isSubscribed={isSubscribed}
+                    toggleSubscription={toggleSubscription}
+                    barPosition={barPosition}
+                    setBarPosition={setBarPosition}
+                    barColor={barColor}
+                    setBarColor={setBarColor}
+                  />
+                ) : (
+                  <ProfileSection
+                    uuid={uuid}
+                    username={username}
+                    avatarUrl={avatarUrl}
+                    previewUrl={previewUrl}
+                    uname={uname}
+                    isProfileChange={isProfileChange}
+                    copied={copied}
+                    fileInputRef={fileInputRef}
+                    setUname={setUname}
+                    handleFileChange={handleFileChange}
+                    handleCopy={handleCopy}
+                    handleUpload={handleUpload}
+                    setIsProfileChange={setIsProfileChange}
+                  />
+                )}
+              </div>
+
+              {!isProfileChange && !isFriend && !isSetting && (
+                <div className="pt-4 space-y-3">
+                  <Button
+                    className="w-full bg-white text-black hover:bg-gray-400"
+                    onClick={() => setIsProfileChange(true)}
+                  >
+                    プロフィールを編集
+                  </Button>
+                  <Button
+                    className="w-full bg-indigo-500 hover:bg-indigo-700 text-black"
+                    onClick={() => setIsFriend(true)}
+                  >
+                    フレンド
+                  </Button>
+                  <Button
+                    className="w-full bg-indigo-500 hover:bg-indigo-700 text-black"
+                    onClick={() => setIsSetting(true)}
+                  >
+                    設定
+                  </Button>
+                  <Form method="post" action="/logout" className="w-full">
+                    <Button
+                      type="submit"
+                      className="w-full bg-red-500 hover:bg-red-700 text-white"
+                    >
+                      ログアウト
+                    </Button>
+                  </Form>
+                </div>
               )}
             </div>
           </div>
