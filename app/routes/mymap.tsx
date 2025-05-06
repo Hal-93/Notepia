@@ -436,7 +436,7 @@ export default function MapPage() {
       />
 
       <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
-        <DrawerContent className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px]">
+        <DrawerContent className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px]" style={{ zIndex: 99999 }}>
           <DrawerHeader>
             <DrawerTitle>メモを検索</DrawerTitle>
           </DrawerHeader>
