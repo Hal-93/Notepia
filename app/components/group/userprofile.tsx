@@ -82,7 +82,11 @@ export default function UserProfile({
                 {currentRole}
                 </span>
                 {canChangeRole && (
-                  <div className="relative mt-2">
+                  <div
+                    className="relative mt-2"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
+                  >
                     <select
                       value={currentRole}
                       onChange={async (e) => {
