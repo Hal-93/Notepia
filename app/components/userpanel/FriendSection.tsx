@@ -1,0 +1,154 @@
+import Avatar from "boring-avatars";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
+import { Label } from "~/components/ui/label";
+
+type User = { uuid: string; username: string; avatar: string };
+
+type Props = {
+  toId: string;
+  follwingUser: User | null;
+  friendRequests: any[];
+  follwingUsers: User[];
+  setToId: (v: string) => void;
+  handleFriend: (uuid: string) => void;
+  handleGetUser: (id: string) => void;
+  handleAccept: (id: string) => void;
+  handleReject: (id: string) => void;
+};
+
+export default function FriendSection({
+  toId,
+  follwingUser,
+  friendRequests,
+  follwingUsers,
+  setToId,
+  handleFriend,
+  handleGetUser,
+  handleAccept,
+  handleReject,
+}: Props) {
+  return (
+    <div className="min-h-screen w-full flex justify-center bg-black">
+      <div className="w-full p-6 rounded-lg shadow-lg text-white">
+        <h2 className="text-2xl text-center mb-4">フレンド追加</h2>
+
+        <Label htmlFor="username" className="text-white text-lg">
+          ユーザーID
+        </Label>
+        <Input
+          id="username"
+          name="username"
+          type="text"
+          autoComplete="username"
+          required
+          value={toId}
+          onChange={(e) => setToId(e.target.value)}
+          className="w-full text-white h-14 bg-gray-800 p-2 text-xl rounded-md"
+        />
+
+        {follwingUser && (
+          <div className="p-2 mt-3 text-white flex border rounded-md items-center">
+            {follwingUser.avatar ? (
+              <img
+                src={follwingUser.avatar}
+                alt={follwingUser.username}
+                className="rounded-full h-16 w-16"
+              />
+            ) : (
+              <Avatar
+                size="4rem"
+                name={follwingUser.uuid}
+                variant="beam"
+              />
+            )}
+            <div className="ml-4 text-xl">{follwingUser.username}</div>
+            <Button
+              onClick={() => handleFriend(follwingUser.uuid)}
+              className="ml-auto p-2 bg-indigo-500 text-white rounded-md"
+            >
+              フレンド申請
+            </Button>
+          </div>
+        )}
+
+        <Button
+          onClick={() => handleGetUser(toId)}
+          className="w-full mt-4 p-3 bg-indigo-500 text-white rounded-md text-lg"
+        >
+          検索
+        </Button>
+
+        {friendRequests?.length > 0 && (
+          <>
+            <h3 className="text-2xl text-center mt-6">フレンドリクエスト</h3>
+            {friendRequests.map((user) => (
+              <div
+                key={user.uuid}
+                className="p-3 mt-3 flex items-center justify-between border rounded-md bg-gray-800"
+              >
+                <div className="flex items-center">
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.username}
+                      className="rounded-full h-12 w-12"
+                    />
+                  ) : (
+                    <Avatar size="3rem" name={user.uuid} variant="beam" />
+                  )}
+                  <div className="ml-4">
+                    <div className="text-xl">{user.username}</div>
+                    <div className="text-gray-500 text-sm">@{user.uuid}</div>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => handleAccept(user.fromId)}
+                  className="ml-auto p-2 bg-green-600 text-white rounded-md"
+                >
+                  承認
+                </Button>
+                <Button
+                  onClick={() => handleReject(user.fromId)}
+                  className="ml-2 p-2 bg-red-500 text-white rounded-md"
+                >
+                  拒否
+                </Button>
+              </div>
+            ))}
+          </>
+        )}
+
+        <h3 className="text-2xl text-center mt-6">フレンド一覧</h3>
+        <div className="overflow-y-auto max-h-96">
+          {follwingUsers.length > 0 ? (
+            follwingUsers.map((user) => (
+              <div
+                key={user.uuid}
+                className="p-3 mt-3 flex items-center justify-between border rounded-md bg-gray-800"
+              >
+                <div className="flex items-center">
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.username}
+                      className="rounded-full h-12 w-12"
+                    />
+                  ) : (
+                    <Avatar size="3rem" name={user.uuid} variant="beam" />
+                  )}
+                  <div className="ml-4">
+                    <div className="text-xl">{user.username}</div>
+                    <div className="text-gray-500 text-sm">@{user.uuid}</div>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center mt-3">フレンドがまだいません。</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

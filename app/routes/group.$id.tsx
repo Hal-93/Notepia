@@ -6,7 +6,7 @@ import { getUsersByGroup, getUserRole } from "~/models/group.server";
 import { useRevalidator } from "@remix-run/react";
 import mapboxgl, { Marker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import ActionBar from "~/components/actionbar";
+import ActionBar from "~/components/userpanel/actionbar";
 import MemoCreateModal from "~/components/memo/create";
 import MemoDetailModal from "~/components/memo/detail";
 import { MapBoxSearch } from "~/components/searchbar";
