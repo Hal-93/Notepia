@@ -164,7 +164,7 @@ export default function LoginPage() {
       {/* 右カラム */}
       <div
         className="hidden md:block col-span-2 bg-cover bg-center"
-        style={{ backgroundImage: "url('/background.jpeg')" }}
+        style={{ backgroundImage: "url('/backGround250506.jpeg')" }}
       ></div>
     </div>
   );

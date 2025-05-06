@@ -22,18 +22,18 @@ export default function Index() {
           className="absolute inset-0 md:hidden"
           style={{
             backgroundImage:
-              "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0, 0, 0, 0.85) 100%), url('/backgroundMobile.jpeg')",
+              "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0, 0, 0, 0.85) 100%), url('/backGroundMobile250506.jpeg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         ></div>
 
         {/* コンテンツ */}
-        <nav className="relative flex flex-col items-center md:h-screen md:w-full z-10 justify-center">
+        <nav className="relative flex flex-col items-center md:h-screen md:w-full md:pt-10 z-10 justify-center">
           <img
             src="/Notepia-light.svg"
             alt="Notepia"
-            className="w-full md:w-90px h-[70vh] md:mb-40 px-10 md:px-[10vw]"
+            className="w-full px-10 h-[70vh] md:w-90px md:h-[100vh] md:px-[10vw]"
           />
 
           <Link to={"/join"} className="w-full flex justify-center">
@@ -72,7 +72,7 @@ export default function Index() {
       {/* 右カラム */}
       <div
         className="hidden md:block col-span-2 bg-cover bg-center"
-        style={{ backgroundImage: "url('/background.jpeg')" }}
+        style={{ backgroundImage: "url('/backGround250506.jpeg')" }}
       ></div>
     </div>
   );
