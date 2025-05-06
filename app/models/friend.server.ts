@@ -117,3 +117,16 @@ export async function getAllFriendRequests(userId: string): Promise<Friend[]> {
     },
   });
 }
+
+// すでにフレンドかどうかを確認する関数
+export async function isFriend(userId: string, otherId: string): Promise<boolean> {
+  const record = await prisma.friend.findFirst({
+    where: {
+      OR: [
+        { fromId: userId, toId: otherId, status: "ACCEPTED" },
+        { fromId: otherId, toId: userId, status: "ACCEPTED" },
+      ],
+    },
+  });
+  return record !== null;
+}
