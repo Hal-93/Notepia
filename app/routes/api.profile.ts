@@ -14,9 +14,9 @@ export const action: ActionFunction = async ({ request }) => {
     const buffer = Buffer.from(await file.arrayBuffer());
     try {
       updateUserName(userId!, username);
-      const pngBuffer = await sharp(buffer).png().toBuffer();
-      const metadata = { "Content-Type": "image/png" };
-      await uploadFile(pngBuffer, `${uuid}.png`, metadata);
+      const pngBuffer = await sharp(buffer).webp().toBuffer();
+      const metadata = { "Content-Type": "image/webp" };
+      await uploadFile(pngBuffer, `${uuid}.webp`, metadata);
       await updateUserAvatar(userId!, `/user/${uuid}/avatar`);
       return json(
         { message: "更新しました。", updatedAvatar: true },
@@ -44,9 +44,9 @@ export const action: ActionFunction = async ({ request }) => {
     }
     const buffer = Buffer.from(await file.arrayBuffer());
     try {
-      const pngBuffer = await sharp(buffer).png().toBuffer();
-      const metadata = { "Content-Type": "image/png" };
-      await uploadFile(pngBuffer, `${uuid}.png`, metadata);
+      const pngBuffer = await sharp(buffer).webp().toBuffer();
+      const metadata = { "Content-Type": "image/webp" };
+      await uploadFile(pngBuffer, `${uuid}.webp`, metadata);
       await updateUserAvatar(userId, `/user/${uuid}/avatar`);
 
       return json(
