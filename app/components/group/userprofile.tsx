@@ -82,49 +82,103 @@ export default function UserProfile({
                 {currentRole}
                 </span>
                 {canChangeRole && (
-                  <div
-                    className="relative mt-2 pointer-events-auto"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onPointerUp={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onTouchEnd={(e) => e.stopPropagation()}
-                  >
-                    <select
-                      value={currentRole}
-                      onChange={async (e) => {
-                        const newRole = e.target.value as Role;
-                        const res = await fetch("/api/group", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ groupId, targetUserId: userId, newRole }),
-                        });
-                        const data = await res.json();
-                        if (res.ok) {
-                          setCurrentRole(newRole);
-                          onRoleChange?.(newRole);
-                        } else {
-                          alert(`権限変更に失敗しました: ${data.error}`);
-                        }
-                      }}
-                      className="block w-full h-10 pl-3 pr-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white text-sm cursor-pointer md:appearance-none"
-                    >
-                      {actorRole === "OWNER" && (
-                        <option value="ADMIN">ADMIN</option>
-                      )}
-                      <option value="EDITOR">EDITOR</option>
-                      <option value="VIEWER">VIEWER</option>
-                    </select>
-                    <div className="hidden md:flex pointer-events-none absolute inset-y-0 right-0 items-center pr-2">
-                      <svg
-                        className="h-4 w-4 text-gray-400"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                  <div className="mt-2">
+                    <details className="relative inline-block">
+                      <summary
+                        className="list-none cursor-pointer inline-flex items-center px-2 py-1 bg-gray-700 text-xs rounded-full"
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        tabIndex={0}
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
+                        {currentRole}
+                        <svg
+                          className="ml-1 h-4 w-4 text-gray-400"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </summary>
+                      <ul className="absolute right-0 mt-1 bg-gray-800 text-white rounded-md shadow-lg list-none p-1 w-32">
+                        {actorRole === "OWNER" && currentRole !== "ADMIN" && (
+                          <li>
+                            <button
+                              type="button"
+                              className="w-full text-left px-2 py-1 hover:bg-gray-700 rounded"
+                              onClick={async () => {
+                                const newRole = "ADMIN" as Role;
+                                const res = await fetch("/api/group", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ groupId, targetUserId: userId, newRole }),
+                                });
+                                const data = await res.json();
+                                if (res.ok) {
+                                  setCurrentRole(newRole);
+                                  onRoleChange?.(newRole);
+                                } else {
+                                  alert(`権限変更に失敗しました: ${data.error}`);
+                                }
+                              }}
+                            >
+                              ADMIN
+                            </button>
+                          </li>
+                        )}
+                        {currentRole !== "EDITOR" && (
+                          <li>
+                            <button
+                              type="button"
+                              className="w-full text-left px-2 py-1 hover:bg-gray-700 rounded"
+                              onClick={async () => {
+                                const newRole = "EDITOR" as Role;
+                                const res = await fetch("/api/group", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ groupId, targetUserId: userId, newRole }),
+                                });
+                                const data = await res.json();
+                                if (res.ok) {
+                                  setCurrentRole(newRole);
+                                  onRoleChange?.(newRole);
+                                } else {
+                                  alert(`権限変更に失敗しました: ${data.error}`);
+                                }
+                              }}
+                            >
+                              EDITOR
+                            </button>
+                          </li>
+                        )}
+                        {currentRole !== "VIEWER" && (
+                          <li>
+                            <button
+                              type="button"
+                              className="w-full text-left px-2 py-1 hover:bg-gray-700 rounded"
+                              onClick={async () => {
+                                const newRole = "VIEWER" as Role;
+                                const res = await fetch("/api/group", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ groupId, targetUserId: userId, newRole }),
+                                });
+                                const data = await res.json();
+                                if (res.ok) {
+                                  setCurrentRole(newRole);
+                                  onRoleChange?.(newRole);
+                                } else {
+                                  alert(`権限変更に失敗しました: ${data.error}`);
+                                }
+                              }}
+                            >
+                              VIEWER
+                            </button>
+                          </li>
+                        )}
+                      </ul>
+                    </details>
                   </div>
                 )}
               </>
