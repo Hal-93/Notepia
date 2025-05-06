@@ -49,7 +49,12 @@ import { faHome } from "@fortawesome/free-solid-svg-icons";
 import toastr from "toastr";
 import "toastr/build/toastr.css";
 import { useAtom } from "jotai/react";
-import { bearingAtom, locationAtom, zoomAtom } from "~/atoms/locationAtom";
+import {
+  bearingAtom,
+  currentLocationAtom,
+  locationAtom,
+  zoomAtom,
+} from "~/atoms/locationAtom";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const userId = await getUserId(request);
@@ -155,9 +160,6 @@ export default function MapPage() {
   const [showModal, setShowModal] = useState(false);
   const [modalLat, setModalLat] = useState(0);
   const [modalLng, setModalLng] = useState(0);
-  const [currentLocation, setCurrentLocation] = useState<
-    [number, number] | null
-  >(null);
 
   const [showGroupDetailModal, setShowGroupDetailModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -170,6 +172,7 @@ export default function MapPage() {
   const [location, setLocation] = useAtom(locationAtom);
   const [zoom, setZoom] = useAtom(zoomAtom);
   const [bearing, setBearing] = useAtom(bearingAtom);
+  const [currentLocation, setCurrentLocation] = useAtom(currentLocationAtom);
 
   const handleMoveEnd = (map: mapboxgl.Map) => {
     const center = map.getCenter();
@@ -272,15 +275,12 @@ export default function MapPage() {
       handleMoveEnd(map);
     });
 
-    // if (navigator.geolocation) {
-    //   navigator.geolocation.getCurrentPosition((position) => {
-    //     const { latitude, longitude } = position.coords;
-    //     map.flyTo({
-    //       center: [longitude, latitude],
-    //       zoom: 16,
-    //     });
-    //   });
-    // }
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        setLocation([longitude, latitude]);
+      });
+    }
 
     mapRef.current = map;
     return () => map.remove();
@@ -434,7 +434,14 @@ export default function MapPage() {
   };
 
   const handleGoToCurrentLocation = () => {
-    if (navigator.geolocation) {
+    if (currentLocation) {
+      if (mapRef.current) {
+        mapRef.current.flyTo({
+          center: [currentLocation[0], currentLocation[1]],
+          zoom: 16,
+        });
+      }
+    } else if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
         const { latitude, longitude } = position.coords;
         if (mapRef.current) {

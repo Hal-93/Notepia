@@ -7,6 +7,11 @@ export const locationAtom = atomWithStorage<[number, number]>(
   { getOnInit: true }
 );
 
+export const currentLocationAtom = atomWithStorage<number[] | undefined>(
+  "currentLocation",
+  undefined,
+);
+
 export const zoomAtom = atomWithStorage<number>("zoom", 16, undefined, {
   getOnInit: true,
 });
