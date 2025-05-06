@@ -172,6 +172,7 @@ export default function ActionBar({
   const [copied, setCopied] = useState(false);
   const [uname, setUname] = useState(username);
   const [open, setOpen] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -196,6 +197,18 @@ export default function ActionBar({
     }
     loadSettings();
   }, []);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) {
+      document.addEventListener("mousedown", handler);
+    }
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
 
   // Persist user settings when changed
   useEffect(() => {
@@ -328,78 +341,72 @@ export default function ActionBar({
   };
 
   return (
-    <div className="fixed top-4 right-5 z-10">
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-          {avatarUrl ? (
-            <img
-              src={`${avatarUrl}`}
-              alt={username}
-              className="rounded-full w-12 h-12 object-cover"
-            />
-          ) : (
-            <Avatar size={"3rem"} name={uuid} variant="beam" />
-          )}
-        </DialogTrigger>
-        <DialogContent
-          className="h-full lg:w-1/2 w-full mx-auto"
-          style={{
-            alignItems: "center",
-            display: "flex",
-            flexFlow: "column",
-            backgroundColor: "black",
-          }}
-        >
-          <DialogHeader className="w-full flex justify-between items-center">
-            <div>
-              {isProfileChange || isSetting || isFriend ? (
-                <button
-                onClick={() => {
-                setIsProfileChange(false);
-                setIsSetting(false);
-                setIsFriend(false);
-                }}
-                  className="absolute top-4 left-4 text-white hover:text-red-500 focus:outline-none"
-                  aria-label="閉じる"
-                >
-                <FontAwesomeIcon icon={faChevronLeft} className="text-3xl" />
-                </button>
-              ) : (
+    <>
+    <div className="fixed top-4 right-5 z-50">
+    <button onClick={() => setOpen(true)}>
+      {avatarUrl ? (
+        <img
+          src={avatarUrl}
+          alt={username}
+          className="rounded-full w-12 h-12 object-cover"
+        />
+      ) : (
+        <Avatar size="3rem" name={uuid} variant="beam" />
+        )}
+        </button>
+      </div>
+      {open && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60">
+          <div
+            ref={modalRef}
+            className="relative w-full max-w-md bg-black rounded-lg shadow-lg p-6 text-white"
+          >
+          {isProfileChange || isFriend || isSetting ? (
               <button
+                onClick={() => {
+                  setIsProfileChange(false);
+                  setIsFriend(false);
+                  setIsSetting(false);
+                }}
+                className="absolute top-4 left-4 text-white hover:text-red-400"
+                aria-label="戻る"
+              >
+                <FontAwesomeIcon icon={faChevronLeft} className="text-3xl" />
+              </button>
+              ) : (
+                <button
                 onClick={() => setOpen(false)}
-                className="absolute top-4 left-4 text-white text-5xl hover:text-red-400 focus:outline-none"
-                aria-label="モーダルを閉じる"
+                className="absolute top-4 left-4 text-white text-5xl hover:text-red-400"
+                aria-label="閉じる"
               >
                 &times;
               </button>
-              )}
-            </div>
-
-          </DialogHeader>
-          {isFriend ? (
-            <FriendSection
-              toId={toId}
-              follwingUser={follwingUser}
-              friendRequests={friendRequests}
-              follwingUsers={follwingUsers}
-              setToId={setToId}
-              handleFriend={handleFriend}
-              handleGetUser={handleGetUser}
-              handleAccept={handleAccept}
-              handleReject={handleReject}
-            />
-          ) : isSetting ? (
-          <Setting
-            isSubscribed={isSubscribed}
-            toggleSubscription={toggleSubscription}
-            barPosition={barPosition}
-            setBarPosition={setBarPosition}
-            barColor={barColor}
-            setBarColor={setBarColor}
-          />        
-          ) : (
-            <>
-               <ProfileSection
+            )}
+            <div className="mt-10">
+              {isFriend ? (
+                <FriendSection
+                toId={toId}
+                follwingUser={follwingUser}
+                friendRequests={friendRequests}
+                follwingUsers={follwingUsers}
+                setToId={setToId}
+                handleFriend={handleFriend}
+                handleGetUser={handleGetUser}
+                handleAccept={handleAccept}
+                handleReject={handleReject}
+                 />
+              ) : isSetting ? (
+                <Setting 
+                isSubscribed={isSubscribed}
+                toggleSubscription={toggleSubscription}
+                barPosition={barPosition}
+                setBarPosition={setBarPosition}
+                barColor={barColor}
+                setBarColor={setBarColor}
+                 />
+              ) : (
+                <>
+                <ProfileSection
                 uuid={uuid}
                 username={username}
                 avatarUrl={avatarUrl}
@@ -413,38 +420,37 @@ export default function ActionBar({
                 handleCopy={handleCopy}
                 handleUpload={handleUpload}
                 setIsProfileChange={setIsProfileChange}
-              />
-              {!isProfileChange && (
-                <>
-                  <Button
-                    onClick={() => setIsFriend(true)}
-                    className="p-5 mt-5 bg-indigo-500 hover:bg-indigo-700 text-black"
-                    style={{ width: "90%" }}
-                  >
-                    フレンド
-                  </Button>
-                  <Button
-                    onClick={() => setIsSetting(true)}
-                    className="p-5 mt-5 bg-indigo-500 hover:bg-indigo-700 text-black"
-                    style={{ width: "90%" }}
-                  >
-                    設定
-                  </Button>
-                  <Form method="post" action="/logout" className="w-full pt-5 flex justify-center">
-                    <Button
-                      type="submit"
-                      className="p-5 bg-red-500 hover:bg-red-700 text-white"
-                      style={{ width: "90%" }}
-                    >
-                      ログアウト
-                    </Button>
-                  </Form>
+                />
+                  {!isProfileChange && (
+                    <>
+                      <Button
+                        className="w-full mt-5 bg-indigo-500 hover:bg-indigo-700 text-black"
+                        onClick={() => setIsFriend(true)}
+                      >
+                        フレンド
+                      </Button>
+                      <Button
+                        className="w-full mt-3 bg-indigo-500 hover:bg-indigo-700 text-black"
+                        onClick={() => setIsSetting(true)}
+                      >
+                        設定
+                      </Button>
+                      <Form method="post" action="/logout" className="w-full mt-4">
+                        <Button
+                          type="submit"
+                          className="w-full bg-red-500 hover:bg-red-700 text-white"
+                        >
+                          ログアウト
+                        </Button>
+                      </Form>
+                    </>
+                  )}
                 </>
               )}
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
