@@ -1,5 +1,5 @@
 import Avatar from "boring-avatars";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Role } from "@prisma/client";
 import { Button } from "../ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -30,6 +30,23 @@ export default function UserProfile({
   userId,
 }: UserProfileProps) {
   const [currentRole, setCurrentRole] = useState<Role | undefined>(role);
+  const [isFriendState, setIsFriendState] = useState<boolean>(false);
+  useEffect(() => {
+    fetch("/api/friends")
+      .then((res) => res.json())
+      .then((data) => {
+        setIsFriendState(data.friendIds.includes(userId));
+      });
+  }, [userId]);
+
+  const handleSendFriend = async () => {
+    /*
+    *
+    *    ここを実装
+    * 
+    */
+  };
+
   const canChangeRole =
     userId !== actorId && (
       (actorRole === "OWNER" && currentRole !== "OWNER") ||
@@ -53,17 +70,19 @@ export default function UserProfile({
             <span className="mr-2">@{uuid}</span>
             {currentRole && (
               <>
-                <span className={`ml-2 px-2 py-1 bg-gray-700 text-xs rounded ${
+                <span className={`ml-2 inline-flex items-center max-w-max px-1 py-0.5 bg-gray-700 text-xs rounded ${
                   currentRole === "OWNER"
                   ? "text-yellow-300"
                   : currentRole === "ADMIN"
                   ? "text-blue-400"
+                  : currentRole === "EDITOR"
+                  ? "text-green-400"
                   : "text-gray-500"
               }`}>
                 {currentRole}
                 </span>
                 {canChangeRole && (
-                  <div className="mt-2">
+                  <div className="relative mt-2">
                     <select
                       value={currentRole}
                       onChange={async (e) => {
@@ -81,7 +100,7 @@ export default function UserProfile({
                           alert(`権限変更に失敗しました: ${data.error}`);
                         }
                       }}
-                      className="mt-1 block w-full rounded bg-gray-800 border border-gray-600 p-1 text-sm text-white"
+                      className="block w-full h-10 pl-3 pr-8 bg-gray-700 border border-gray-600 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white text-sm"
                     >
                       {actorRole === "OWNER" && (
                         <option value="ADMIN">ADMIN</option>
@@ -89,12 +108,23 @@ export default function UserProfile({
                       <option value="EDITOR">EDITOR</option>
                       <option value="VIEWER">VIEWER</option>
                     </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                      <svg
+                        className="h-4 w-4 text-gray-400"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
                   </div>
                 )}
               </>
             )}
           </div>
-          <div className="mt-4 text-right flex justify-end items-center space-x-2">
+          <div className="mt-4 flex justify-end items-center space-x-4">
             {canChangeRole && (
               <Button
                 variant="ghost"
@@ -122,9 +152,15 @@ export default function UserProfile({
                 <FontAwesomeIcon icon={faBan} className="w-4 h-4" />
               </Button>
             )}
-            <Button>
-              フレンド申請
-            </Button>
+            {userId !== actorId && (
+              isFriendState ? (
+                <Button className="text-gray-400">フレンド登録済み</Button>
+              ) : (
+                <Button className="bg-indigo-500 hover:bg-indigo-600" onClick={handleSendFriend}>
+                  フレンド申請
+                </Button>
+              )
+            )}
           </div>
         </div>
       </div>
