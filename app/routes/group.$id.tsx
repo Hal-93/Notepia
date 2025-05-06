@@ -2,7 +2,8 @@ import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useFetcher, Form } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
-import { getUsersByGroup } from "~/models/group.server";
+import { getUsersByGroup, getUserRole } from "~/models/group.server";
+import { useRevalidator } from "@remix-run/react";
 import mapboxgl, { Marker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/actionbar";
@@ -17,7 +18,7 @@ import type { User, Role } from "@prisma/client";
 
 import Avatar from "boring-avatars";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import UserProfile from "~/components/userprofile";
+import UserProfile from "~/components/group/userprofile";
 
 type LoaderData = {
   vapidPublicKey: string;
@@ -29,6 +30,7 @@ type LoaderData = {
   avatarUrl: string | null;
   groupId: string;
   groupUsers: (User & { role: Role })[];
+  currentUserRole: Role;
 };
 import { getUserById } from "~/models/user.server";
 import {
@@ -39,7 +41,7 @@ import {
 } from "~/components/ui/drawer";
 import MemoList from "~/components/memo/memolist";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHome, faCrown } from "@fortawesome/free-solid-svg-icons";
+import { faHome } from "@fortawesome/free-solid-svg-icons";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const userId = await getUserId(request);
@@ -59,6 +61,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   if (!mapboxToken) throw new Response("サーバー設定エラー", { status: 500 });
 
   const groupUsers = await getUsersByGroup(groupId);
+  const currentUserRole = await getUserRole(groupId, userId);
 
   // グループ所属チェック
   if (!groupUsers.some(u => u.id === userId)) {
@@ -75,6 +78,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     avatarUrl: user.avatar,
     groupId,
     groupUsers,
+    currentUserRole,
   });
 };
 
@@ -115,7 +119,19 @@ export default function MapPage() {
     groupId,
     vapidPublicKey,
     groupUsers,
+    currentUserRole,
   } = useLoaderData<LoaderData>();
+  // 権限順にソート: OWNER, ADMIN, EDITOR, VIEWER
+  const roleOrder: Record<Role, number> = {
+    OWNER: 0,
+    ADMIN: 1,
+    EDITOR: 2,
+    VIEWER: 3,
+  };
+  const sortedMembers = [...groupUsers].sort(
+    (a, b) => roleOrder[a.role] - roleOrder[b.role]
+  );
+  const revalidator = useRevalidator();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -553,7 +569,7 @@ export default function MapPage() {
           </DrawerHeader>
           <ScrollArea className="w-full h-[80vh] pr-2 mt-2">
             <ul className="w-full space-y-2">
-              {groupUsers.map((user: User & { role: Role }) => (
+              {sortedMembers.map((user: User & { role: Role }) => (
                 <li key={user.id}>
                   <Button
                     onClick={() => {
@@ -579,11 +595,13 @@ export default function MapPage() {
                       </p>
                       <p className="text-md text-gray-400">
                         @{user.uuid}
-                        <span className={`ml-2 text-sm ${
+                        <span className={`ml-2 px-2 py-1 bg-gray-700 text-xs rounded ${
                           user.role === "OWNER"
                             ? "text-yellow-300"
                             : user.role === "ADMIN"
                             ? "text-blue-400"
+                            : user.role === "EDITOR"
+                            ? "text-green-400"
                             : "text-gray-500"
                         }`}>
                           {user.role}
@@ -629,6 +647,27 @@ export default function MapPage() {
             username={selectedProfileUser.name}
             avatarUrl={selectedProfileUser.avatar}
             uuid={selectedProfileUser.uuid}
+            role={selectedProfileUser.role}
+            actorRole={currentUserRole}
+            groupId={groupId}
+            actorId={userId}
+            userId={selectedProfileUser.id}
+            onRoleChange={async (newRole) => {
+              const res = await fetch("/api/group", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  groupId,
+                  targetUserId: selectedProfileUser.id,
+                  newRole,
+                }),
+              });
+              if (!res.ok) {
+                const data = await res.json();
+                alert(`権限変更に失敗しました: ${data.error}`);
+              }
+              revalidator.revalidate();
+            }}
           />
         </div>
       </div>
