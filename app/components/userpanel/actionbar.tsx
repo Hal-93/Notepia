@@ -356,7 +356,8 @@ export default function ActionBar({
         </button>
       </div>
       {open && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60">
+        <div className="fixed inset-0 flex items-center justify-center p-4 bg-black/60"
+        style={{ zIndex: 99999 }}>
           <div
             ref={modalRef}
             className="relative w-full max-w-md h-[40rem] bg-black rounded-lg shadow-lg p-6 text-white flex flex-col"
