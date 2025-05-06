@@ -14,7 +14,10 @@ import { getUserId } from "~/session.server";
 import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
 import { Memo } from "@prisma/client";
-import type { User, Role } from "@prisma/client";
+// Client-side role type
+type Role = "OWNER" | "ADMIN" | "EDITOR" | "VIEWER";
+import type { User } from "@prisma/client";
+import UserSearch from "~/components/usersearch";
 
 import Avatar from "boring-avatars";
 import { ScrollArea } from "~/components/ui/scroll-area";
@@ -122,7 +125,7 @@ export default function MapPage() {
     currentUserRole,
   } = useLoaderData<LoaderData>();
   // 権限順にソート: OWNER, ADMIN, EDITOR, VIEWER
-  const roleOrder: Record<Role, number> = {
+  const roleOrder: Record<string, number> = {
     OWNER: 0,
     ADMIN: 1,
     EDITOR: 2,
@@ -417,6 +420,23 @@ export default function MapPage() {
     }
   };
 
+  const handleAddMember = async (targetUserId: string) => {
+    const res = await fetch("/api/group", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        intent: "add",
+        groupId,
+        targetUserId,
+      }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      alert(`メンバー追加に失敗しました: ${data.error}`);
+    }
+    revalidator.revalidate();
+  };
+
   const handleCloseModal = () => {
     setShowModal(false);
     if (tempMarkerRef.current) {
@@ -565,8 +585,19 @@ export default function MapPage() {
       >
         <DrawerContent className="mx-auto h-[70vh] w-full max-w-[768px] bg-black text-white px-4 pb-4 z-[1100]">
           <DrawerHeader>
-            <DrawerTitle>グループメンバーリスト</DrawerTitle>
+            <DrawerTitle>メンバーリスト</DrawerTitle>
           </DrawerHeader>
+          {/* Owner/Admin */}
+          { (currentUserRole === "OWNER" || currentUserRole === "ADMIN") && (
+            <div className="px-4 pt-4">
+              <UserSearch
+                currentUserId={userId}
+                selectedUsers={groupUsers}
+                onUserAdd={(user) => handleAddMember(user.id)}
+              />
+            </div>
+          )}
+          {/* All roles */}
           <ScrollArea className="w-full h-[80vh] pr-2 mt-2">
             <ul className="w-full space-y-2">
               {sortedMembers.map((user: User & { role: Role }) => (

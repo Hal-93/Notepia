@@ -2,6 +2,7 @@ import type { ActionFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { requireUserId } from "~/session.server";
 import { updateUserRoleInGroup, removeUserFromGroup } from "~/models/group.server";
+import { addUserToGroup } from "~/models/group.server";
 
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
@@ -10,13 +11,13 @@ export const action: ActionFunction = async ({ request }) => {
     groupId: string;
     targetUserId: string;
     newRole?: string;
-    intent?: "updateRole" | "kick";
+    intent?: "updateRole" | "kick" | "add";
   };
 
   if (
     typeof groupId !== "string" ||
     typeof targetUserId !== "string" ||
-    (intent !== "kick" && intent !== "updateRole" && intent !== undefined)
+    (intent !== "kick" && intent !== "updateRole" && intent !== "add" && intent !== undefined)
   ) {
     return json({ error: "Invalid payload" }, { status: 400 });
   }
@@ -30,6 +31,8 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     if (intent === "kick") {
       await removeUserFromGroup(groupId, targetUserId);
+    } else if (intent === "add") {
+      await addUserToGroup(groupId, targetUserId);
     } else {
       await updateUserRoleInGroup(groupId, userId, targetUserId, newRole as any);
     }

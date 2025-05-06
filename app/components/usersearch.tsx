@@ -13,11 +13,20 @@ export default function UserSearch({ onUserAdd, currentUserId, selectedUsers }: 
   const [isClient, setIsClient] = useState(false);
   const [results, setResults] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
+  const [friendIds, setFriendIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch("/api/friends")
+      .then((res) => res.json())
+      .then((data) => {
+        setFriendIds(data.friendIds);
+      });
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
 
-    if (query.length > 0) {
+    if (query.length > 0 && friendIds.length > 0) {
       setLoading(true);
       fetch(`/api/search-user?uuid=${encodeURIComponent(query)}`, {
         signal: controller.signal,
@@ -25,7 +34,10 @@ export default function UserSearch({ onUserAdd, currentUserId, selectedUsers }: 
         .then((res) => res.json())
         .then((data) => {
           const filtered = data.users.filter(
-            (u: User) => u.id !== currentUserId && !selectedUsers.find((s) => s.id === u.id)
+            (u: User) =>
+              u.id !== currentUserId &&
+              !selectedUsers.find((s) => s.id === u.id) &&
+              friendIds.includes(u.id)
           );
           setResults(filtered.slice(0, 5));
           setLoading(false);
@@ -41,7 +53,7 @@ export default function UserSearch({ onUserAdd, currentUserId, selectedUsers }: 
     }
 
     return () => controller.abort();
-  }, [query, currentUserId, selectedUsers]);
+  }, [query, currentUserId, selectedUsers, friendIds]);
 
   useEffect(() => {
     setIsClient(true);
@@ -52,7 +64,7 @@ export default function UserSearch({ onUserAdd, currentUserId, selectedUsers }: 
   return (
     <div className="mb-6">
       <label className="block mb-4">
-        <span className="text-sm">追加するユーザー</span>
+        <span className="text-sm">追加するフレンド</span>
         <input
           type="text"
           value={query}

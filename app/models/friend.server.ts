@@ -98,7 +98,7 @@ export async function removeFriend(
   );
 }
 
-// フォロー中一覧取得関数
+// フレンド一覧取得関数
 export async function getAllFriend(userId: string): Promise<Friend[]> {
   return await prisma.friend.findMany({
     where: {
