@@ -47,6 +47,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import toastr from "toastr";
 import "toastr/build/toastr.css";
+import { useAtom } from "jotai/react";
+import { bearingAtom, locationAtom, zoomAtom } from "~/atoms/locationAtom";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const userId = await getUserId(request);
@@ -69,7 +71,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const currentUserRole = await getUserRole(groupId, userId);
 
   // グループ所属チェック
-  if (!groupUsers.some(u => u.id === userId)) {
+  if (!groupUsers.some((u) => u.id === userId)) {
     throw redirect(`/mymap`);
   }
 
@@ -158,9 +160,24 @@ export default function MapPage() {
 
   const [showGroupDetailModal, setShowGroupDetailModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
+  const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
+    null
+  );
   const modalRef = useRef<HTMLDivElement>(null);
   const profileModalRef = useRef<HTMLDivElement>(null);
+
+  const [location, setLocation] = useAtom(locationAtom);
+  const [zoom, setZoom] = useAtom(zoomAtom);
+  const [bearing, setBearing] = useAtom(bearingAtom);
+
+  const handleMoveEnd = (map: mapboxgl.Map) => {
+    const center = map.getCenter();
+    const zoom = map.getZoom();
+    const bearing = map.getBearing();
+    setZoom(zoom);
+    setLocation([center.lng, center.lat]);
+    setBearing(bearing);
+  };
 
   // Click outside to close profile modal
   useEffect(() => {
@@ -232,8 +249,9 @@ export default function MapPage() {
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: getMapStyle(),
-      center: [139.759, 35.684],
-      zoom: 16,
+      center: location,
+      bearing: bearing,
+      zoom: zoom,
       minZoom: 5,
       pitch: 45,
       antialias: true,
@@ -249,15 +267,19 @@ export default function MapPage() {
       }
     });
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const { latitude, longitude } = position.coords;
-        map.flyTo({
-          center: [longitude, latitude],
-          zoom: 16,
-        });
-      });
-    }
+    map.on("moveend", () => {
+      handleMoveEnd(map);
+    });
+
+    // if (navigator.geolocation) {
+    //   navigator.geolocation.getCurrentPosition((position) => {
+    //     const { latitude, longitude } = position.coords;
+    //     map.flyTo({
+    //       center: [longitude, latitude],
+    //       zoom: 16,
+    //     });
+    //   });
+    // }
 
     mapRef.current = map;
     return () => map.remove();
@@ -411,10 +433,15 @@ export default function MapPage() {
   };
 
   const handleGoToCurrentLocation = () => {
-    if (currentLocation && mapRef.current) {
-      mapRef.current?.flyTo({
-        center: currentLocation,
-        zoom: 16,
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        if (mapRef.current) {
+          mapRef.current.flyTo({
+            center: [longitude, latitude],
+            zoom: 16,
+          });
+        }
       });
     }
   };
@@ -487,225 +514,224 @@ export default function MapPage() {
 
   return (
     <>
-    <div style={{ position: "relative" }}>
-      <div
-        ref={mapContainerRef}
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-        }}
-      />
-
-
-      <div className="fixed top-4 inset-x-5 flex-nowrap flex items-center gap-2 z-50">
-        <Form action="/home" className="flex-none">
-          <Button
-            className="rounded-full w-12 h-12 flex items-center justify-center shadow-md"
-          >
-            <FontAwesomeIcon icon={faHome}></FontAwesomeIcon>
-          </Button>
-        </Form>
-        <div className="relative flex-1 min-w-0">
-          <MapBoxSearch
-            api={mapboxToken}
-            onSelect={(place) => {
-              if (mapRef.current) {
-                mapRef.current.flyTo({
-                  center: place.center,
-                  zoom: 16,
-                  essential: true,
-                });
-              }
-            }}
-          />
-        </div>
-        <div className="flex-none flex-shrink-0 w-12 h-12 flex items-center justify-center">
-          <ActionBar
-            username={username!}
-            uuid={uuid!}
-            initialAvatarUrl={avatarUrl}
-            publicKey={vapidPublicKey}
-            userId={userId}
-          />
-        </div>
-      </div>
-
-      <Bar
-        handleGroupDetail={handleGroupDetail}
-        handleSearchMemo={handleSearchMemo}
-        handleGoToCurrentLocation={handleGoToCurrentLocation}
-        userId={userId}
-        groupeId={groupId}
-        groupeName={"Group Name"}
-      />
-
-      <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
-        <DrawerContent className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px] z-[1100]">
-          <DrawerHeader>
-            <DrawerTitle>メモを検索</DrawerTitle>
-          </DrawerHeader>
-          <MemoList
-            searchQuery={searchQuery}
-            onSearchQueryChange={setSearchQuery}
-            filteredMemos={filteredMemos}
-            jumpToMemo={jumpToMemo}
-            actorRole={currentUserRole}
-          />
-        </DrawerContent>
-      </Drawer>
-
-      {showModal && currentUserRole !== "VIEWER" && (
-        <MemoCreateModal
-          lat={modalLat}
-          lng={modalLng}
-          mapboxToken={mapboxToken}
-          onClose={handleCloseModal}
-          onSubmit={handleSubmitMemo}
-        />
-      )}
-      {showDetail && selectedMemo && (
-        <MemoDetailModal
-          memo={selectedMemo}
-          onClose={() => {
-            setShowDetail(false);
-            setSelectedMemo(null);
-          }}
-          actorRole={currentUserRole}
-        />
-      )}
-      <Drawer
-        open={showGroupDetailModal}
-        onOpenChange={(open: boolean) => {
-          if (!showProfileModal) {
-            setShowGroupDetailModal(open);
-          }
-        }}
-      >
-        <DrawerContent className="mx-auto h-[70vh] w-full max-w-[768px] bg-black text-white px-4 pb-4 z-[1100]">
-          <DrawerHeader>
-            <DrawerTitle>メンバーリスト</DrawerTitle>
-          </DrawerHeader>
-          {/* Owner/Admin */}
-          { (currentUserRole === "OWNER" || currentUserRole === "ADMIN") && (
-            <div className="px-4 pt-4">
-              <UserSearch
-                currentUserId={userId}
-                selectedUsers={groupUsers}
-                onUserAdd={(user) => handleAddMember(user.id)}
-              />
-            </div>
-          )}
-          {/* All roles */}
-          <ScrollArea className="w-full h-[80vh] pr-2 mt-2">
-            <ul className="w-full space-y-2">
-              {sortedMembers.map((user: User & { role: Role }) => (
-                <li key={user.id}>
-                  <Button
-                    onClick={() => {
-                      setSelectedProfileUser(user);
-                      setShowProfileModal(true);
-                    }}
-                    className="block w-full h-18 flex items-center justify-start gap-8 px-4 bg-gray-900 hover:bg-gray-800 rounded text-left [&_svg]:w-16 [&_svg]:h-16"
-                  >
-                    {user.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt={user.name}
-                        className="flex-shrink-0 rounded-full object-cover w-16 h-16"
-                      />
-                    ) : (
-                      <div className="flex-shrink-0">
-                        <Avatar size={64} name={user.uuid} variant="beam" />
-                      </div>
-                    )}
-                    <div className="flex flex-col text-left">
-                      <p className="text-lg font-medium text-white flex items-center">
-                        {user.name}
-                      </p>
-                      <p className="text-md text-gray-400">
-                        @{user.uuid}
-                        <span className={`ml-2 px-2 py-1 bg-gray-700 text-xs rounded ${
-                          user.role === "OWNER"
-                            ? "text-yellow-300"
-                            : user.role === "ADMIN"
-                            ? "text-blue-400"
-                            : user.role === "EDITOR"
-                            ? "text-green-400"
-                            : "text-gray-500"
-                        }`}>
-                          {user.role}
-                        </span>
-                      </p>
-                    </div>
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          </ScrollArea>
-        </DrawerContent>
-      </Drawer>
-    </div>
-
-    {showProfileModal && selectedProfileUser && (
-      <div
-        role="dialog"
-        aria-modal="true"
-        tabIndex={0}
-        className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/60 pointer-events-auto"
-        onMouseDown={(e) => e.stopPropagation()}
-        onClick={() => setShowProfileModal(false)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " " || e.key === "Escape") {
-            setShowProfileModal(false);
-          }
-        }}
-      >
+      <div style={{ position: "relative" }}>
         <div
-          ref={profileModalRef}
-          onClick={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
-          className="bg-gray-900 relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white overflow-hidden"
-        >
-          <button
-            type="button"
-            onClick={() => setShowProfileModal(false)}
-            className="absolute top-2 right-2 text-white hover:text-red-400 w-8 h-8 flex items-center justify-center rounded-full text-4xl"
-          >
-            ×
-          </button>
-          <UserProfile
-            username={selectedProfileUser.name}
-            avatarUrl={selectedProfileUser.avatar}
-            uuid={selectedProfileUser.uuid}
-            role={selectedProfileUser.role}
-            actorRole={currentUserRole}
-            groupId={groupId}
-            actorId={userId}
-            userId={selectedProfileUser.id}
-            onRoleChange={async (newRole) => {
-              const res = await fetch("/api/group", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  groupId,
-                  targetUserId: selectedProfileUser.id,
-                  newRole,
-                }),
-              });
-              if (!res.ok) {
-                const data = await res.json();
-                alert(`権限変更に失敗しました: ${data.error}`);
-              }
-              revalidator.revalidate();
-            }}
-          />
+          ref={mapContainerRef}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+          }}
+        />
+
+        <div className="fixed top-4 inset-x-5 flex-nowrap flex items-center gap-2 z-50">
+          <Form action="/home" className="flex-none">
+            <Button className="rounded-full w-12 h-12 flex items-center justify-center shadow-md">
+              <FontAwesomeIcon icon={faHome}></FontAwesomeIcon>
+            </Button>
+          </Form>
+          <div className="relative flex-1 min-w-0">
+            <MapBoxSearch
+              api={mapboxToken}
+              onSelect={(place) => {
+                if (mapRef.current) {
+                  mapRef.current.flyTo({
+                    center: place.center,
+                    zoom: 16,
+                    essential: true,
+                  });
+                }
+              }}
+            />
+          </div>
+          <div className="flex-none flex-shrink-0 w-12 h-12 flex items-center justify-center">
+            <ActionBar
+              username={username!}
+              uuid={uuid!}
+              initialAvatarUrl={avatarUrl}
+              publicKey={vapidPublicKey}
+              userId={userId}
+            />
+          </div>
         </div>
+
+        <Bar
+          handleGroupDetail={handleGroupDetail}
+          handleSearchMemo={handleSearchMemo}
+          handleGoToCurrentLocation={handleGoToCurrentLocation}
+          userId={userId}
+          groupeId={groupId}
+          groupeName={"Group Name"}
+        />
+
+        <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
+          <DrawerContent className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px] z-[1100]">
+            <DrawerHeader>
+              <DrawerTitle>メモを検索</DrawerTitle>
+            </DrawerHeader>
+            <MemoList
+              searchQuery={searchQuery}
+              onSearchQueryChange={setSearchQuery}
+              filteredMemos={filteredMemos}
+              jumpToMemo={jumpToMemo}
+              actorRole={currentUserRole}
+            />
+          </DrawerContent>
+        </Drawer>
+
+        {showModal && currentUserRole !== "VIEWER" && (
+          <MemoCreateModal
+            lat={modalLat}
+            lng={modalLng}
+            mapboxToken={mapboxToken}
+            onClose={handleCloseModal}
+            onSubmit={handleSubmitMemo}
+          />
+        )}
+        {showDetail && selectedMemo && (
+          <MemoDetailModal
+            memo={selectedMemo}
+            onClose={() => {
+              setShowDetail(false);
+              setSelectedMemo(null);
+            }}
+            actorRole={currentUserRole}
+          />
+        )}
+        <Drawer
+          open={showGroupDetailModal}
+          onOpenChange={(open: boolean) => {
+            if (!showProfileModal) {
+              setShowGroupDetailModal(open);
+            }
+          }}
+        >
+          <DrawerContent className="mx-auto h-[70vh] w-full max-w-[768px] bg-black text-white px-4 pb-4 z-[1100]">
+            <DrawerHeader>
+              <DrawerTitle>メンバーリスト</DrawerTitle>
+            </DrawerHeader>
+            {/* Owner/Admin */}
+            {(currentUserRole === "OWNER" || currentUserRole === "ADMIN") && (
+              <div className="px-4 pt-4">
+                <UserSearch
+                  currentUserId={userId}
+                  selectedUsers={groupUsers}
+                  onUserAdd={(user) => handleAddMember(user.id)}
+                />
+              </div>
+            )}
+            {/* All roles */}
+            <ScrollArea className="w-full h-[80vh] pr-2 mt-2">
+              <ul className="w-full space-y-2">
+                {sortedMembers.map((user: User & { role: Role }) => (
+                  <li key={user.id}>
+                    <Button
+                      onClick={() => {
+                        setSelectedProfileUser(user);
+                        setShowProfileModal(true);
+                      }}
+                      className="block w-full h-18 flex items-center justify-start gap-8 px-4 bg-gray-900 hover:bg-gray-800 rounded text-left [&_svg]:w-16 [&_svg]:h-16"
+                    >
+                      {user.avatar ? (
+                        <img
+                          src={user.avatar}
+                          alt={user.name}
+                          className="flex-shrink-0 rounded-full object-cover w-16 h-16"
+                        />
+                      ) : (
+                        <div className="flex-shrink-0">
+                          <Avatar size={64} name={user.uuid} variant="beam" />
+                        </div>
+                      )}
+                      <div className="flex flex-col text-left">
+                        <p className="text-lg font-medium text-white flex items-center">
+                          {user.name}
+                        </p>
+                        <p className="text-md text-gray-400">
+                          @{user.uuid}
+                          <span
+                            className={`ml-2 px-2 py-1 bg-gray-700 text-xs rounded ${
+                              user.role === "OWNER"
+                                ? "text-yellow-300"
+                                : user.role === "ADMIN"
+                                ? "text-blue-400"
+                                : user.role === "EDITOR"
+                                ? "text-green-400"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            {user.role}
+                          </span>
+                        </p>
+                      </div>
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </ScrollArea>
+          </DrawerContent>
+        </Drawer>
       </div>
-    )}
+
+      {showProfileModal && selectedProfileUser && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          tabIndex={0}
+          className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/60 pointer-events-auto"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={() => setShowProfileModal(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " " || e.key === "Escape") {
+              setShowProfileModal(false);
+            }
+          }}
+        >
+          <div
+            ref={profileModalRef}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            className="bg-gray-900 relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white overflow-hidden"
+          >
+            <button
+              type="button"
+              onClick={() => setShowProfileModal(false)}
+              className="absolute top-2 right-2 text-white hover:text-red-400 w-8 h-8 flex items-center justify-center rounded-full text-4xl"
+            >
+              ×
+            </button>
+            <UserProfile
+              username={selectedProfileUser.name}
+              avatarUrl={selectedProfileUser.avatar}
+              uuid={selectedProfileUser.uuid}
+              role={selectedProfileUser.role}
+              actorRole={currentUserRole}
+              groupId={groupId}
+              actorId={userId}
+              userId={selectedProfileUser.id}
+              onRoleChange={async (newRole) => {
+                const res = await fetch("/api/group", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    groupId,
+                    targetUserId: selectedProfileUser.id,
+                    newRole,
+                  }),
+                });
+                if (!res.ok) {
+                  const data = await res.json();
+                  alert(`権限変更に失敗しました: ${data.error}`);
+                }
+                revalidator.revalidate();
+              }}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }
