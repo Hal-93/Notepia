@@ -13,7 +13,7 @@ import { getUserId } from "~/session.server";
 import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
 import { Memo } from "@prisma/client";
-import type { User } from "@prisma/client";
+import type { User, Role } from "@prisma/client";
 
 import Avatar from "boring-avatars";
 import { ScrollArea } from "~/components/ui/scroll-area";
@@ -28,7 +28,7 @@ type LoaderData = {
   uuid: string;
   avatarUrl: string | null;
   groupId: string;
-  groupUsers: User[];
+  groupUsers: (User & { role: Role })[];
 };
 import { getUserById } from "~/models/user.server";
 import {
@@ -39,7 +39,7 @@ import {
 } from "~/components/ui/drawer";
 import MemoList from "~/components/memo/memolist";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHome } from "@fortawesome/free-solid-svg-icons";
+import { faHome, faCrown } from "@fortawesome/free-solid-svg-icons";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const userId = await getUserId(request);
@@ -553,7 +553,7 @@ export default function MapPage() {
           </DrawerHeader>
           <ScrollArea className="w-full h-[80vh] pr-2 mt-2">
             <ul className="w-full space-y-2">
-              {groupUsers.map((user: User) => (
+              {groupUsers.map((user: User & { role: Role }) => (
                 <li key={user.id}>
                   <Button
                     onClick={() => {
@@ -574,8 +574,21 @@ export default function MapPage() {
                       </div>
                     )}
                     <div className="flex flex-col text-left">
-                      <p className="text-lg font-medium text-white">{user.name}</p>
-                      <p className="text-md text-gray-400">@{user.uuid}</p>
+                      <p className="text-lg font-medium text-white flex items-center">
+                        {user.name}
+                      </p>
+                      <p className="text-md text-gray-400">
+                        @{user.uuid}
+                        <span className={`ml-2 text-sm ${
+                          user.role === "OWNER"
+                            ? "text-yellow-300"
+                            : user.role === "ADMIN"
+                            ? "text-blue-400"
+                            : "text-gray-500"
+                        }`}>
+                          {user.role}
+                        </span>
+                      </p>
                     </div>
                   </Button>
                 </li>

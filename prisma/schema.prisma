@@ -20,8 +20,9 @@ model User {
   bar           String         @default("bottom")
   files         File[]
   memos         Memo[]
+  GroupMember   GroupMember[]
   groupRequests GroupRequest[]
-  groups        Group[]        @relation("UserGroups")
+  ownedGroups   Group[]        @relation("OwnerGroups")
   Subscription  Subscription[]
   from          Friend[]       @relation("From")
   to            Friend[]       @relation("To")
@@ -47,11 +48,20 @@ model Memo {
 model Group {
   id            String         @id @default(cuid())
   name          String
+  ownerId       String
+  owner         User           @relation("OwnerGroups", fields: [ownerId], references: [id], onDelete: Cascade)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   memos         Memo[]
-  users         User[]         @relation("UserGroups")
   groupRequests GroupRequest[]
+  memberships   GroupMember[]
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
 }
 
 model GroupRequest {
@@ -63,6 +73,20 @@ model GroupRequest {
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+}
+
+model GroupMember {
+  id         String    @id @default(cuid())
+  userId     String
+  groupId    String
+  role       Role      @default(VIEWER)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group      Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@unique([userId, groupId])
 }
