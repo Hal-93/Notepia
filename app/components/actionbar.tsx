@@ -21,6 +21,7 @@ import { Input } from "./ui/input";
 import { getPushEndpoint, handleSubscribe } from "~/utils/pushNotification";
 import { Form } from "@remix-run/react";
 import { Label } from "./ui/label";
+import Setting from "./setting"
 
 export default function ActionBar({
   username,
@@ -385,24 +386,6 @@ export default function ActionBar({
               )}
             </div>
 
-            {isProfileChange || isSetting || isFriend ? (
-              <div className="p-5"></div>
-            ) : (
-              <div>
-                <Button
-                  className="p-5"
-                  style={{ backgroundColor: "black" }}
-                  onClick={() => {
-                    setIsSetting(true);
-                  }}
-                >
-                  <FontAwesomeIcon
-                    icon={faGear}
-                    style={{ height: "2rem", width: "2rem" }}
-                  />
-                </Button>
-              </div>
-            )}
           </DrawerHeader>
           {isFriend ? (
             <div className="min-h-screen w-full flex justify-center  bg-black">
@@ -545,55 +528,14 @@ export default function ActionBar({
               </div>
             </div>
           ) : isSetting ? (
-            <div className="flex">
-              <div className="p-4 flex flex-col">
-                {/* 通知設定 */}
-                <div className="flex items-center p-4">
-                  <div className="flex-1">
-                    <div className="text-white text-2xl">プッシュ通知</div>
-                    <div className="text-gray-500">
-                      プッシュ通知の有無を切り替え
-                    </div>
-                  </div>
-                  <Switch
-                    checked={isSubscribed}
-                    onClick={toggleSubscription}
-                    className="relative inline-flex items-center h-10 w-16 bg-gray-200 rounded-full p-1"
-                  />
-                </div>
-
-                {/* Bar表示位置設定 */}
-                <div className="flex items-center p-4">
-                  <div className="flex-1">
-                    <div className="text-white text-2xl">バー表示位置</div>
-                    <div className="text-gray-500">アクションバーの位置</div>
-                  </div>
-                  <select
-                    value={barPosition}
-                    onChange={(e) => setBarPosition(e.target.value as any)}
-                    className="bg-gray-800 text-white p-2 rounded"
-                  >
-                    <option value="bottom">下</option>
-                    <option value="left">左</option>
-                    <option value="right">右</option>
-                  </select>
-                </div>
-
-                {/* Barボタンカラー設定 */}
-                <div className="flex items-center p-4">
-                  <div className="flex-1">
-                    <div className="text-white text-2xl">テーマカラー</div>
-                    <div className="text-gray-500">テーマ色を選択</div>
-                  </div>
-                  <input
-                    type="color"
-                    value={barColor}
-                    onChange={(e) => setBarColor(e.target.value)}
-                    className="w-12 h-8 p-0 border-0"
-                  />
-                </div>
-              </div>
-            </div>
+          <Setting
+            isSubscribed={isSubscribed}
+            toggleSubscription={toggleSubscription}
+            barPosition={barPosition}
+            setBarPosition={setBarPosition}
+            barColor={barColor}
+            setBarColor={setBarColor}
+          />        
           ) : (
             <>
               <div className="p-4 relative inline-block">
@@ -704,6 +646,13 @@ export default function ActionBar({
                     style={{ width: "90%" }}
                   >
                     フレンド
+                  </Button>
+                  <Button
+                    onClick={() => setIsSetting(true)}
+                    className="p-5 mt-5 bg-indigo-500 hover:bg-indigo-700 text-black"
+                    style={{ width: "90%" }}
+                  >
+                  設定
                   </Button>
                   <Form
                     method="post"
