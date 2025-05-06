@@ -583,30 +583,6 @@ export default function MapPage() {
           />
         </DrawerContent>
       </Drawer>
-
-      {showModal && (
-        <MemoCreateModal
-          lat={modalLat}
-          lng={modalLng}
-          mapboxToken={mapboxToken}
-          onClose={handleCloseModal}
-          onSubmit={handleSubmitMemo}
-        />
-
-        <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
-          <DrawerContent className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px] z-[1100]">
-            <DrawerHeader>
-              <DrawerTitle>メモを検索</DrawerTitle>
-            </DrawerHeader>
-            <MemoList
-              searchQuery={searchQuery}
-              onSearchQueryChange={setSearchQuery}
-              filteredMemos={filteredMemos}
-              jumpToMemo={jumpToMemo}
-            />
-          </DrawerContent>
-        </Drawer>
-
         {showModal && (
           <MemoCreateModal
             lat={modalLat}
