@@ -13,7 +13,7 @@ import {
   getUserByUuid,
 } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
-import { safeRedirect, validateEmail } from "~/utils";
+import { validateEmail } from "~/utils";
 
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
@@ -30,7 +30,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const email = formData.get("email");
   const uuid = formData.get("uuid");
   const password = formData.get("password");
-  const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
 
   if (!validateEmail(email)) {
     return json(
@@ -110,6 +109,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   const user = await createUser(email, password, uuid);
+  const redirectTo = "/home";
 
   return createUserSession({
     redirectTo,
@@ -123,7 +123,6 @@ export const meta: MetaFunction = () => [{ title: "Sign Up" }];
 
 export default function Join() {
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") ?? undefined;
   const actionData = useActionData<typeof action>();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -225,8 +224,6 @@ export default function Join() {
                   </p>
                 )}
               </div>
-
-              <input type="hidden" name="redirectTo" value={redirectTo} />
 
               <Button
                 type="submit"
