@@ -100,7 +100,7 @@ export default function UserProfile({
                           alert(`権限変更に失敗しました: ${data.error}`);
                         }
                       }}
-                      className="block w-full h-10 pl-3 pr-8 bg-gray-700 border border-gray-600 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white text-sm"
+                      className="block w-full h-10 pl-3 pr-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white text-sm cursor-pointer md:appearance-none"
                     >
                       {actorRole === "OWNER" && (
                         <option value="ADMIN">ADMIN</option>
@@ -108,7 +108,7 @@ export default function UserProfile({
                       <option value="EDITOR">EDITOR</option>
                       <option value="VIEWER">VIEWER</option>
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                    <div className="hidden md:flex pointer-events-none absolute inset-y-0 right-0 items-center pr-2">
                       <svg
                         className="h-4 w-4 text-gray-400"
                         xmlns="http://www.w3.org/2000/svg"
