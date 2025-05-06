@@ -29,8 +29,8 @@ export default function FriendSection({
   handleReject,
 }: Props) {
   return (
-    <div className="min-h-screen w-full flex justify-center bg-black">
-      <div className="w-full p-6 rounded-lg shadow-lg text-white">
+    <div className="w-full max-h-[65vh] overflow-y-auto px-1">
+      <div className="w-full p-2 rounded-lg text-white">
         <h2 className="text-2xl text-center mb-4">フレンド追加</h2>
 
         <Label htmlFor="username" className="text-white text-lg">
@@ -48,7 +48,7 @@ export default function FriendSection({
         />
 
         {follwingUser && (
-          <div className="p-2 mt-3 text-white flex border rounded-md items-center">
+          <div className="p-2 mt-3 flex border rounded-md items-center bg-gray-800">
             {follwingUser.avatar ? (
               <img
                 src={follwingUser.avatar}
