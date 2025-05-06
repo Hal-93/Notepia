@@ -7,7 +7,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const url = new URL(request.url);
   const height = url.searchParams.get("h");
   try {
-    const fileBuffer = await getFile(`${userId}.png`);
+    const fileBuffer = await getFile(`${userId}.webp`);
     let image = sharp(fileBuffer);
 
     if (height) {
@@ -20,7 +20,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     const resizedBuffer = await image.toBuffer();
     return new Response(resizedBuffer, {
       headers: {
-        "Content-Type": "image/png",
+        "Content-Type": "image/webp",
       },
     });
   } catch (error) {
