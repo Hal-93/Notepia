@@ -654,12 +654,8 @@ export default function MapPage() {
         aria-modal="true"
         tabIndex={0}
         className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/60 pointer-events-auto"
-        onClickCapture={(e) => {
-          // Only close when clicking directly on the overlay background
-          if (e.target === e.currentTarget) {
-            setShowProfileModal(false);
-          }
-        }}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={() => setShowProfileModal(false)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " " || e.key === "Escape") {
             setShowProfileModal(false);
@@ -669,6 +665,8 @@ export default function MapPage() {
         <div
           ref={profileModalRef}
           onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
           className="bg-gray-900 relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white overflow-hidden"
         >
           <button
