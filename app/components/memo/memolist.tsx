@@ -7,7 +7,7 @@ import {
   TabsTrigger,
   TabsContent,
 } from "~/components/ui/tabs";
-import { useFetcher, useRevalidator } from "@remix-run/react";
+import { useFetcher } from "@remix-run/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faTrash, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 
@@ -42,14 +42,6 @@ export default function MemoList({
   }, [filteredMemos]);
 
   const fetcher = useFetcher<{ success: boolean }>();
-  const revalidator = useRevalidator();
-
-  useEffect(() => {
-    if (fetcher.data?.success) {
-      // Revalidate loader data instead of full reload
-      revalidator.revalidate();
-    }
-  }, [fetcher.data, revalidator]);
 
   const handleCompleteClick = (memo: Memo) => {
     fetcher.submit(
@@ -79,14 +71,12 @@ export default function MemoList({
     );
   };
 
-  // Filter by selected color
   const displayedMemos = localMemos.filter(memo =>
     selectedColor ? memo.color === selectedColor : true
   );
 
   return (
     <div className="mx-auto w-full max-w-[768px] h-full bg-black px-4 pb-4">
-      {/* 検索入力 */}
       <Input
         placeholder="メモのタイトル名で検索"
         value={searchQuery}

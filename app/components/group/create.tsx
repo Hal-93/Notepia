@@ -1,50 +1,33 @@
 import { useState } from "react";
 import { useFetcher } from "@remix-run/react";
-import Avatar from "boring-avatars";
-import UserSearch from "../search_user";
 
 type GroupCreateProps = {
   currentUserId: string;
   onClose: () => void;
 };
 
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  uuid: string;
-  createdAt: Date;
-  updatedAt: Date;
-  avatar: string | null;
-};
 
-export default function GroupCreateModal({ currentUserId, onClose }: GroupCreateProps) {
+
+export default function GroupCreateModal({ onClose }: GroupCreateProps) {
   const [name, setName] = useState("");
-  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+  const [agreed, setAgreed] = useState(false);
   const fetcher = useFetcher();
 
   const handleSubmit = () => {
+    if (!agreed) {
+      alert("グループ作成前にチェックボックスを承認してください");
+      return;
+    }
     if (name.trim() === "") {
       alert("グループ名を入力してください");
       return;
     }
 
-    const userIds = [currentUserId, ...selectedUsers.map((u) => u.id)];
-
     fetcher.submit(
-      {
-        name,
-        userIds: JSON.stringify(userIds),
-      },
+      { name },
       { method: "post", action: "/group/create" }
     );
     onClose();
-  };
-
-  const handleUserAdd = (user: User) => {
-    if (!selectedUsers.find((u) => u.id === user.id)) {
-      setSelectedUsers((prev) => [...prev, user]);
-    }
   };
 
   return (
@@ -74,46 +57,26 @@ export default function GroupCreateModal({ currentUserId, onClose }: GroupCreate
           />
         </label>
 
-        <UserSearch
-          currentUserId={currentUserId}
-          selectedUsers={selectedUsers}
-          onUserAdd={handleUserAdd}
-        />
-
-        {selectedUsers.length > 0 && (
-          <div className="mt-4">
-            <p className="text-sm text-gray-300 mb-1">追加済み</p>
-            <ul className="space-y-2">
-              {selectedUsers.map((u) => (
-                <li key={u.id} className="flex items-center gap-3">
-                  {u.avatar ? (
-                    <img
-                      src={`/user/${u.uuid}/avatar`}
-                      alt={u.name}
-                      className="rounded-full border-2 border-black object-cover w-8 h-8"
-                    />
-                  ) : (
-                    <Avatar
-                      size={32}
-                      name={u.uuid}
-                      variant="beam"
-                      colors={["#92A1C6", "#146A7C", "#F0AB3D", "#C271B4", "#C20D90"]}
-                    />
-                  )}
-                  <div className="flex flex-col text-left">
-                    <span className="text-sm font-medium">{u.name}</span>
-                    <span className="text-xs text-gray-400">@{u.uuid}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <label className="flex items-start space-x-2 text-xs text-gray-400 mb-4">
+          <input
+            type="checkbox"
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+            className="mt-1 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+          />
+          <span className="leading-tight">
+            グループを作成すると、あなたはこのグループのオーナーになります。<br/>
+            あなたがこのグループを脱退するとグループは破棄されます。
+          </span>
+        </label>
 
         <button
           type="button"
           onClick={handleSubmit}
-          className="w-full mt-6 py-2 bg-indigo-500 rounded text-white hover:bg-indigo-700"
+          disabled={!agreed}
+          className={`w-full mt-6 py-2 rounded text-white ${
+            agreed ? "bg-indigo-500 hover:bg-indigo-700" : "bg-gray-400 cursor-not-allowed"
+          }`}
         >
           グループを作成する
         </button>

@@ -14,7 +14,7 @@ export const action: ActionFunction = async ({ request }) => {
     const name = formData.get("name") as string;
     const userIds = JSON.parse(formData.get("userIds") as string) as string[];
   
-    const group = await createGroup(name, [userId, ...userIds]);
+    const group = await createGroup(name, userId, userIds);
   
     return json({ group });
   };

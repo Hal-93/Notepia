@@ -1,7 +1,7 @@
+import { redirect } from "@remix-run/node";
 import { useEffect, useState } from "react";
 import {
   Link,
-  redirect,
   json,
   useLoaderData,
   useFetcher,
@@ -17,7 +17,6 @@ import {
   createGroup,
   getUserGroups,
   removeUserFromGroup,
-  deleteGroup,
   getUsersByGroup,
 } from "~/models/group.server";
 import GroupCreateModal from "~/components/group/create";
@@ -66,13 +65,6 @@ export const action: ActionFunction = async ({ request }) => {
   if (intent === "leaveGroup") {
     const groupId = formData.get("groupId") as string;
     await removeUserFromGroup(groupId, userId);
-
-    const updatedGroup = await getUserGroups(userId);
-    const group = updatedGroup.find((g) => g.id === groupId);
-    if (!group || group.users.length === 0) {
-      await deleteGroup(groupId);
-    }
-
     return json({ success: true });
   }
 
@@ -105,8 +97,12 @@ export default function Home() {
     setEditingGroup(null);
   };
 
-  const handleLeaveGroup = (groupId: string, groupName: string) => {
-    if (confirm(`グループ ${groupName} から脱退しますか？`)) {
+  const handleLeaveGroup = (groupId: string, groupName: string, ownerId: string) => {
+    const message =
+      ownerId === userId
+        ? `【警告】あなたはグループ ${groupName} のオーナーです。\nあなたが脱退することでグループが削除されますが、このグループを本当に脱退しますか？`
+        : `グループ ${groupName} から脱退しますか？`;
+    if (confirm(message)) {
       fetcher.submit({ intent: "leaveGroup", groupId }, { method: "post" });
     }
   };
@@ -191,21 +187,23 @@ export default function Home() {
                   </Link>
 
                   <div className="flex justify-end">
-                  <Button
-                    variant="ghost"
-                    className="text-white w-[10vh]"
-                    onClick={() => handleOpenEditModal(group.id, group.name)}
-                  >
-                    <FontAwesomeIcon icon={faGear} />
-                  </Button>
-                  <Button
-                    className="w-[5vh]"
-                    variant="ghost"
-                    onClick={() => handleLeaveGroup(group.id, group.name)}
-                  >
-                    <FontAwesomeIcon icon={faRightFromBracket} />
-                  </Button>
-                </div>
+                    {group.ownerId === userId && (
+                      <Button
+                        variant="ghost"
+                        className="text-white w-[10vh]"
+                        onClick={() => handleOpenEditModal(group.id, group.name)}
+                      >
+                        <FontAwesomeIcon icon={faGear} />
+                      </Button>
+                    )}
+                    <Button
+                      className="w-[5vh]"
+                      variant="ghost"
+                      onClick={() => handleLeaveGroup(group.id, group.name, group.ownerId)}
+                    >
+                      <FontAwesomeIcon icon={faRightFromBracket} />
+                    </Button>
+                  </div>
                 </div>
               ))}
 

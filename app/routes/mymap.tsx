@@ -22,8 +22,7 @@ import MemoList from "~/components/memo/memolist";
 import "~/popup.css";
 import { MapBoxSearch } from "~/components/searchbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ArrowLeft } from "lucide-react";
-import { faArrowsLeftRight, faHome } from "@fortawesome/free-solid-svg-icons";
+import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { useAtom } from "jotai/react";
 import { locationAtom, zoomAtom } from "~/atoms/locationAtom";
 
@@ -399,7 +398,6 @@ export default function MapPage() {
       <div className="fixed top-4 inset-x-5 flex-nowrap flex items-center gap-2 z-50">
         <Form action="/home" className="flex-none">
           <Button
-            onClick={handleSearchMemo}
             className="rounded-full w-12 h-12 flex items-center justify-center shadow-md"
           >
             <FontAwesomeIcon icon={faHome}></FontAwesomeIcon>

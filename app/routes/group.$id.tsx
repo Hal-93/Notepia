@@ -2,7 +2,8 @@ import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useFetcher, Form } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
-import { getUsersByGroup } from "~/models/group.server";
+import { getUsersByGroup, getUserRole } from "~/models/group.server";
+import { useRevalidator } from "@remix-run/react";
 import mapboxgl, { Marker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/userpanel/actionbar";
@@ -13,11 +14,11 @@ import { getUserId } from "~/session.server";
 import Bar from "~/components/memo/bar";
 import { Button } from "~/components/ui/button";
 import { Memo } from "@prisma/client";
-import type { User } from "@prisma/client";
+import type { User, Role } from "@prisma/client";
 
 import Avatar from "boring-avatars";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import UserProfile from "~/components/userprofile";
+import UserProfile from "~/components/group/userprofile";
 
 type LoaderData = {
   vapidPublicKey: string;
@@ -28,7 +29,8 @@ type LoaderData = {
   uuid: string;
   avatarUrl: string | null;
   groupId: string;
-  groupUsers: User[];
+  groupUsers: (User & { role: Role })[];
+  currentUserRole: Role;
 };
 import { getUserById } from "~/models/user.server";
 import {
@@ -59,6 +61,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   if (!mapboxToken) throw new Response("サーバー設定エラー", { status: 500 });
 
   const groupUsers = await getUsersByGroup(groupId);
+  const currentUserRole = await getUserRole(groupId, userId);
 
   // グループ所属チェック
   if (!groupUsers.some(u => u.id === userId)) {
@@ -75,6 +78,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     avatarUrl: user.avatar,
     groupId,
     groupUsers,
+    currentUserRole,
   });
 };
 
@@ -115,7 +119,19 @@ export default function MapPage() {
     groupId,
     vapidPublicKey,
     groupUsers,
+    currentUserRole,
   } = useLoaderData<LoaderData>();
+  // 権限順にソート: OWNER, ADMIN, EDITOR, VIEWER
+  const roleOrder: Record<Role, number> = {
+    OWNER: 0,
+    ADMIN: 1,
+    EDITOR: 2,
+    VIEWER: 3,
+  };
+  const sortedMembers = [...groupUsers].sort(
+    (a, b) => roleOrder[a.role] - roleOrder[b.role]
+  );
+  const revalidator = useRevalidator();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -463,10 +479,11 @@ export default function MapPage() {
           height: "100vh",
         }}
       />
-      <div className="fixed top-4 inset-x-5 flex flex-wrap items-center gap-2 z-50">
+
+
+      <div className="fixed top-4 inset-x-5 flex-nowrap flex items-center gap-2 z-50">
         <Form action="/home" className="flex-none">
           <Button
-            onClick={handleSearchMemo}
             className="rounded-full w-12 h-12 flex items-center justify-center shadow-md"
           >
             <FontAwesomeIcon icon={faHome}></FontAwesomeIcon>
@@ -486,7 +503,7 @@ export default function MapPage() {
             }}
           />
         </div>
-        <div className="flex-none">
+        <div className="flex-none flex-shrink-0 w-12 h-12 flex items-center justify-center">
           <ActionBar
             username={username!}
             uuid={uuid!}
@@ -552,7 +569,7 @@ export default function MapPage() {
           </DrawerHeader>
           <ScrollArea className="w-full h-[80vh] pr-2 mt-2">
             <ul className="w-full space-y-2">
-              {groupUsers.map((user: User) => (
+              {sortedMembers.map((user: User & { role: Role }) => (
                 <li key={user.id}>
                   <Button
                     onClick={() => {
@@ -573,8 +590,23 @@ export default function MapPage() {
                       </div>
                     )}
                     <div className="flex flex-col text-left">
-                      <p className="text-lg font-medium text-white">{user.name}</p>
-                      <p className="text-md text-gray-400">@{user.uuid}</p>
+                      <p className="text-lg font-medium text-white flex items-center">
+                        {user.name}
+                      </p>
+                      <p className="text-md text-gray-400">
+                        @{user.uuid}
+                        <span className={`ml-2 px-2 py-1 bg-gray-700 text-xs rounded ${
+                          user.role === "OWNER"
+                            ? "text-yellow-300"
+                            : user.role === "ADMIN"
+                            ? "text-blue-400"
+                            : user.role === "EDITOR"
+                            ? "text-green-400"
+                            : "text-gray-500"
+                        }`}>
+                          {user.role}
+                        </span>
+                      </p>
                     </div>
                   </Button>
                 </li>
@@ -615,6 +647,27 @@ export default function MapPage() {
             username={selectedProfileUser.name}
             avatarUrl={selectedProfileUser.avatar}
             uuid={selectedProfileUser.uuid}
+            role={selectedProfileUser.role}
+            actorRole={currentUserRole}
+            groupId={groupId}
+            actorId={userId}
+            userId={selectedProfileUser.id}
+            onRoleChange={async (newRole) => {
+              const res = await fetch("/api/group", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  groupId,
+                  targetUserId: selectedProfileUser.id,
+                  newRole,
+                }),
+              });
+              if (!res.ok) {
+                const data = await res.json();
+                alert(`権限変更に失敗しました: ${data.error}`);
+              }
+              revalidator.revalidate();
+            }}
           />
         </div>
       </div>
