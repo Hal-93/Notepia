@@ -8,7 +8,7 @@ import {
 } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { Button } from "~/components/ui/button";
-import ActionBar from "~/components/actionbar";
+import ActionBar from "~/components/userpanel/actionbar";
 import { getUserId } from "~/session.server";
 import {
   getUserById,
