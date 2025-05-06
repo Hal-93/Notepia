@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useFetcher } from "@remix-run/react";
 import Avatar from "boring-avatars";
-import UserSearch from "../search_user";
+import UserSearch from "../usersearch";
 
 type GroupEditProps = {
   groupId: string;

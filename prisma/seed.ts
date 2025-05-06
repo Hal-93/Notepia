@@ -6,9 +6,8 @@ const prisma = new PrismaClient();
 async function seed() {
     const email = "test@cyberhub.jp";
   
-    // Remove memos created by this user to avoid FK constraint errors
-    await prisma.memo.deleteMany({ where: { createdBy: { email } } });
-    await prisma.user.deleteMany({ where: { email } });
+    await prisma.user.delete({ where: { email } }).catch(() => {
+    });
   
     const hashedPassword = await bcrypt.hash("admin1234", 10);
   
@@ -24,27 +23,6 @@ async function seed() {
         },
       },
     });
-
-    const testIds = [1, 2, 3, 4, 5];
-    for (const id of testIds) {
-      const email = `test${id}@cyberhub.jp`;
-      // Remove memos created by this test user
-      await prisma.memo.deleteMany({ where: { createdBy: { email } } });
-      await prisma.user.deleteMany({ where: { email } });
-    }
-
-    for (const id of testIds) {
-      const email = `test${id}@cyberhub.jp`;
-      const testUser = await prisma.user.create({
-        data: {
-          email,
-          uuid: `test${id}`,
-          name: `Test User ${id}`,
-          password: { create: { hash: hashedPassword } },
-        },
-      });
-      console.log(`テストユーザー${id}を作成しました 🌱`, testUser);
-    }
   
     console.log(`テストユーザーを作成しました 🌱`, user);
 }

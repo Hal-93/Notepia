@@ -20,7 +20,6 @@ export async function getUsersByGroup(groupId: string): Promise<(User & { role: 
 }
 
 // グループを作成する関数
-// クリエイターIDを受け取り、そのユーザーをオーナーとしてグループを作成
 export async function createGroup(
   name: string,
   creatorId: string,
