@@ -84,12 +84,6 @@ export default function UserProfile({
                 {canChangeRole && (
                   <div className="relative mt-2">
                     <select
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                      onTouchStart={(e) => {
-                        e.stopPropagation();
-                      }}
                       value={currentRole}
                       onChange={async (e) => {
                         const newRole = e.target.value as Role;
