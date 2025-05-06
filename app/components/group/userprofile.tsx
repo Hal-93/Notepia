@@ -83,13 +83,13 @@ export default function UserProfile({
                 </span>
                 {canChangeRole && (
                   <div
-                    className="relative mt-2"
+                    className="relative mt-2 pointer-events-auto"
                     onPointerDown={(e) => e.stopPropagation()}
+                    onPointerUp={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
                     onTouchEnd={(e) => e.stopPropagation()}
                   >
                     <select
-                      onClick={(e) => e.stopPropagation()}
-                      onTouchStart={(e) => e.stopPropagation()}
                       value={currentRole}
                       onChange={async (e) => {
                         const newRole = e.target.value as Role;
