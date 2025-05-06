@@ -25,7 +25,7 @@ import { MapBoxSearch } from "~/components/searchbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { useAtom } from "jotai/react";
-import { bearingAtom, locationAtom, zoomAtom } from "~/atoms/locationAtom";
+import { bearingAtom, currentLocationAtom, locationAtom, zoomAtom } from "~/atoms/locationAtom";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -91,9 +91,6 @@ export default function MapPage() {
   const [showModal, setShowModal] = useState(false);
   const [modalLat, setModalLat] = useState(35.684);
   const [modalLng, setModalLng] = useState(139.759);
-  const [currentLocation, setCurrentLocation] = useState<
-    [number, number] | null
-  >(null);
   const memoMarkersRef = useRef<mapboxgl.Marker[]>([]);
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -103,6 +100,7 @@ export default function MapPage() {
   const [location, setLocation] = useAtom(locationAtom);
   const [zoom, setZoom] = useAtom(zoomAtom);
   const [bearing, setBearing] = useAtom(bearingAtom);
+  const [currentLocation, setCurrentLocation] = useAtom(currentLocationAtom);
 
   useEffect(() => {
     if (searchQuery.trim() === "") {
@@ -183,16 +181,12 @@ export default function MapPage() {
       handleMoveEnd(map);
     });
 
-    // if (navigator.geolocation) {
-    //   navigator.geolocation.getCurrentPosition((position) => {
-    //     const { latitude, longitude } = position.coords;
-    //     setLocation([longitude, latitude]);
-    //     map.flyTo({
-    //       center: [longitude, latitude],
-    //       zoom: 16,
-    //     });
-    //   });
-    // }
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        setLocation([longitude, latitude]);
+      });
+    }
 
     mapRef.current = map;
     return () => map.remove();
@@ -331,7 +325,14 @@ export default function MapPage() {
   }, [memos, setModalLat, setModalLng, setShowModal]);
 
   const handleGoToCurrentLocation = () => {
-    if (navigator.geolocation) {
+    if (currentLocation) {
+      if (mapRef.current) {
+        mapRef.current.flyTo({
+          center: [currentLocation[0], currentLocation[1]],
+          zoom: 16,
+        });
+      }
+    } else if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
         const { latitude, longitude } = position.coords;
         if (mapRef.current) {
