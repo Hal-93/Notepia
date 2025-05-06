@@ -25,7 +25,7 @@ import { MapBoxSearch } from "~/components/searchbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { useAtom } from "jotai/react";
-import { locationAtom, zoomAtom } from "~/atoms/locationAtom";
+import { bearingAtom, locationAtom, zoomAtom } from "~/atoms/locationAtom";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -102,6 +102,7 @@ export default function MapPage() {
 
   const [location, setLocation] = useAtom(locationAtom);
   const [zoom, setZoom] = useAtom(zoomAtom);
+  const [bearing, setBearing] = useAtom(bearingAtom);
 
   useEffect(() => {
     if (searchQuery.trim() === "") {
@@ -128,11 +129,13 @@ export default function MapPage() {
     }
   };
 
-  const handleMoveEnd = (map:mapboxgl.Map) => {
+  const handleMoveEnd = (map: mapboxgl.Map) => {
     const center = map.getCenter();
     const zoom = map.getZoom();
+    const bearing = map.getBearing();
     setZoom(zoom);
     setLocation([center.lng, center.lat]);
+    setBearing(bearing);
   };
 
   useEffect(() => {
@@ -160,6 +163,7 @@ export default function MapPage() {
       container: mapContainerRef.current,
       style: getMapStyle(),
       center: location,
+      bearing: bearing,
       zoom: zoom,
       minZoom: 5,
       pitch: 45,
@@ -327,10 +331,15 @@ export default function MapPage() {
   }, [memos, setModalLat, setModalLng, setShowModal]);
 
   const handleGoToCurrentLocation = () => {
-    if (currentLocation && mapRef.current) {
-      mapRef.current?.flyTo({
-        center: currentLocation,
-        zoom: 16,
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        if (mapRef.current) {
+          mapRef.current.flyTo({
+            center: [longitude, latitude],
+            zoom: 16,
+          });
+        }
       });
     }
   };
@@ -398,9 +407,7 @@ export default function MapPage() {
       />
       <div className="fixed top-4 inset-x-5 flex-nowrap flex items-center gap-2 z-50">
         <Form action="/home" className="flex-none">
-          <Button
-            className="rounded-full w-12 h-12 flex items-center justify-center shadow-md"
-          >
+          <Button className="rounded-full w-12 h-12 flex items-center justify-center shadow-md">
             <FontAwesomeIcon icon={faHome}></FontAwesomeIcon>
           </Button>
         </Form>
@@ -439,7 +446,10 @@ export default function MapPage() {
       <Compass map={mapRef.current} />
 
       <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
-        <DrawerContent className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px]" style={{ zIndex: 99999 }}>
+        <DrawerContent
+          className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px]"
+          style={{ zIndex: 99999 }}
+        >
           <DrawerHeader>
             <DrawerTitle>メモを検索</DrawerTitle>
           </DrawerHeader>
