@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import type { Memo } from "@prisma/client";
+import type { Role } from "@prisma/client";
 import { Input } from "~/components/ui/input";
 import {
   Tabs,
@@ -27,6 +28,7 @@ interface MemoListProps {
   onSearchQueryChange: (value: string) => void;
   filteredMemos: Memo[];
   jumpToMemo: (memo: Memo) => void;
+  actorRole?: Role;
 }
 
 export default function MemoList({
@@ -34,6 +36,7 @@ export default function MemoList({
   onSearchQueryChange,
   filteredMemos,
   jumpToMemo,
+  actorRole,
 }: MemoListProps) {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [localMemos, setLocalMemos] = useState<Memo[]>(filteredMemos);
@@ -44,6 +47,7 @@ export default function MemoList({
   const fetcher = useFetcher<{ success: boolean }>();
 
   const handleCompleteClick = (memo: Memo) => {
+    if (actorRole === "VIEWER") return;
     fetcher.submit(
       { memoId: memo.id, intent: "complete" },
       { method: "post", action: "/memo/detail" }
@@ -54,6 +58,7 @@ export default function MemoList({
   };
 
   const handleDeleteClick = (memo: Memo) => {
+    if (actorRole === "VIEWER") return;
     fetcher.submit(
       { memoId: memo.id, intent: "delete" },
       { method: "post", action: "/memo/detail" }
@@ -62,6 +67,7 @@ export default function MemoList({
   };
 
   const handleUncompleteClick = (memo: Memo) => {
+    if (actorRole === "VIEWER") return;
     fetcher.submit(
       { memoId: memo.id, intent: "uncomplete" },
       { method: "post", action: "/memo/detail" }
@@ -141,14 +147,16 @@ export default function MemoList({
                         >
                           {memo.title}
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleCompleteClick(memo)}
-                          className="ml-2"
-                          style={{ touchAction: 'manipulation' }}
-                        >
-                          <FontAwesomeIcon icon={faCheck} />
-                        </button>
+                        {actorRole !== "VIEWER" && (
+                          <button
+                            type="button"
+                            onClick={() => handleCompleteClick(memo)}
+                            className="ml-2"
+                            style={{ touchAction: 'manipulation' }}
+                          >
+                            <FontAwesomeIcon icon={faCheck} />
+                          </button>
+                        )}
                       </div>
                     </li>
                   ))
@@ -180,22 +188,26 @@ export default function MemoList({
                         >
                           {memo.title}
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleUncompleteClick(memo)}
-                          className="ml-4"
-                          style={{ touchAction: 'manipulation' }}
-                        >
-                          <FontAwesomeIcon icon={faRotateLeft} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteClick(memo)}
-                          className="ml-4"
-                          style={{ touchAction: 'manipulation' }}
-                        >
-                          <FontAwesomeIcon icon={faTrash} />
-                        </button>
+                        {actorRole !== "VIEWER" && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleUncompleteClick(memo)}
+                              className="ml-4"
+                              style={{ touchAction: 'manipulation' }}
+                            >
+                              <FontAwesomeIcon icon={faRotateLeft} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteClick(memo)}
+                              className="ml-4"
+                              style={{ touchAction: 'manipulation' }}
+                            >
+                              <FontAwesomeIcon icon={faTrash} />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </li>
                   ))

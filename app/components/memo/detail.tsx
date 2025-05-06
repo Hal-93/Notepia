@@ -1,15 +1,17 @@
 import { useEffect, useRef } from "react";
 import { useFetcher } from "@remix-run/react";
 import type { Memo } from "@prisma/client";
+import type { Role } from "@prisma/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faCheck, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 type MemoDetailModalProps = {
   memo: Memo;
   onClose: () => void;
+  actorRole?: Role;
 };
 
-export default function MemoDetailModal({ memo, onClose }: MemoDetailModalProps) {
+export default function MemoDetailModal({ memo, onClose, actorRole }: MemoDetailModalProps) {
   const fetcher = useFetcher();
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -85,21 +87,23 @@ export default function MemoDetailModal({ memo, onClose }: MemoDetailModalProps)
           </p>
         )}
 
-      {!memo.completed && (
+      {actorRole !== "VIEWER" && !memo.completed && (
         <button
           onClick={handleComplete}
           className="absolute bottom-2 right-16 text-green-500 hover:text-green-300 text-2xl"
-          >
+        >
           <FontAwesomeIcon icon={faCheck} />
         </button>
-        )}
+      )}
 
+      {actorRole !== "VIEWER" && (
         <button
           onClick={handleDelete}
           className="absolute bottom-2 right-4 text-white-500 hover:text-white-300 text-2xl"
         >
           <FontAwesomeIcon icon={faTrash} />
         </button>
+      )}
       </div>
     </div>
   );
