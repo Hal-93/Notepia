@@ -148,6 +148,18 @@ export async function updateUserRoleInGroup(
     throw new Error("指定したユーザーはこのグループに参加していません");
   }
 
+  if (actorMembership.role === Role.ADMIN) {
+    if (
+      targetMembership.role === Role.OWNER ||
+      targetMembership.role === Role.ADMIN
+    ) {
+      throw new Error("許可がありません: Adminは他のAdminまたはOwnerの権限を変更できません");
+    }
+    if (newRole !== Role.EDITOR && newRole !== Role.VIEWER) {
+      throw new Error("許可がありません: AdminはEditorまたはViewerへの変更のみ可能です");
+    }
+  }
+
   return await prisma.groupMember.update({
     where: {
       userId_groupId: {
