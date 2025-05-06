@@ -2,6 +2,8 @@ import Avatar from "boring-avatars";
 import { useState } from "react";
 import type { Role } from "@prisma/client";
 import { Button } from "../ui/button";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBan } from "@fortawesome/free-solid-svg-icons";
 
 interface UserProfileProps {
   username: string;
@@ -92,7 +94,34 @@ export default function UserProfile({
               </>
             )}
           </div>
-          <div className="mt-4 text-right">
+          <div className="mt-4 text-right flex justify-end items-center space-x-2">
+            {canChangeRole && (
+              <Button
+                variant="ghost"
+                className="text-red-500"
+                onClick={async () => {
+                  if (confirm("このユーザーをグループからキックしますか？")) {
+                    const res = await fetch("/api/group", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        intent: "kick",
+                        groupId,
+                        targetUserId: userId,
+                      }),
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                      window.location.reload();
+                    } else {
+                      alert(`キックに失敗しました: ${data.error}`);
+                    }
+                  }
+                }}
+              >
+                <FontAwesomeIcon icon={faBan} className="w-4 h-4" />
+              </Button>
+            )}
             <Button>
               フレンド申請
             </Button>
