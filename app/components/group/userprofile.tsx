@@ -88,6 +88,8 @@ export default function UserProfile({
                     onTouchEnd={(e) => e.stopPropagation()}
                   >
                     <select
+                      onClick={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
                       value={currentRole}
                       onChange={async (e) => {
                         const newRole = e.target.value as Role;
