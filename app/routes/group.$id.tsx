@@ -45,6 +45,8 @@ import {
 import MemoList from "~/components/memo/memolist";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
+import toastr from "toastr";
+import "toastr/build/toastr.css";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const userId = await getUserId(request);
@@ -372,26 +374,23 @@ export default function MapPage() {
       );
     }
 
-    map.on("dblclick", (e) => {
+    // Only allow non-VIEWERs to create memos by double-clicking
+    const handleDblClick = (e: mapboxgl.MapMouseEvent & mapboxgl.EventData) => {
+      if (currentUserRole === "VIEWER") {
+        toastr.warning("メモの作成権限がありません");
+        return;
+      }
       const coordinates = e.lngLat;
-
-      const customMarker = document.createElement("div");
-      customMarker.style.width = "20px";
-      customMarker.style.height = "20px";
-      customMarker.style.backgroundColor = "#007BFF";
-      customMarker.style.borderRadius = "50%";
-      customMarker.style.border = "3px solid white";
-      customMarker.style.boxShadow = "0 0 5px rgba(0, 0, 255, 0.5)";
-
       setModalLat(coordinates.lat);
       setModalLng(coordinates.lng);
       setShowModal(true);
-    });
+    };
+    map.on("dblclick", handleDblClick);
 
     return () => {
-      map.off("dblclick", () => {});
+      map.off("dblclick", handleDblClick);
     };
-  }, [memos, setModalLat, setModalLng, setShowModal]);
+  }, [memos, setModalLat, setModalLng, setShowModal, currentUserRole]);
 
   const handleGroupDetail = () => {
     setShowGroupDetailModal(true);
@@ -553,11 +552,12 @@ export default function MapPage() {
             onSearchQueryChange={setSearchQuery}
             filteredMemos={filteredMemos}
             jumpToMemo={jumpToMemo}
+            actorRole={currentUserRole}
           />
         </DrawerContent>
       </Drawer>
 
-      {showModal && (
+      {showModal && currentUserRole !== "VIEWER" && (
         <MemoCreateModal
           lat={modalLat}
           lng={modalLng}
@@ -573,6 +573,7 @@ export default function MapPage() {
             setShowDetail(false);
             setSelectedMemo(null);
           }}
+          actorRole={currentUserRole}
         />
       )}
       <Drawer
