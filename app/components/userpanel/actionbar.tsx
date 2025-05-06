@@ -21,6 +21,7 @@ import { Label } from "../ui/label";
 import Setting from "./Setting"
 import ProfileSection from "./ProfileSection";
 import FriendSection from "./FriendSection";
+import ReactDOM from "react-dom";
 
 export default function ActionBar({
   username,
@@ -355,12 +356,14 @@ export default function ActionBar({
           )}
         </button>
       </div>
-      {open && (
+      {open && 
+      ReactDOM.createPortal(
         <div className="fixed inset-0 flex items-center justify-center p-4 bg-black/60"
         style={{ zIndex: 99999 }}>
           <div
             ref={modalRef}
-            className="relative w-full max-w-md h-[40rem] bg-black rounded-lg shadow-lg p-6 text-white flex flex-col"
+            className="relative w-full max-w-md h-[36em] bg-black rounded-lg shadow-lg p-6 text-white flex flex-col"
+            style={{ zIndex: 1000000 }}
           >
             {isProfileChange || isFriend || isSetting ? (
               <button
@@ -426,6 +429,17 @@ export default function ActionBar({
                 )}
               </div>
 
+              {isProfileChange && !isFriend && !isSetting && (
+                <div className="pt-4">
+                  <Button
+                    onClick={handleUpload}
+                    className="w-full bg-indigo-500 hover:bg-indigo-700 text-black"
+                  >
+                    保存
+                  </Button>
+                </div>
+              )}
+
               {!isProfileChange && !isFriend && !isSetting && (
                 <div className="pt-4 space-y-3">
                   <Button
@@ -458,7 +472,8 @@ export default function ActionBar({
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
