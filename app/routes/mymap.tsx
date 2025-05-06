@@ -20,6 +20,7 @@ import {
 } from "~/components/ui/drawer";
 import MemoList from "~/components/memo/memolist";
 import "~/popup.css";
+import Compass from "~/components/compass";
 import { MapBoxSearch } from "~/components/searchbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
@@ -434,6 +435,8 @@ export default function MapPage() {
         groupeId="defaultGroupId"
         groupeName="defaultGroupName"
       />
+
+      <Compass map={mapRef.current} />
 
       <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
         <DrawerContent className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px]">
