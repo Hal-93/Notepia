@@ -9,6 +9,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/userpanel/actionbar";
 import MemoCreateModal from "~/components/memo/create";
 import MemoDetailModal from "~/components/memo/detail";
+import Compass from "~/components/compass";
 import { MapBoxSearch } from "~/components/searchbar";
 import { getUserId } from "~/session.server";
 import Bar from "~/components/memo/bar";
@@ -216,13 +217,13 @@ export default function MapPage() {
       const hours = new Date().getHours();
 
       if (hours >= 20 || hours < 4) {
-        return "mapbox://styles/so03jp/cm9zurz3t004e01sp63ke1ngh"; // Night
+        return "mapbox://styles/so03jp/cmacqbau900le01sn1i4t3fze"; // Night
       } else if (hours >= 4 && hours < 8) {
-        return "mapbox://styles/so03jp/cm9zu6y0h00py01ssf79y7lkr"; // Dawn
+        return "mapbox://styles/so03jp/cmacq38zn00j701rf2uzp8yqa"; // Dawn
       } else if (hours >= 8 && hours < 16) {
-        return "mapbox://styles/so03jp/cm9zu55nn004a01spbkjbf94v"; // Day
+        return "mapbox://styles/so03jp/cmacq6ily00l501rf5j67an3w"; // Day
       } else {
-        return "mapbox://styles/so03jp/cm9zu7s4700yi01rmgn9p75xi"; // Dusk
+        return "mapbox://styles/so03jp/cmacpyy7d00j501rf8zq45x3w"; // Dusk
       }
     };
 
@@ -542,6 +543,8 @@ export default function MapPage() {
         groupeId={groupId}
         groupeName={"Group Name"}
       />
+
+      <Compass map={mapRef.current} />
 
       <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
         <DrawerContent className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px] z-[1100]">
