@@ -66,7 +66,7 @@ type LoaderData = {
   groupUsers: (User & { role: Role })[] | null;
   currentUserRole: Role | null;
   groupName: string | null;
-  groups: GroupWithMembershipsAndUsers[]
+  groups: GroupWithMembershipsAndUsers[];
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -625,6 +625,7 @@ export default function MapPage() {
         </div>
 
         <Bar
+          {...(groupId ? { handleGroupDetail } : {})}
           handleSearchMemo={handleSearchMemo}
           handleGoToCurrentLocation={handleGoToCurrentLocation}
           userId={userId}
