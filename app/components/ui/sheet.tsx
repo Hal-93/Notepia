@@ -60,7 +60,7 @@ const SheetContent = React.forwardRef<
     <SheetOverlay />
     <SheetPrimitive.Content
       ref={ref}
-      className={cn(sheetVariants({ side }), className,"bg-primary border-0 rounded-e-3xl text-white")}
+      className={cn(sheetVariants({ side }), className,"bg-primary border-0 pr-2 rounded-e-3xl text-white")}
       {...props}
       style={{zIndex:2000}}
     >
