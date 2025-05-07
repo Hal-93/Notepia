@@ -25,7 +25,7 @@ import { MapBoxSearch } from "~/components/searchbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { useAtom } from "jotai/react";
-import { locationAtom, zoomAtom } from "~/atoms/locationAtom";
+import { bearingAtom, currentLocationAtom, locationAtom, zoomAtom } from "~/atoms/locationAtom";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -91,9 +91,6 @@ export default function MapPage() {
   const [showModal, setShowModal] = useState(false);
   const [modalLat, setModalLat] = useState(35.684);
   const [modalLng, setModalLng] = useState(139.759);
-  const [currentLocation, setCurrentLocation] = useState<
-    [number, number] | null
-  >(null);
   const memoMarkersRef = useRef<mapboxgl.Marker[]>([]);
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -102,6 +99,8 @@ export default function MapPage() {
 
   const [location, setLocation] = useAtom(locationAtom);
   const [zoom, setZoom] = useAtom(zoomAtom);
+  const [bearing, setBearing] = useAtom(bearingAtom);
+  const [currentLocation, setCurrentLocation] = useAtom(currentLocationAtom);
 
   useEffect(() => {
     if (searchQuery.trim() === "") {
@@ -128,11 +127,13 @@ export default function MapPage() {
     }
   };
 
-  const handleMoveEnd = (map:mapboxgl.Map) => {
+  const handleMoveEnd = (map: mapboxgl.Map) => {
     const center = map.getCenter();
     const zoom = map.getZoom();
+    const bearing = map.getBearing();
     setZoom(zoom);
     setLocation([center.lng, center.lat]);
+    setBearing(bearing);
   };
 
   useEffect(() => {
@@ -145,13 +146,13 @@ export default function MapPage() {
       const hours = new Date().getHours();
 
       if (hours >= 20 || hours < 4) {
-        return "mapbox://styles/so03jp/cm9zurz3t004e01sp63ke1ngh"; // Night
+        return "mapbox://styles/so03jp/cmacqbau900le01sn1i4t3fze"; // Night
       } else if (hours >= 4 && hours < 8) {
-        return "mapbox://styles/so03jp/cm9zu6y0h00py01ssf79y7lkr"; // Dawn
+        return "mapbox://styles/so03jp/cmacq38zn00j701rf2uzp8yqa"; // Dawn
       } else if (hours >= 8 && hours < 16) {
-        return "mapbox://styles/so03jp/cm9zu55nn004a01spbkjbf94v"; // Day
+        return "mapbox://styles/so03jp/cmacq6ily00l501rf5j67an3w"; // Day
       } else {
-        return "mapbox://styles/so03jp/cm9zu7s4700yi01rmgn9p75xi"; // Dusk
+        return "mapbox://styles/so03jp/cmacpyy7d00j501rf8zq45x3w"; // Dusk
       }
     };
 
@@ -160,6 +161,7 @@ export default function MapPage() {
       container: mapContainerRef.current,
       style: getMapStyle(),
       center: location,
+      bearing: bearing,
       zoom: zoom,
       minZoom: 5,
       pitch: 45,
@@ -179,16 +181,12 @@ export default function MapPage() {
       handleMoveEnd(map);
     });
 
-    // if (navigator.geolocation) {
-    //   navigator.geolocation.getCurrentPosition((position) => {
-    //     const { latitude, longitude } = position.coords;
-    //     setLocation([longitude, latitude]);
-    //     map.flyTo({
-    //       center: [longitude, latitude],
-    //       zoom: 16,
-    //     });
-    //   });
-    // }
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        setLocation([longitude, latitude]);
+      });
+    }
 
     mapRef.current = map;
     return () => map.remove();
@@ -327,10 +325,22 @@ export default function MapPage() {
   }, [memos, setModalLat, setModalLng, setShowModal]);
 
   const handleGoToCurrentLocation = () => {
-    if (currentLocation && mapRef.current) {
-      mapRef.current?.flyTo({
-        center: currentLocation,
-        zoom: 16,
+    if (currentLocation) {
+      if (mapRef.current) {
+        mapRef.current.flyTo({
+          center: [currentLocation[0], currentLocation[1]],
+          zoom: 16,
+        });
+      }
+    } else if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        if (mapRef.current) {
+          mapRef.current.flyTo({
+            center: [longitude, latitude],
+            zoom: 16,
+          });
+        }
       });
     }
   };
@@ -398,9 +408,7 @@ export default function MapPage() {
       />
       <div className="fixed top-4 inset-x-5 flex-nowrap flex items-center gap-2 z-50">
         <Form action="/home" className="flex-none">
-          <Button
-            className="rounded-full w-12 h-12 flex items-center justify-center shadow-md"
-          >
+          <Button className="rounded-full w-12 h-12 flex items-center justify-center shadow-md">
             <FontAwesomeIcon icon={faHome}></FontAwesomeIcon>
           </Button>
         </Form>
@@ -439,7 +447,10 @@ export default function MapPage() {
       <Compass map={mapRef.current} />
 
       <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
-        <DrawerContent className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px]" style={{ zIndex: 99999 }}>
+        <DrawerContent
+          className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px]"
+          style={{ zIndex: 99999 }}
+        >
           <DrawerHeader>
             <DrawerTitle>メモを検索</DrawerTitle>
           </DrawerHeader>

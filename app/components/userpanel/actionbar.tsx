@@ -1,24 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faChevronLeft,
-  faGear,
-  faPen,
-} from "@fortawesome/free-solid-svg-icons";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import Avatar from "boring-avatars";
 import { Button } from "../ui/button";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-} from "../ui/dialog";
-import { Switch } from "../ui/switch";
-import { Input } from "../ui/input";
 import { getPushEndpoint, handleSubscribe } from "~/utils/pushNotification";
 import { Form } from "@remix-run/react";
-import { Label } from "../ui/label";
-import Setting from "./Setting"
+import Setting from "./Setting";
 import ProfileSection from "./ProfileSection";
 import FriendSection from "./FriendSection";
 import ReactDOM from "react-dom";
@@ -112,9 +99,9 @@ export default function ActionBar({
     }
 
     const data = await response.json();
-    
+
     if (data.status == "ACCEPTED") {
-      await getUsers()
+      await getUsers();
       setFriendRequests((prev) =>
         prev.filter((request) => request.id !== data.id)
       );
@@ -326,7 +313,11 @@ export default function ActionBar({
   }, []);
 
   const refreshImage = () => {
-    setAvatarUrl(`/user/${uuid}/avatar?t=${new Date().getTime()}`);
+    const url = new URL(`/user/${uuid}/avatar`, window.location.origin);
+    url.searchParams.set("t", `${new Date().getTime()}`);
+    if (url) {
+      setAvatarUrl(url.toString());
+    }
   };
 
   if (!isClient) return null;
@@ -340,14 +331,21 @@ export default function ActionBar({
       console.error("コピーに失敗しました:", err);
     }
   };
+  const imgUrl = avatarUrl
+    ? (() => {
+        const url = new URL(avatarUrl, window.location.origin);
+        url.searchParams.set("h", "100");
+        return url.toString();
+      })()
+    : null;
 
   return (
     <>
       <div className="fixed top-4 right-5 z-50">
         <button onClick={() => setOpen(true)}>
-          {avatarUrl ? (
+          {imgUrl ? (
             <img
-              src={avatarUrl}
+              src={imgUrl}
               alt={username}
               className="rounded-full w-12 h-12 object-cover"
             />
@@ -356,125 +354,129 @@ export default function ActionBar({
           )}
         </button>
       </div>
-      {open && 
-      ReactDOM.createPortal(
-        <div className="fixed inset-0 flex items-center justify-center p-4 bg-black/60"
-        style={{ zIndex: 99999 }}>
+      {open &&
+        ReactDOM.createPortal(
           <div
-            ref={modalRef}
-            className="relative w-full max-w-md h-[36em] bg-black rounded-lg shadow-lg p-6 text-white flex flex-col"
-            style={{ zIndex: 1000000 }}
+            className="fixed inset-0 flex items-center justify-center p-4 bg-black/60"
+            style={{ zIndex: 99999 }}
           >
-            {isProfileChange || isFriend || isSetting ? (
-              <button
-                onClick={() => {
-                  setIsProfileChange(false);
-                  setIsFriend(false);
-                  setIsSetting(false);
-                }}
-                className="absolute top-4 left-4 text-white hover:text-red-400"
-                aria-label="戻る"
-              >
-                <FontAwesomeIcon icon={faChevronLeft} className="text-3xl" />
-              </button>
-            ) : (
-              <button
-                onClick={() => setOpen(false)}
-                className="absolute top-4 left-4 text-white text-5xl hover:text-red-400"
-                aria-label="閉じる"
-              >
-                &times;
-              </button>
-            )}
+            <div
+              ref={modalRef}
+              className="relative w-full max-w-md h-[36em] bg-black rounded-lg shadow-lg p-6 text-white flex flex-col"
+              style={{ zIndex: 1000000 }}
+            >
+              {isProfileChange || isFriend || isSetting ? (
+                <button
+                  onClick={() => {
+                    setIsProfileChange(false);
+                    setIsFriend(false);
+                    setIsSetting(false);
+                    setPreviewUrl(null);
+                    setSelectedFile(null);
+                  }}
+                  className="absolute top-4 left-4 text-white hover:text-red-400"
+                  aria-label="戻る"
+                >
+                  <FontAwesomeIcon icon={faChevronLeft} className="text-3xl" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => setOpen(false)}
+                  className="absolute top-4 left-4 text-white text-5xl hover:text-red-400"
+                  aria-label="閉じる"
+                >
+                  &times;
+                </button>
+              )}
 
-            <div className="flex flex-col justify-between h-full pt-10">
-              <div className="overflow-y-auto pb-4">
-                {isFriend ? (
-                  <FriendSection
-                    toId={toId}
-                    follwingUser={follwingUser}
-                    friendRequests={friendRequests}
-                    follwingUsers={follwingUsers}
-                    setToId={setToId}
-                    handleFriend={handleFriend}
-                    handleGetUser={handleGetUser}
-                    handleAccept={handleAccept}
-                    handleReject={handleReject}
-                  />
-                ) : isSetting ? (
-                  <Setting
-                    isSubscribed={isSubscribed}
-                    toggleSubscription={toggleSubscription}
-                    barPosition={barPosition}
-                    setBarPosition={setBarPosition}
-                    barColor={barColor}
-                    setBarColor={setBarColor}
-                  />
-                ) : (
-                  <ProfileSection
-                    uuid={uuid}
-                    username={username}
-                    avatarUrl={avatarUrl}
-                    previewUrl={previewUrl}
-                    uname={uname}
-                    isProfileChange={isProfileChange}
-                    copied={copied}
-                    fileInputRef={fileInputRef}
-                    setUname={setUname}
-                    handleFileChange={handleFileChange}
-                    handleCopy={handleCopy}
-                    handleUpload={handleUpload}
-                    setIsProfileChange={setIsProfileChange}
-                  />
+              <div className="flex flex-col justify-between h-full pt-10">
+                <div className="overflow-y-auto pb-4">
+                  {isFriend ? (
+                    <FriendSection
+                      toId={toId}
+                      follwingUser={follwingUser}
+                      friendRequests={friendRequests}
+                      follwingUsers={follwingUsers}
+                      setToId={setToId}
+                      handleFriend={handleFriend}
+                      handleGetUser={handleGetUser}
+                      handleAccept={handleAccept}
+                      handleReject={handleReject}
+                    />
+                  ) : isSetting ? (
+                    <Setting
+                      isSubscribed={isSubscribed}
+                      toggleSubscription={toggleSubscription}
+                      barPosition={barPosition}
+                      setBarPosition={setBarPosition}
+                      barColor={barColor}
+                      setBarColor={setBarColor}
+                    />
+                  ) : (
+                    <ProfileSection
+                      uuid={uuid}
+                      username={username}
+                      avatarUrl={avatarUrl}
+                      previewUrl={previewUrl}
+                      uname={uname}
+                      isProfileChange={isProfileChange}
+                      copied={copied}
+                      fileInputRef={fileInputRef}
+                      setUname={setUname}
+                      handleFileChange={handleFileChange}
+                      handleCopy={handleCopy}
+                      handleUpload={handleUpload}
+                      setIsProfileChange={setIsProfileChange}
+                    />
+                  )}
+                </div>
+
+                {isProfileChange && !isFriend && !isSetting && (
+                  <div className="pt-4">
+                    <Button
+                      onClick={handleUpload}
+                      className="w-full bg-indigo-500 hover:bg-indigo-700 text-black"
+                    >
+                      保存
+                    </Button>
+                  </div>
+                )}
+
+                {!isProfileChange && !isFriend && !isSetting && (
+                  <div className="pt-4 space-y-3">
+                    <Button
+                      className="w-full bg-white text-black hover:bg-gray-400"
+                      onClick={() => setIsProfileChange(true)}
+                    >
+                      プロフィールを編集
+                    </Button>
+                    <Button
+                      className="w-full bg-indigo-500 hover:bg-indigo-700 text-black"
+                      onClick={() => setIsFriend(true)}
+                    >
+                      フレンド
+                    </Button>
+                    <Button
+                      className="w-full bg-indigo-500 hover:bg-indigo-700 text-black"
+                      onClick={() => setIsSetting(true)}
+                    >
+                      設定
+                    </Button>
+                    <Form method="post" action="/logout" className="w-full">
+                      <Button
+                        type="submit"
+                        className="w-full bg-red-500 hover:bg-red-700 text-white"
+                      >
+                        ログアウト
+                      </Button>
+                    </Form>
+                  </div>
                 )}
               </div>
-
-              {isProfileChange && !isFriend && !isSetting && (
-                <div className="pt-4">
-                  <Button
-                    onClick={handleUpload}
-                    className="w-full bg-indigo-500 hover:bg-indigo-700 text-black"
-                  >
-                    保存
-                  </Button>
-                </div>
-              )}
-
-              {!isProfileChange && !isFriend && !isSetting && (
-                <div className="pt-4 space-y-3">
-                  <Button
-                    className="w-full bg-white text-black hover:bg-gray-400"
-                    onClick={() => setIsProfileChange(true)}
-                  >
-                    プロフィールを編集
-                  </Button>
-                  <Button
-                    className="w-full bg-indigo-500 hover:bg-indigo-700 text-black"
-                    onClick={() => setIsFriend(true)}
-                  >
-                    フレンド
-                  </Button>
-                  <Button
-                    className="w-full bg-indigo-500 hover:bg-indigo-700 text-black"
-                    onClick={() => setIsSetting(true)}
-                  >
-                    設定
-                  </Button>
-                  <Form method="post" action="/logout" className="w-full">
-                    <Button
-                      type="submit"
-                      className="w-full bg-red-500 hover:bg-red-700 text-white"
-                    >
-                      ログアウト
-                    </Button>
-                  </Form>
-                </div>
-              )}
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }
