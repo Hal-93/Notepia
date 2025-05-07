@@ -55,7 +55,7 @@ export default function FriendSection({
               <div className="p-2 mt-3 flex border rounded-md items-center bg-gray-800">
                 {follwingUser.avatar ? (
                   <img
-                    src={follwingUser.avatar}
+                    src={follwingUser.avatar+"?h=128"}
                     alt={follwingUser.username}
                     className="rounded-full h-16 w-16"
                   />
@@ -93,7 +93,7 @@ export default function FriendSection({
                 <div className="flex items-center">
                   {user.avatar ? (
                     <img
-                      src={user.avatar}
+                      src={user.avatar+"?h=128"}
                       alt={user.username}
                       className="rounded-full h-12 w-12"
                     />
@@ -133,7 +133,7 @@ export default function FriendSection({
                 <div className="flex items-center">
                   {user.avatar ? (
                     <img
-                      src={user.avatar}
+                      src={user.avatar+"?h=128"}
                       alt={user.username}
                       className="rounded-full h-12 w-12"
                     />
