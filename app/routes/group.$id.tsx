@@ -55,6 +55,7 @@ import {
   locationAtom,
   zoomAtom,
 } from "~/atoms/locationAtom";
+import MemoDetailModal from "~/components/memo/detail";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const userId = await getUserId(request);
