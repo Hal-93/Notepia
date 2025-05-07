@@ -346,17 +346,33 @@ export default function MapPage() {
               closeButton: false,
             }).setDOMContent(popupContent)
           );
-
-          marker.togglePopup();
+          if (map.getZoom() >= 10) {
+            marker.togglePopup();
+          }
         }
 
         newMarkers.push(marker);
       }
     });
 
+    const handleZoomEnd = () => {
+      memoMarkersRef.current.forEach((m) => {
+        const popup = m.getPopup();
+        if (popup) {
+          if (map.getZoom() >= 10) {
+            popup.addTo(map);
+          } else {
+            popup.remove();
+          }
+        }
+      });
+    };
+    map.on('zoomend', handleZoomEnd);
+
     memoMarkersRef.current = newMarkers;
 
     return () => {
+      map.off('zoomend', handleZoomEnd);
       newMarkers.forEach((marker) => {
         marker.getPopup()?.remove();
         marker.remove();
