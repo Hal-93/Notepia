@@ -92,7 +92,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       currentUserRole = await getUserRole(groupId, userId);
       groupName = await getGroupName(groupId);
     } else {
-      memos = await getUsersMemo(userId);
+      throw redirect("/map");
     }
   } else {
     memos = await getUsersMemo(userId);
@@ -583,7 +583,7 @@ export default function MapPage() {
         />
 
         <div className="fixed top-4 inset-x-5 flex-nowrap flex items-center gap-2 z-50">
-          <SheetSide />
+          <SheetSide username={username} avatarUrl={avatarUrl} uuid={uuid} />
           <div className="text-5xl text-white">
             {groupName ? groupName : "マイマップ"}
           </div>

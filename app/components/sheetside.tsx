@@ -11,8 +11,17 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import { useLocation, useNavigate } from "@remix-run/react";
+import Avatar from "boring-avatars";
 
-export function SheetSide() {
+export function SheetSide({
+  username,
+  avatarUrl,
+  uuid,
+}: {
+  username: string;
+  avatarUrl: string | null;
+  uuid: string;
+}) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -28,6 +37,17 @@ export function SheetSide() {
     }
     navigate(url.pathname + url.search);
   };
+
+  const imgUrl = avatarUrl
+    ? (() => {
+        if (typeof window !== "undefined") {
+          const url = new URL(avatarUrl, window.location.origin);
+          url.searchParams.set("h", "512");
+          return url.toString();
+        }
+      })()
+    : null;
+
   return (
     <div className="grid grid-cols-2 gap-2">
       <Sheet>
@@ -41,11 +61,27 @@ export function SheetSide() {
             <SheetTitle className="text-4xl">マップ</SheetTitle>
           </SheetHeader>
           <SheetClose asChild>
-            <div >
-              <Button className="flex items-center mt-3 p-4 border-2 rounded-md hover:bg-gray-800 w-full h-100" type="submit" onClick={() => changeGroup(null)}>
-                マイマップ
-              </Button>
-            </div>
+            <Button
+              className="flex items-center justify-start mt-3 p-4 rounded-xl hover:bg-gray-800 w-full min-h-20 "
+              type="submit"
+              onClick={() => changeGroup(null)}
+            >
+              {imgUrl ? (
+                <img
+                  src={imgUrl}
+                  alt={username}
+                  className="rounded-full w-12 h-12 object-cover"
+                />
+              ) : (
+                <Avatar
+                  size="3rem"
+                  name={uuid}
+                  variant="beam"
+                  className="!w-12 !h-12"
+                />
+              )}
+              マイマップ
+            </Button>
           </SheetClose>
           <SheetFooter></SheetFooter>
         </SheetContent>
