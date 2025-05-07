@@ -54,7 +54,7 @@ export default function MemoDetailModal({ memo, onClose, actorRole, currentUserI
   const [newComment, setNewComment] = useState("");
 
   const handleDeleteComment = async (commentId: string) => {
-    if (!window.confirm("コメントを削除しますか？")) return;
+    if (!window.confirm("この付箋を削除しますか？")) return;
     const res = await fetch("/api/comments", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -63,7 +63,7 @@ export default function MemoDetailModal({ memo, onClose, actorRole, currentUserI
     if (res.ok) {
       setComments(prev => prev.filter(c => c.id !== commentId));
     } else {
-      alert("コメントの削除に失敗しました");
+      alert("付箋の削除に失敗しました");
     }
   };
 
@@ -91,7 +91,7 @@ export default function MemoDetailModal({ memo, onClose, actorRole, currentUserI
       setComments((prev) => [...prev, data.comment]);
       setNewComment("");
     } else {
-      alert("コメントの投稿に失敗しました");
+      alert("付箋の追加に失敗しました");
     }
   };
 
@@ -141,7 +141,6 @@ export default function MemoDetailModal({ memo, onClose, actorRole, currentUserI
 
           {/* コメントセクション */}
           <div>
-            <h3 className="text-lg font-semibold mb-2">コメント</h3>
             <div className="max-h-36 overflow-y-auto space-y-2 mb-4">
               {comments.map((c) => {
                 const isOwn = c.author.id === currentUserId;
@@ -157,13 +156,18 @@ export default function MemoDetailModal({ memo, onClose, actorRole, currentUserI
                         handleDeleteComment(c.id);
                       }
                     } : undefined}
-                    className="px-3 py-2 text-black rounded-lg shadow inline-block"
+                    className="px-3 pt-2 pb-6 text-black rounded-lg shadow inline-block mb-2 mr-2 relative max-w-max"
                     style={{
                       backgroundColor: c.color,
                       cursor: isOwn ? "pointer" : "default",
                     }}
                   >
-                    <span className="font-medium">{c.author.name}</span>: {c.content}
+                    <div className="whitespace-pre-wrap break-all">
+                      {c.content}
+                    </div>
+                    <div className="text-xs text-gray-800 absolute bottom-1 right-1 whitespace-nowrap">
+                      {c.author.name}
+                    </div>
                   </div>
                 );
               })}
@@ -174,14 +178,14 @@ export default function MemoDetailModal({ memo, onClose, actorRole, currentUserI
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 className="flex-1 bg-gray-700 text-white p-2 rounded"
-                placeholder="コメントを追加"
+                placeholder="付箋を追加"
               />
               <button
                 type="button"
                 onClick={handleAddComment}
                 className="p-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded"
               >
-                投稿
+                追加
               </button>
             </div>
           </div>
