@@ -12,15 +12,33 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import { useLocation, useNavigate } from "@remix-run/react";
 import Avatar from "boring-avatars";
+import { Role } from "@prisma/client";
 
 export function SheetSide({
   username,
   avatarUrl,
   uuid,
+  groups,
 }: {
   username: string;
   avatarUrl: string | null;
   uuid: string;
+  groups: ({
+    memberships: {
+      id: string;
+      createdAt: Date;
+      updatedAt: Date;
+      userId: string;
+      groupId: string;
+      role: Role;
+    }[];
+  } & {
+    id: string;
+    name: string;
+    ownerId: string;
+    createdAt: Date;
+    updatedAt: Date;
+  })[];
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -83,6 +101,19 @@ export function SheetSide({
               マイマップ
             </Button>
           </SheetClose>
+          {groups &&
+            groups.map((group) => (
+              <SheetClose asChild key={group.id}>
+                <Button
+                  className="flex items-center justify-start mt-3 p-4 rounded-xl hover:bg-gray-800 w-full min-h-20"
+                  type="submit"
+                  onClick={() => changeGroup(group.id)}
+                >
+                  {group.name}
+                </Button>
+              </SheetClose>
+            ))}
+
           <SheetFooter></SheetFooter>
         </SheetContent>
       </Sheet>

@@ -213,3 +213,18 @@ export async function checkIsInGroup(
   });
   return group !== null;
 }
+
+export async function getGroupsAndMemberShips(userId: string) {
+  return await prisma.group.findMany({
+    where: {
+      memberships: {
+        some: {
+          userId: userId,
+        },
+      },
+    },
+    include: {
+      memberships: true,
+    },
+  });
+}

@@ -7,6 +7,8 @@ import {
   getUserRole,
   checkIsInGroup,
   getGroupName,
+  getUserGroups,
+  getGroupsAndMemberShips,
 } from "~/models/group.server";
 import { useRevalidator } from "@remix-run/react";
 import mapboxgl, { Marker } from "mapbox-gl";
@@ -64,7 +66,24 @@ type LoaderData = {
   groupUsers: (User & { role: Role })[] | null;
   currentUserRole: Role | null;
   groupName: string | null;
+  groups: ({
+    memberships: {
+      id: string;
+      createdAt: Date;
+      updatedAt: Date;
+      userId: string;
+      groupId: string;
+      role: Role;
+    }[];
+  } & {
+    id: string;
+    name: string;
+    ownerId: string;
+    createdAt: Date;
+    updatedAt: Date;
+  })[];
 };
+
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
   if (!userId) throw redirect("/login");
@@ -73,7 +92,6 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   const url = new URL(request.url);
   const groupId = url.searchParams.get("group");
-  console.log(groupId);
 
   let memos: Memo[] | null = [];
   let groupUsers:
@@ -85,7 +103,6 @@ export const loader: LoaderFunction = async ({ request }) => {
   let groupName = null;
   if (groupId) {
     const isInGroup = await checkIsInGroup(userId, groupId);
-    console.log(isInGroup);
     if (isInGroup) {
       memos = await getMemosByGroup(groupId);
       groupUsers = await getUsersByGroup(groupId);
@@ -97,6 +114,8 @@ export const loader: LoaderFunction = async ({ request }) => {
   } else {
     memos = await getUsersMemo(userId);
   }
+
+  const groups = await getGroupsAndMemberShips(userId);
 
   const mapboxToken = process.env.MAPBOX_TOKEN;
   if (!mapboxToken) throw new Response("サーバー設定エラー", { status: 500 });
@@ -113,6 +132,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     groupUsers,
     currentUserRole,
     groupName,
+    groups,
   });
 };
 
@@ -161,6 +181,7 @@ export default function MapPage() {
     groupUsers,
     currentUserRole,
     groupName,
+    groups,
   } = useLoaderData<LoaderData>();
   // 権限順にソート: OWNER, ADMIN, EDITOR, VIEWER
   const roleOrder: Record<string, number> = {
@@ -583,7 +604,12 @@ export default function MapPage() {
         />
 
         <div className="fixed top-4 inset-x-5 flex-nowrap flex items-center gap-2 z-50">
-          <SheetSide username={username} avatarUrl={avatarUrl} uuid={uuid} />
+          <SheetSide
+            username={username}
+            avatarUrl={avatarUrl}
+            uuid={uuid}
+            groups={groups}
+          />
           <div className="text-5xl text-white">
             {groupName ? groupName : "マイマップ"}
           </div>
