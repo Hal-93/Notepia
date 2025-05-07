@@ -618,14 +618,14 @@ export default function MapPage() {
         )}
         {showDetail && selectedMemo && (
           <MemoDetailModal
-            memo={selectedMemo}
-            onClose={() => {
-              setShowDetail(false);
-              setSelectedMemo(null);
-            }}
-            actorRole={currentUserRole}
-            currentUserId={userId}
-          />
+              memo={selectedMemo}
+              onClose={() => {
+                setShowDetail(false);
+                setSelectedMemo(null);
+              }}
+              actorRole={currentUserRole}
+              currentUserId={userId}
+            />
         )}
         <Drawer
           open={showGroupDetailModal}
