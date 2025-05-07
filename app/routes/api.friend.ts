@@ -8,6 +8,7 @@ import {
   getAllFriendRequests,
   getAllFriendWithPend,
   rejectFriendRequestById,
+  removeFriend,
   sendFriendRequest,
 } from "~/models/friend.server";
 
@@ -82,6 +83,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
     case "acceptFriend": {
       return await acceptFriendRequestById(fromId, toUser.id);
+    }
+
+    case "removeFriend": {
+      await removeFriend(fromId, toUser.id);
+      return null;
     }
 
     default:

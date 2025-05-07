@@ -128,6 +128,27 @@ export default function ActionBar({
     }
   }
 
+  async function handleRemove(toUUID: string) {
+    const confirmed = confirm("本当にフレンドを削除してもよろしいですか？");
+    if (!confirmed) return;
+
+    const formData = new FormData();
+    formData.append("toUUID", toUUID);
+    formData.append("_action", "removeFriend");
+    formData.append("fromId", userId);
+
+    const response = await fetch("/api/friend", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to remove friend");
+    }
+
+    getUsers();
+  }
+
   const [isFriend, setIsFriend] = useState(false);
   const [toId, setToId] = useState("");
   const [follwingUser, setFollowingUser] = useState<{
@@ -356,12 +377,12 @@ export default function ActionBar({
         ReactDOM.createPortal(
           <div
             className="fixed inset-0 flex items-center justify-center p-4 bg-black/60"
-            style={{ zIndex: 99999 }}
+            style={{ zIndex: 3000 }}
           >
             <div
               ref={modalRef}
               className="relative w-full max-w-md h-[36em] bg-black rounded-lg shadow-lg p-6 text-white flex flex-col"
-              style={{ zIndex: 1000000 }}
+              style={{ zIndex: 3000 }}
             >
               {isProfileChange || isFriend || isSetting ? (
                 <button
@@ -414,6 +435,7 @@ export default function ActionBar({
                       handleGetUser={handleGetUser}
                       handleAccept={handleAccept}
                       handleReject={handleReject}
+                      handleRemove={handleRemove}
                     />
                   ) : isSetting ? (
                     <Setting
