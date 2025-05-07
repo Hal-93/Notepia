@@ -287,7 +287,7 @@ export default function ActionBar({
     formData.append("username", uname);
 
     try {
-      const res = await fetch("api/profile", {
+      const res = await fetch("/api/profile", {
         method: "POST",
         body: formData,
       });
