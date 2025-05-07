@@ -38,6 +38,7 @@ export default function ActionBar({
       username: user.username,
       uuid: user.uuid,
       avatar: user.avatar,
+      status: user.status,
     }));
     const requests = data.requests;
     setFriendRequests(requests);
@@ -75,11 +76,7 @@ export default function ActionBar({
       throw new Error("Failed to send friend request");
     }
 
-    const data = await response.json();
-    if (data.status == "ACCEPTED") {
-      const newUsers = [data, ...(follwingUsers || [])];
-      setFollowingUsers(newUsers); // 状態を更新
-    }
+    getUsers();
     setFollowingUser(null);
   }
 
@@ -161,6 +158,7 @@ export default function ActionBar({
   const [uname, setUname] = useState(username);
   const [open, setOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+  const [isAdd, setIsAdd] = useState(false);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -373,11 +371,15 @@ export default function ActionBar({
                     setIsSetting(false);
                     setPreviewUrl(null);
                     setSelectedFile(null);
+                    setIsAdd(false);
                   }}
                   className="absolute top-4 left-4 text-white hover:text-red-400"
                   aria-label="戻る"
                 >
-                  <FontAwesomeIcon icon={faChevronLeft} className="text-3xl" />
+                  <FontAwesomeIcon
+                    icon={faChevronLeft}
+                    className="text-3xl pt-4"
+                  />
                 </button>
               ) : (
                 <button
@@ -386,6 +388,15 @@ export default function ActionBar({
                   aria-label="閉じる"
                 >
                   &times;
+                </button>
+              )}
+              {isFriend && !isAdd && (
+                <button
+                  onClick={() => setIsAdd(true)}
+                  className="absolute top-4 right-4 text-white text-5xl hover:text-red-400"
+                  aria-label="フレンド追加"
+                >
+                  +
                 </button>
               )}
 
@@ -397,6 +408,7 @@ export default function ActionBar({
                       follwingUser={follwingUser}
                       friendRequests={friendRequests}
                       follwingUsers={follwingUsers}
+                      isAdd={isAdd}
                       setToId={setToId}
                       handleFriend={handleFriend}
                       handleGetUser={handleGetUser}

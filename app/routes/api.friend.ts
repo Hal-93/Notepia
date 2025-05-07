@@ -5,8 +5,8 @@ import { getUserId } from "~/session.server";
 import webPush from "web-push";
 import {
   acceptFriendRequestById,
-  getAllFriend,
   getAllFriendRequests,
+  getAllFriendWithPend,
   rejectFriendRequestById,
   sendFriendRequest,
 } from "~/models/friend.server";
@@ -98,16 +98,17 @@ export async function action({ request }: ActionFunctionArgs) {
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
   if (!userId) return null;
-  const frineds = await getAllFriend(userId);
+  const friends = await getAllFriendWithPend(userId);
   const friendRequests = await getAllFriendRequests(userId);
 
   const users = await Promise.all(
-    frineds.map(async (frined) => {
-      const user = await getUserById(frined.toId);
+    friends.map(async (friend) => {
+      const user = await getUserById(friend.toId);
       return {
         username: user!.name,
         uuid: user!.uuid,
         avatar: user!.avatar,
+        status: friend.status,
       };
     })
   );

@@ -108,6 +108,15 @@ export async function getAllFriend(userId: string): Promise<Friend[]> {
   });
 }
 
+// フレンド一覧取得関数
+export async function getAllFriendWithPend(userId: string): Promise<Friend[]> {
+  return await prisma.friend.findMany({
+    where: {
+      fromId: userId,
+    },
+  });
+}
+
 // 保留中のフォローリクエスト取得関数
 export async function getAllFriendRequests(userId: string): Promise<Friend[]> {
   return await prisma.friend.findMany({

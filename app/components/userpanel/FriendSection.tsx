@@ -9,7 +9,8 @@ type Props = {
   toId: string;
   follwingUser: User | null;
   friendRequests: any[];
-  follwingUsers: User[];
+  follwingUsers: any[];
+  isAdd: boolean;
   setToId: (v: string) => void;
   handleFriend: (uuid: string) => void;
   handleGetUser: (id: string) => void;
@@ -22,6 +23,7 @@ export default function FriendSection({
   follwingUser,
   friendRequests,
   follwingUsers,
+  isAdd,
   setToId,
   handleFriend,
   handleGetUser,
@@ -29,56 +31,57 @@ export default function FriendSection({
   handleReject,
 }: Props) {
   return (
-    <div className="w-full max-h-[65vh] overflow-y-auto px-1">
+    <div className="w-full max-h-[65vh]  px-1">
       <div className="w-full p-2 rounded-lg text-white">
-        <h2 className="text-2xl text-center mb-4">フレンド追加</h2>
+        {isAdd && (
+          <>
+            <h2 className="text-2xl text-center mb-4">フレンド追加</h2>
 
-        <Label htmlFor="username" className="text-white text-lg">
-          ユーザーID
-        </Label>
-        <Input
-          id="username"
-          name="username"
-          type="text"
-          autoComplete="username"
-          required
-          value={toId}
-          onChange={(e) => setToId(e.target.value)}
-          className="w-full text-white h-14 bg-gray-800 p-2 text-xl rounded-md"
-        />
+            <Label htmlFor="username" className="text-white text-lg">
+              ユーザーID
+            </Label>
+            <Input
+              id="username"
+              name="username"
+              type="text"
+              autoComplete="username"
+              required
+              value={toId}
+              onChange={(e) => setToId(e.target.value)}
+              className="w-full text-white h-14 bg-gray-800 p-2 text-xl rounded-md"
+            />
 
-        {follwingUser && (
-          <div className="p-2 mt-3 flex border rounded-md items-center bg-gray-800">
-            {follwingUser.avatar ? (
-              <img
-                src={follwingUser.avatar}
-                alt={follwingUser.username}
-                className="rounded-full h-16 w-16"
-              />
-            ) : (
-              <Avatar
-                size="4rem"
-                name={follwingUser.uuid}
-                variant="beam"
-              />
+            {follwingUser && (
+              <div className="p-2 mt-3 flex border rounded-md items-center bg-gray-800">
+                {follwingUser.avatar ? (
+                  <img
+                    src={follwingUser.avatar}
+                    alt={follwingUser.username}
+                    className="rounded-full h-16 w-16"
+                  />
+                ) : (
+                  <Avatar size="4rem" name={follwingUser.uuid} variant="beam" />
+                )}
+                <div className="ml-4 text-xl">{follwingUser.username}</div>
+                {!follwingUsers.some((u) => u.uuid === follwingUser.uuid) && (
+                  <Button
+                    onClick={() => handleFriend(follwingUser.uuid)}
+                    className="ml-auto p-2 bg-indigo-500 text-white rounded-md"
+                  >
+                    フレンド申請
+                  </Button>
+                )}
+              </div>
             )}
-            <div className="ml-4 text-xl">{follwingUser.username}</div>
+
             <Button
-              onClick={() => handleFriend(follwingUser.uuid)}
-              className="ml-auto p-2 bg-indigo-500 text-white rounded-md"
+              onClick={() => handleGetUser(toId)}
+              className="w-full mt-4 p-3 bg-indigo-500 text-white rounded-md text-lg"
             >
-              フレンド申請
+              検索
             </Button>
-          </div>
+          </>
         )}
-
-        <Button
-          onClick={() => handleGetUser(toId)}
-          className="w-full mt-4 p-3 bg-indigo-500 text-white rounded-md text-lg"
-        >
-          検索
-        </Button>
-
         {friendRequests?.length > 0 && (
           <>
             <h3 className="text-2xl text-center mt-6">フレンドリクエスト</h3>
@@ -120,7 +123,7 @@ export default function FriendSection({
         )}
 
         <h3 className="text-2xl text-center mt-6">フレンド一覧</h3>
-        <div className="overflow-y-auto max-h-96">
+        <div className=" max-h-96">
           {follwingUsers.length > 0 ? (
             follwingUsers.map((user) => (
               <div
@@ -141,6 +144,9 @@ export default function FriendSection({
                     <div className="text-xl">{user.username}</div>
                     <div className="text-gray-500 text-sm">@{user.uuid}</div>
                   </div>
+                </div>
+                <div className="ml-auto">
+                  {user.status === "PENDING" && "承認待ち"}
                 </div>
               </div>
             ))
