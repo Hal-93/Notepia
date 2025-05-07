@@ -7,8 +7,8 @@ import {
   getUserRole,
   checkIsInGroup,
   getGroupName,
-  getUserGroups,
   getGroupsAndMemberShips,
+  GroupWithMembershipsAndUsers,
 } from "~/models/group.server";
 import { useRevalidator } from "@remix-run/react";
 import mapboxgl, { Marker } from "mapbox-gl";
@@ -66,22 +66,7 @@ type LoaderData = {
   groupUsers: (User & { role: Role })[] | null;
   currentUserRole: Role | null;
   groupName: string | null;
-  groups: ({
-    memberships: {
-      id: string;
-      createdAt: Date;
-      updatedAt: Date;
-      userId: string;
-      groupId: string;
-      role: Role;
-    }[];
-  } & {
-    id: string;
-    name: string;
-    ownerId: string;
-    createdAt: Date;
-    updatedAt: Date;
-  })[];
+  groups: GroupWithMembershipsAndUsers[]
 };
 
 export const loader: LoaderFunction = async ({ request }) => {

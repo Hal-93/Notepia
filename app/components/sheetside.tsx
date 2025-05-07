@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import { useLocation, useNavigate } from "@remix-run/react";
 import Avatar from "boring-avatars";
-import { Role } from "@prisma/client";
+import { GroupWithMembershipsAndUsers } from "~/models/group.server";
 
 export function SheetSide({
   username,
@@ -23,22 +23,7 @@ export function SheetSide({
   username: string;
   avatarUrl: string | null;
   uuid: string;
-  groups: ({
-    memberships: {
-      id: string;
-      createdAt: Date;
-      updatedAt: Date;
-      userId: string;
-      groupId: string;
-      role: Role;
-    }[];
-  } & {
-    id: string;
-    name: string;
-    ownerId: string;
-    createdAt: Date;
-    updatedAt: Date;
-  })[];
+  groups: GroupWithMembershipsAndUsers[];
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -110,6 +95,31 @@ export function SheetSide({
                     type="submit"
                     onClick={() => changeGroup(group.id)}
                   >
+                    {group.memberships.slice(0, 3).map((user, index) => (
+                      <div
+                        key={user.id}
+                        className="flex w-12 h-12 overflow-hidden"
+                        style={{
+                          marginLeft: index === 0 ? 0 : "-40px",
+                          zIndex: group.memberships.length - index,
+                        }}
+                      >
+                        {user.user.avatar ? (
+                          <img
+                            src={`/user/${user.user.uuid}/avatar?h=96`}
+                            alt={user.user.name}
+                            className="object-cover w-full h-full rounded-full"
+                          />
+                        ) : (
+                          <Avatar
+                            name={user.user.uuid}
+                            size={32}
+                            variant="beam"
+                            className="!w-12 !h-12"
+                          />
+                        )}
+                      </div>
+                    ))}
                     {group.name}
                   </Button>
                 </SheetClose>

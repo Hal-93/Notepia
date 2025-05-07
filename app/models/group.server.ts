@@ -1,5 +1,5 @@
 import { prisma } from "~/db.server";
-import { Role, type Group, type User, type GroupMember } from "@prisma/client";
+import { Role, type Group, type User, type GroupMember, Prisma } from "@prisma/client";
 
 // ユーザーが所属しているグループ一覧を取得する関数
 export async function getUserGroups(
@@ -224,7 +224,23 @@ export async function getGroupsAndMemberShips(userId: string) {
       },
     },
     include: {
-      memberships: true,
+      memberships: {
+        include: {
+          user: true,
+        },
+      },
     },
   });
 }
+
+const groupWithMembershipsAndUsers = Prisma.validator<Prisma.GroupDefaultArgs>()({
+  include: {
+    memberships: {
+      include: {
+        user: true,
+      },
+    },
+  },
+});
+
+export type GroupWithMembershipsAndUsers = Prisma.GroupGetPayload<typeof groupWithMembershipsAndUsers>;
