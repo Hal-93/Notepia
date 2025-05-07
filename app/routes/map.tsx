@@ -594,6 +594,7 @@ export default function MapPage() {
             avatarUrl={avatarUrl}
             uuid={uuid}
             groups={groups}
+            userId={userId}
           />
           <div className="text-5xl text-primary">
             {groupName ? groupName : "マイマップ"}
