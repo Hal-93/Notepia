@@ -4,7 +4,7 @@ import type { Memo } from "@prisma/client";
 import type { Role } from "@prisma/client";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faCheck, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faTimes, faCheck, faTrash, faUndo } from "@fortawesome/free-solid-svg-icons";
 
 type MemoDetailModalProps = {
   memo: Memo;
@@ -39,6 +39,14 @@ export default function MemoDetailModal({ memo, onClose, actorRole, currentUserI
   const handleDelete = () => {
     fetcher.submit(
       { memoId: memo.id, intent: "delete" },
+      { method: "post", action: "/memo/detail" }
+    );
+    onClose();
+  };
+
+  const handleRestore = () => {
+    fetcher.submit(
+      { memoId: memo.id, intent: "uncomplete" },
       { method: "post", action: "/memo/detail" }
     );
     onClose();
@@ -172,6 +180,7 @@ export default function MemoDetailModal({ memo, onClose, actorRole, currentUserI
                 );
               })}
             </div>
+            {!memo.completed && (
             <div className="flex items-center space-x-2">
               <input
                 type="text"
@@ -188,6 +197,7 @@ export default function MemoDetailModal({ memo, onClose, actorRole, currentUserI
                 追加
               </button>
             </div>
+            )}
           </div>
         </div>
 
@@ -201,7 +211,15 @@ export default function MemoDetailModal({ memo, onClose, actorRole, currentUserI
               <FontAwesomeIcon icon={faCheck} />
             </button>
           )}
-          {actorRole !== "VIEWER" && (
+          {actorRole !== "VIEWER" && memo.completed && (
+            <button
+              onClick={handleRestore}
+              className="text-yellow-400 hover:text-yellow-300 text-2xl"
+            >
+              <FontAwesomeIcon icon={faUndo} />
+            </button>
+          )}
+          {actorRole !== "VIEWER" && memo.completed && (
             <button
               onClick={handleDelete}
               className="text-white-500 hover:text-white-300 text-2xl"
