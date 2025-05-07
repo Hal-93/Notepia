@@ -1,22 +1,26 @@
 import { prisma } from "~/db.server";
-import { Role, type Group, type User, type GroupMember } from "@prisma/client";
+import { Role, type Group, type User, type GroupMember, Prisma } from "@prisma/client";
 
 // ユーザーが所属しているグループ一覧を取得する関数
-export async function getUserGroups(userId: string): Promise<(Group & { role: Role })[]> {
+export async function getUserGroups(
+  userId: string
+): Promise<(Group & { role: Role })[]> {
   const memberships = await prisma.groupMember.findMany({
     where: { userId },
     include: { group: true },
   });
-  return memberships.map(m => ({ ...m.group, role: m.role }));
+  return memberships.map((m) => ({ ...m.group, role: m.role }));
 }
 
 // グループに所属しているユーザー一覧を表示する関数
-export async function getUsersByGroup(groupId: string): Promise<(User & { role: Role })[]> {
+export async function getUsersByGroup(
+  groupId: string
+): Promise<(User & { role: Role })[]> {
   const memberships = await prisma.groupMember.findMany({
     where: { groupId },
     include: { user: true },
   });
-  return memberships.map(m => ({ ...m.user, role: m.role }));
+  return memberships.map((m) => ({ ...m.user, role: m.role }));
 }
 
 // グループを作成する関数
@@ -82,7 +86,6 @@ export async function deleteGroup(groupId: string): Promise<Group> {
   });
 }
 
-
 // グループ名を変更する関数
 export async function updateGroupName(
   groupId: string,
@@ -133,7 +136,9 @@ export async function updateUserRoleInGroup(
     actorMembership.role !== Role.OWNER &&
     actorMembership.role !== Role.ADMIN
   ) {
-    throw new Error("許可がありません: 権限変更は Owner または Admin のみ可能です");
+    throw new Error(
+      "許可がありません: 権限変更は Owner または Admin のみ可能です"
+    );
   }
 
   const targetMembership = await prisma.groupMember.findUnique({
@@ -153,10 +158,14 @@ export async function updateUserRoleInGroup(
       targetMembership.role === Role.OWNER ||
       targetMembership.role === Role.ADMIN
     ) {
-      throw new Error("許可がありません: Adminは他のAdminまたはOwnerの権限を変更できません");
+      throw new Error(
+        "許可がありません: Adminは他のAdminまたはOwnerの権限を変更できません"
+      );
     }
     if (newRole !== Role.EDITOR && newRole !== Role.VIEWER) {
-      throw new Error("許可がありません: AdminはEditorまたはViewerへの変更のみ可能です");
+      throw new Error(
+        "許可がありません: AdminはEditorまたはViewerへの変更のみ可能です"
+      );
     }
   }
 
@@ -172,3 +181,66 @@ export async function updateUserRoleInGroup(
     },
   });
 }
+
+// グループ名取得関数
+export async function getGroupName(groupId: string) {
+  const group = await prisma.group.findFirst({
+    where: {
+      id: groupId,
+    },
+  });
+  if (group) {
+    return group.name;
+  } else {
+    return null;
+  }
+}
+
+// グループに含まれているか確認する関数
+export async function checkIsInGroup(
+  userId: string,
+  groupId: string
+): Promise<boolean> {
+  const group = await prisma.group.findFirst({
+    where: {
+      id: groupId,
+      memberships: {
+        some: {
+          userId: userId,
+        },
+      },
+    },
+  });
+  return group !== null;
+}
+
+export async function getGroupsAndMemberShips(userId: string) {
+  return await prisma.group.findMany({
+    where: {
+      memberships: {
+        some: {
+          userId: userId,
+        },
+      },
+    },
+    include: {
+      memberships: {
+        include: {
+          user: true,
+        },
+      },
+    },
+  });
+}
+
+const groupWithMembershipsAndUsers = Prisma.validator<Prisma.GroupDefaultArgs>()({
+  include: {
+    memberships: {
+      include: {
+        user: true,
+      },
+    },
+  },
+});
+
+export type GroupWithMembershipsAndUsers = Prisma.GroupGetPayload<typeof groupWithMembershipsAndUsers>;

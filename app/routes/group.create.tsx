@@ -16,5 +16,5 @@ export const action: ActionFunction = async ({ request }) => {
   
     const group = await createGroup(name, userId, userIds);
   
-    return json({ group });
+    return json({ groupId: group.id });
   };

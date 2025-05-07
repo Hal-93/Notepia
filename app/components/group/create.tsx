@@ -1,17 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFetcher } from "@remix-run/react";
 
 type GroupCreateProps = {
   currentUserId: string;
   onClose: () => void;
+  changeGroup?: (groupId: string) => void;
 };
+type GroupCreateResponse = { groupId: string };
 
-
-
-export default function GroupCreateModal({ onClose }: GroupCreateProps) {
+export default function GroupCreateModal({
+  onClose,
+  changeGroup,
+}: GroupCreateProps) {
   const [name, setName] = useState("");
   const [agreed, setAgreed] = useState(false);
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<GroupCreateResponse>();
 
   const handleSubmit = () => {
     if (!agreed) {
@@ -23,12 +26,14 @@ export default function GroupCreateModal({ onClose }: GroupCreateProps) {
       return;
     }
 
-    fetcher.submit(
-      { name },
-      { method: "post", action: "/group/create" }
-    );
-    onClose();
+    fetcher.submit({ name }, { method: "post", action: "/group/create" });
   };
+  useEffect(() => {
+    if (fetcher.state === "idle" && fetcher.data?.groupId) {
+      changeGroup?.(fetcher.data.groupId);
+      onClose();
+    }
+  }, [fetcher.state, fetcher.data]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
@@ -38,7 +43,7 @@ export default function GroupCreateModal({ onClose }: GroupCreateProps) {
           <button
             type="button"
             onClick={onClose}
-            className="text-white hover:text-red-400"
+            className="text-white hover:text-red-400 text-2xl"
           >
             ×
           </button>
@@ -65,7 +70,8 @@ export default function GroupCreateModal({ onClose }: GroupCreateProps) {
             className="mt-1 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
           />
           <span className="leading-tight">
-            グループを作成すると、あなたはこのグループのオーナーになります。<br/>
+            グループを作成すると、あなたはこのグループのオーナーになります。
+            <br />
             あなたがこのグループを脱退するとグループは破棄されます。
           </span>
         </label>
@@ -75,7 +81,9 @@ export default function GroupCreateModal({ onClose }: GroupCreateProps) {
           onClick={handleSubmit}
           disabled={!agreed}
           className={`w-full mt-6 py-2 rounded text-white ${
-            agreed ? "bg-indigo-500 hover:bg-indigo-700" : "bg-gray-400 cursor-not-allowed"
+            agreed
+              ? "bg-indigo-500 hover:bg-indigo-700"
+              : "bg-gray-400 cursor-not-allowed"
           }`}
         >
           グループを作成する
