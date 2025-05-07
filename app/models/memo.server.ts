@@ -24,7 +24,9 @@ export async function getUsersMemo(userId: string): Promise<Memo[]> {
 }
 
 // ユーザーの完了していない個人メモを全て取得する関数
-export async function getNotCompletedUsersMemo(userId: string): Promise<Memo[]> {
+export async function getNotCompletedUsersMemo(
+  userId: string
+): Promise<Memo[]> {
   return await prisma.memo.findMany({
     where: {
       createdById: userId,
@@ -44,7 +46,9 @@ export async function getMemosByGroup(groupId: string): Promise<Memo[]> {
 }
 
 // グループの完了していないメモを全て取得する関数
-export async function getNotCompletedMemosByGroup(groupId: string): Promise<Memo[]> {
+export async function getNotCompletedMemosByGroup(
+  groupId: string
+): Promise<Memo[]> {
   return await prisma.memo.findMany({
     where: {
       groupId: groupId,
@@ -52,8 +56,6 @@ export async function getNotCompletedMemosByGroup(groupId: string): Promise<Memo
     },
   });
 }
-
-
 
 // 特定のメモを取得する関数
 export async function getMemoById(memoId: string): Promise<Memo | null> {
@@ -75,13 +77,23 @@ export async function createMemo(data: {
   longitude?: number;
   color: string;
 }): Promise<Memo> {
+  let groupConnect;
+  if (data.groupId) {
+    const groupExists = await prisma.group.findUnique({
+      where: { id: data.groupId },
+    });
+    if (groupExists) {
+      groupConnect = { connect: { id: data.groupId } };
+    }
+  }
+
   return await prisma.memo.create({
     data: {
       title: data.title,
       content: data.content,
       place: data.place,
       createdBy: { connect: { id: data.createdById } },
-      group: data.groupId ? { connect: { id: data.groupId } } : undefined,
+      group: groupConnect,
       latitude: data.latitude,
       longitude: data.longitude,
       color: data.color,
@@ -99,7 +111,12 @@ export async function deleteMemo(memoId: string): Promise<Memo> {
 // メモを更新する関数
 export async function updateMemo(
   memoId: string,
-  data: { content?: string; completed?: boolean; latitude?: number; longitude?: number }
+  data: {
+    content?: string;
+    completed?: boolean;
+    latitude?: number;
+    longitude?: number;
+  }
 ): Promise<Memo> {
   return await prisma.memo.update({
     where: { id: memoId },
