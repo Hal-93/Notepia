@@ -8,7 +8,6 @@ import mapboxgl, { Marker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import ActionBar from "~/components/userpanel/actionbar";
 import MemoCreateModal from "~/components/memo/create";
-import Modal from "~/components/memo/detail";
 import { MapBoxSearch } from "~/components/searchbar";
 import { getUserId } from "~/session.server";
 import Bar from "~/components/memo/bar";
