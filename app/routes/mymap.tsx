@@ -479,6 +479,7 @@ export default function MapPage() {
             setShowDetail(false);
             setSelectedMemo(null);
           }}
+          currentUserId={userId}
         />
       )}
     </div>
