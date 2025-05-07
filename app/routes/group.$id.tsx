@@ -663,7 +663,7 @@ export default function MapPage() {
                     >
                       {user.avatar ? (
                         <img
-                          src={user.avatar}
+                          src={user.avatar+"?h=128"}
                           alt={user.name}
                           className="flex-shrink-0 rounded-full object-cover w-16 h-16"
                         />

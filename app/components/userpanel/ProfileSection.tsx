@@ -35,7 +35,7 @@ export default function ProfileSection({
   const imgUrl = avatarUrl
     ? (() => {
         const url = new URL(avatarUrl, window.location.origin);
-        url.searchParams.set("h", "500");
+        url.searchParams.set("h", "512");
         return url.toString();
       })()
     : null;

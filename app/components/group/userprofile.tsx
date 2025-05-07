@@ -41,23 +41,31 @@ export default function UserProfile({
 
   const handleSendFriend = async () => {
     /*
-    *
-    *    ここを実装
-    * 
-    */
+     *
+     *    ここを実装
+     *
+     */
   };
 
   const canChangeRole =
-    userId !== actorId && (
-      (actorRole === "OWNER" && currentRole !== "OWNER") ||
-      (actorRole === "ADMIN" && currentRole !== "OWNER" && currentRole !== "ADMIN")
-    );
+    userId !== actorId &&
+    ((actorRole === "OWNER" && currentRole !== "OWNER") ||
+      (actorRole === "ADMIN" &&
+        currentRole !== "OWNER" &&
+        currentRole !== "ADMIN"));
+  const imgUrl = avatarUrl
+    ? (() => {
+        const url = new URL(avatarUrl, window.location.origin);
+        url.searchParams.set("h", "128");
+        return url.toString();
+      })()
+    : null;
   return (
     <div className="rounded-lg p-6 text-white w-full max-w-sm mx-auto">
       <div className="flex items-center mb-4">
-        {avatarUrl ? (
+        {imgUrl ? (
           <img
-            src={avatarUrl}
+            src={imgUrl}
             alt={username}
             className="w-16 h-16 rounded-full object-cover"
           />
@@ -70,16 +78,18 @@ export default function UserProfile({
             <span className="mr-2">@{uuid}</span>
             {currentRole && (
               <>
-                <span className={`ml-2 inline-flex items-center max-w-max px-1 py-0.5 bg-gray-700 text-xs rounded ${
-                  currentRole === "OWNER"
-                  ? "text-yellow-300"
-                  : currentRole === "ADMIN"
-                  ? "text-blue-400"
-                  : currentRole === "EDITOR"
-                  ? "text-green-400"
-                  : "text-gray-500"
-              }`}>
-                {currentRole}
+                <span
+                  className={`ml-2 inline-flex items-center max-w-max px-1 py-0.5 bg-gray-700 text-xs rounded ${
+                    currentRole === "OWNER"
+                      ? "text-yellow-300"
+                      : currentRole === "ADMIN"
+                      ? "text-blue-400"
+                      : currentRole === "EDITOR"
+                      ? "text-green-400"
+                      : "text-gray-500"
+                  }`}
+                >
+                  {currentRole}
                 </span>
                 {canChangeRole && (
                   <div className="mt-2">
@@ -98,7 +108,12 @@ export default function UserProfile({
                           viewBox="0 0 24 24"
                           stroke="currentColor"
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
                         </svg>
                       </summary>
                       <ul className="absolute right-0 mt-1 bg-gray-800 text-white rounded-md shadow-lg list-none p-1 w-32">
@@ -111,15 +126,23 @@ export default function UserProfile({
                                 const newRole = "ADMIN" as Role;
                                 const res = await fetch("/api/group", {
                                   method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({ groupId, targetUserId: userId, newRole }),
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                  },
+                                  body: JSON.stringify({
+                                    groupId,
+                                    targetUserId: userId,
+                                    newRole,
+                                  }),
                                 });
                                 const data = await res.json();
                                 if (res.ok) {
                                   setCurrentRole(newRole);
                                   onRoleChange?.(newRole);
                                 } else {
-                                  alert(`権限変更に失敗しました: ${data.error}`);
+                                  alert(
+                                    `権限変更に失敗しました: ${data.error}`
+                                  );
                                 }
                               }}
                             >
@@ -136,15 +159,23 @@ export default function UserProfile({
                                 const newRole = "EDITOR" as Role;
                                 const res = await fetch("/api/group", {
                                   method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({ groupId, targetUserId: userId, newRole }),
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                  },
+                                  body: JSON.stringify({
+                                    groupId,
+                                    targetUserId: userId,
+                                    newRole,
+                                  }),
                                 });
                                 const data = await res.json();
                                 if (res.ok) {
                                   setCurrentRole(newRole);
                                   onRoleChange?.(newRole);
                                 } else {
-                                  alert(`権限変更に失敗しました: ${data.error}`);
+                                  alert(
+                                    `権限変更に失敗しました: ${data.error}`
+                                  );
                                 }
                               }}
                             >
@@ -161,15 +192,23 @@ export default function UserProfile({
                                 const newRole = "VIEWER" as Role;
                                 const res = await fetch("/api/group", {
                                   method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({ groupId, targetUserId: userId, newRole }),
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                  },
+                                  body: JSON.stringify({
+                                    groupId,
+                                    targetUserId: userId,
+                                    newRole,
+                                  }),
                                 });
                                 const data = await res.json();
                                 if (res.ok) {
                                   setCurrentRole(newRole);
                                   onRoleChange?.(newRole);
                                 } else {
-                                  alert(`権限変更に失敗しました: ${data.error}`);
+                                  alert(
+                                    `権限変更に失敗しました: ${data.error}`
+                                  );
                                 }
                               }}
                             >
@@ -212,15 +251,17 @@ export default function UserProfile({
                 <FontAwesomeIcon icon={faBan} className="w-4 h-4" />
               </Button>
             )}
-            {userId !== actorId && (
-              isFriendState ? (
+            {userId !== actorId &&
+              (isFriendState ? (
                 <Button className="text-gray-400">フレンド登録済み</Button>
               ) : (
-                <Button className="bg-indigo-500 hover:bg-indigo-600" onClick={handleSendFriend}>
+                <Button
+                  className="bg-indigo-500 hover:bg-indigo-600"
+                  onClick={handleSendFriend}
+                >
                   フレンド申請
                 </Button>
-              )
-            )}
+              ))}
           </div>
         </div>
       </div>

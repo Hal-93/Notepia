@@ -169,7 +169,7 @@ export default function Home() {
                         >
                           {user.avatar ? (
                             <img
-                              src={`/user/${user.uuid}/avatar`}
+                              src={`/user/${user.uuid}/avatar?h=96`}
                               alt={user.name}
                               className="object-cover w-full h-full"
                             />

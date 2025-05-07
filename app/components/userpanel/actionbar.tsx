@@ -334,7 +334,7 @@ export default function ActionBar({
   const imgUrl = avatarUrl
     ? (() => {
         const url = new URL(avatarUrl, window.location.origin);
-        url.searchParams.set("h", "100");
+        url.searchParams.set("h", "128");
         return url.toString();
       })()
     : null;

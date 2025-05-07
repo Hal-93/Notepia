@@ -100,7 +100,7 @@ export default function GroupEditModal({
                 <li key={u.id} className="flex items-center gap-3">
                   {u.avatar ? (
                     <img
-                      src={`/user/${u.uuid}/avatar`}
+                      src={`/user/${u.uuid}/avatar?h=96`}
                       alt={u.name}
                       className="rounded-full border-2 border-black object-cover w-8 h-8"
                     />
