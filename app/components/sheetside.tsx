@@ -17,7 +17,6 @@ export function SheetSide() {
   const location = useLocation();
 
   const changeGroup = (groupId: string | null) => {
-    console.log("call")
     const url = new URL(
       location.pathname + location.search,
       window.location.origin
@@ -41,13 +40,13 @@ export function SheetSide() {
           <SheetHeader>
             <SheetTitle className="text-4xl">マップ</SheetTitle>
           </SheetHeader>
-          <div className="flex items-center mt-3 p-4 border-2">
-            <SheetClose asChild>
-              <Button type="submit" onClick={() => changeGroup(null)}>
+          <SheetClose asChild>
+            <div >
+              <Button className="flex items-center mt-3 p-4 border-2 rounded-md hover:bg-gray-800 w-full h-100" type="submit" onClick={() => changeGroup(null)}>
                 マイマップ
               </Button>
-            </SheetClose>
-          </div>
+            </div>
+          </SheetClose>
           <SheetFooter></SheetFooter>
         </SheetContent>
       </Sheet>
