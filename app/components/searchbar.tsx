@@ -14,6 +14,7 @@ interface Suggestion {
   place_formatted?: string;
   center?: number[];
   poi_category?: string[];
+  feature_type?: string;
   context?: { postcode?: { name: string } };
   geometry?: { coordinates?: number[] };
 }
@@ -64,9 +65,15 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
         const raw = (data.suggestions ?? []) as Suggestion[];
         // Exclude entire non-building categories
         const deny = ["レストラン", "幼稚園", "ショップ", "カフェ", "ホテル"];
-        const filtered = raw.filter(f =>
-          !(f.poi_category ?? []).some(cat => deny.includes(cat))
-        );
+        const filtered = raw.filter(f => {
+          // Exclude pure category suggestions (feature_type "category")
+          if (f.feature_type === "category") {
+            return false;
+          }
+          const cats = f.poi_category ?? [];
+          // Exclude any top-level denied categories
+          return !cats.some(cat => deny.includes(cat));
+        });
         setPredictions(
           filtered.map(f => ({
             id: f.mapbox_id,
@@ -103,34 +110,50 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
 
 
   const handleSelect = async (place: MapBoxPlace) => {
-    // Fallback geocoding sequence: full_address → postcode → place_name
-    let coords: [number, number] | undefined;
-    const queries: (string | undefined)[] = [
-      place.full_address,
-      place.postcode,
-      place.place_name
-    ];
-    for (const q of queries) {
-      if (!q) continue;
-      try {
-        const res = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-            q
-          )}.json?access_token=${api}&limit=1&country=JP`
-        );
-        const data = await res.json();
-        const feat = data.features?.[0];
-        if (feat && Array.isArray(feat.center) && feat.center.length === 2) {
-          coords = [feat.center[0], feat.center[1]];
-          break;
-        }
-      } catch (err) {
-        console.error(`Geocoding error for "${q}":`, err);
+    // Retrieve full feature details to get accurate coordinates
+    let coords: [number, number] = place.center;
+    try {
+      const res = await fetch(
+        `https://api.mapbox.com/search/searchbox/v1/retrieve/${encodeURIComponent(place.id)}` +
+        `?session_token=${sessionToken}` +
+        `&country=JP` +
+        `&access_token=${api}`
+      );
+      const data = await res.json();
+      const feat = data.features?.[0];
+      if (feat?.geometry?.coordinates && feat.geometry.coordinates.length === 2) {
+        coords = [feat.geometry.coordinates[0], feat.geometry.coordinates[1]];
       }
+    } catch (err) {
+      console.error("Retrieve error:", err);
     }
-    if (!coords) {
-      console.error("Failed to geocode with full_address, postcode, or place_name");
-      coords = place.center; // fallback
+    // Fallback: if coords unchanged, geocode by address (avoid long token errors)
+    // Use the single address part (before comma) if provided
+    let fallbackName = place.full_address?.split(",")[0] ?? place.place_name;
+    // Strip Japanese prefecture prefix if present to reduce tokens
+    const prefMatch = fallbackName.match(/^(.+?[都道府県])(.+)/);
+    if (prefMatch) {
+      fallbackName = prefMatch[2];
+    }
+    if (coords[0] === place.center[0] && coords[1] === place.center[1]) {
+      try {
+        const geoRes = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/` +
+          `${encodeURIComponent(fallbackName)}.json` +
+          `?access_token=${api}` +
+          `&limit=1` +
+          `&country=JP` +
+          `&autocomplete=false` +
+          `&types=address`
+        );
+        const geoData = await geoRes.json();
+        const geoFeat = geoData.features?.[0];
+        if (geoFeat?.center && geoFeat.center.length === 2) {
+          coords = [geoFeat.center[0], geoFeat.center[1]];
+        }
+      } catch (geoErr) {
+        console.error("Geocoding fallback error:", geoErr);
+      }
     }
     if (onSelect) {
       onSelect({ ...place, center: coords, zoom: place.zoom ?? 16 });
