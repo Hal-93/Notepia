@@ -610,7 +610,7 @@ export default function MapPage() {
             uuid={uuid}
             groups={groups}
           />
-          <div className="text-5xl text-white">
+          <div className="text-5xl text-primary">
             {groupName ? groupName : "マイマップ"}
           </div>
           <div className="relative flex-1 min-w-0">

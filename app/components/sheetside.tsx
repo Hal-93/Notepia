@@ -74,47 +74,53 @@ export function SheetSide({
             <FontAwesomeIcon icon={faBars}></FontAwesomeIcon>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left">
+        <SheetContent side="left" className="flex flex-col h-full">
           <SheetHeader>
             <SheetTitle className="text-4xl">マップ</SheetTitle>
           </SheetHeader>
-          <SheetClose asChild>
-            <Button
-              className="flex items-center justify-start mt-3 p-4 rounded-xl hover:bg-gray-800 w-full min-h-20 "
-              type="submit"
-              onClick={() => changeGroup(null)}
-            >
-              {imgUrl ? (
-                <img
-                  src={imgUrl}
-                  alt={username}
-                  className="rounded-full w-12 h-12 object-cover"
-                />
-              ) : (
-                <Avatar
-                  size="3rem"
-                  name={uuid}
-                  variant="beam"
-                  className="!w-12 !h-12"
-                />
-              )}
-              マイマップ
-            </Button>
-          </SheetClose>
-          {groups &&
-            groups.map((group) => (
-              <SheetClose asChild key={group.id}>
-                <Button
-                  className="flex items-center justify-start mt-3 p-4 rounded-xl hover:bg-gray-800 w-full min-h-20"
-                  type="submit"
-                  onClick={() => changeGroup(group.id)}
-                >
-                  {group.name}
-                </Button>
-              </SheetClose>
-            ))}
+          <div className="flex-grow">
+            <SheetClose asChild>
+              <Button
+                className="flex items-center justify-start mt-3 p-4 rounded-xl hover:bg-gray-800 w-full min-h-20"
+                type="submit"
+                onClick={() => changeGroup(null)}
+              >
+                {imgUrl ? (
+                  <img
+                    src={imgUrl}
+                    alt={username}
+                    className="rounded-full w-12 h-12 object-cover"
+                  />
+                ) : (
+                  <Avatar
+                    size="3rem"
+                    name={uuid}
+                    variant="beam"
+                    className="!w-12 !h-12"
+                  />
+                )}
+                マイマップ
+              </Button>
+            </SheetClose>
+            {groups &&
+              groups.map((group) => (
+                <SheetClose asChild key={group.id}>
+                  <Button
+                    className="flex items-center justify-start mt-3 p-4 rounded-xl hover:bg-gray-800 w-full min-h-20"
+                    type="submit"
+                    onClick={() => changeGroup(group.id)}
+                  >
+                    {group.name}
+                  </Button>
+                </SheetClose>
+              ))}
+          </div>
 
-          <SheetFooter></SheetFooter>
+          <SheetFooter className="mt-auto">
+            <Button className="w-full hover:bg-gray-800">
+              +グループを追加
+            </Button>
+          </SheetFooter>
         </SheetContent>
       </Sheet>
     </div>
