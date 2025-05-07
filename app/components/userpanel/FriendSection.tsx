@@ -2,7 +2,11 @@ import Avatar from "boring-avatars";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
-
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 type User = { uuid: string; username: string; avatar: string };
 
 type Props = {
@@ -16,6 +20,7 @@ type Props = {
   handleGetUser: (id: string) => void;
   handleAccept: (id: string) => void;
   handleReject: (id: string) => void;
+  handleRemove: (id: string) => void;
 };
 
 export default function FriendSection({
@@ -29,6 +34,7 @@ export default function FriendSection({
   handleGetUser,
   handleAccept,
   handleReject,
+  handleRemove,
 }: Props) {
   return (
     <div className="w-full max-h-[65vh]  px-1">
@@ -55,7 +61,7 @@ export default function FriendSection({
               <div className="p-2 mt-3 flex border rounded-md items-center bg-gray-800">
                 {follwingUser.avatar ? (
                   <img
-                    src={follwingUser.avatar+"?h=128"}
+                    src={follwingUser.avatar + "?h=128"}
                     alt={follwingUser.username}
                     className="rounded-full h-16 w-16"
                   />
@@ -93,7 +99,7 @@ export default function FriendSection({
                 <div className="flex items-center">
                   {user.avatar ? (
                     <img
-                      src={user.avatar+"?h=128"}
+                      src={user.avatar + "?h=128"}
                       alt={user.username}
                       className="rounded-full h-12 w-12"
                     />
@@ -133,7 +139,7 @@ export default function FriendSection({
                 <div className="flex items-center">
                   {user.avatar ? (
                     <img
-                      src={user.avatar+"?h=128"}
+                      src={user.avatar + "?h=128"}
                       alt={user.username}
                       className="rounded-full h-12 w-12"
                     />
@@ -145,9 +151,27 @@ export default function FriendSection({
                     <div className="text-gray-500 text-sm">@{user.uuid}</div>
                   </div>
                 </div>
-                <div className="ml-auto">
+                <div className="ml-auto pr-1">
                   {user.status === "PENDING" && "承認待ち"}
                 </div>
+                <Popover >
+                  <PopoverTrigger className="hover:text-red-400">
+                    ・・・
+                  </PopoverTrigger>
+                  <PopoverContent className="z-[9999] w-auto pointer-events-auto bg-black border-black">
+                    <Button
+                      variant="destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemove(user.uuid);
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      className=" bg-red-600 text-white rounded-md"
+                    >
+                      フレンド削除
+                    </Button>
+                  </PopoverContent>
+                </Popover>
               </div>
             ))
           ) : (
