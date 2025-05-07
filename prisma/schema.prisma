@@ -20,6 +20,7 @@ model User {
   bar           String         @default("bottom")
   files         File[]
   memos         Memo[]
+  comments      Comment[]
   GroupMember   GroupMember[]
   groupRequests GroupRequest[]
   ownedGroups   Group[]        @relation("OwnerGroups")
@@ -43,6 +44,18 @@ model Memo {
   createdById String
   group       Group?   @relation(fields: [groupId], references: [id])
   groupId     String?
+  comments    Comment[]
+}
+
+model Comment {
+  id          String   @id @default(cuid())
+  content     String
+  color       String   @default("")
+  createdAt   DateTime @default(now())
+  memo        Memo     @relation(fields: [memoId], references: [id], onDelete: Cascade)
+  memoId      String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId    String
 }
 
 model Group {

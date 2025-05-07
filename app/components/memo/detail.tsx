@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useFetcher } from "@remix-run/react";
 import type { Memo } from "@prisma/client";
 import type { Role } from "@prisma/client";
+import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faCheck, faTrash } from "@fortawesome/free-solid-svg-icons";
 
@@ -9,9 +10,10 @@ type MemoDetailModalProps = {
   memo: Memo;
   onClose: () => void;
   actorRole?: Role;
+  currentUserId: string;
 };
 
-export default function MemoDetailModal({ memo, onClose, actorRole }: MemoDetailModalProps) {
+export default function MemoDetailModal({ memo, onClose, actorRole, currentUserId }: MemoDetailModalProps) {
   const fetcher = useFetcher();
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -44,6 +46,55 @@ export default function MemoDetailModal({ memo, onClose, actorRole }: MemoDetail
 
   const memoColor = memo.color || "#ffffff";
 
+
+  // コメント機能
+  const [comments, setComments] = useState<
+    { id: string; content: string; createdAt: string; author: { id: string; name: string }; color: string }[]
+  >([]);
+  const [newComment, setNewComment] = useState("");
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!window.confirm("コメントを削除しますか？")) return;
+    const res = await fetch("/api/comments", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ commentId }),
+    });
+    if (res.ok) {
+      setComments(prev => prev.filter(c => c.id !== commentId));
+    } else {
+      alert("コメントの削除に失敗しました");
+    }
+  };
+
+  // コメント取得
+  useEffect(() => {
+    (async () => {
+      const res = await fetch(`/api/comments?memoId=${memo.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setComments(data.comments);
+      }
+    })();
+  }, [memo.id]);
+
+  // コメント追加
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+    const res = await fetch("/api/comments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ memoId: memo.id, content: newComment }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setComments((prev) => [...prev, data.comment]);
+      setNewComment("");
+    } else {
+      alert("コメントの投稿に失敗しました");
+    }
+  };
+
   return (
     <div
       ref={overlayRef}
@@ -64,46 +115,97 @@ export default function MemoDetailModal({ memo, onClose, actorRole }: MemoDetail
           </button>
         </div>
 
-        <p className="mb-2">{memo.content}</p>
+        <div className="space-y-4">
+          {/* Memo content */}
+          <div>
+            <p className="mb-2">{memo.content}</p>
+            <p className="mb-2 flex items-center gap-2">
+              {memo.completed ? (
+                <>
+                  <FontAwesomeIcon icon={faCheck} className="text-green-500" />
+                  <span className="text-green-500">完了</span>
+                </>
+              ) : (
+                <>
+                  <FontAwesomeIcon icon={faTimes} className="text-red-500" />
+                  <span className="text-red-500">未完了</span>
+                </>
+              )}
+            </p>
+            {memo.latitude != null && memo.longitude != null && (
+              <p className="text-sm text-gray-300">
+                場所: {memo.place || "未設定"}
+              </p>
+            )}
+          </div>
 
-        <p className="mb-2 flex items-center gap-2">
-          {memo.completed ? (
-            <>
-              <FontAwesomeIcon icon={faCheck} className="text-green-500" />
-              <span className="text-green-500">完了</span>
-            </>
-          ) : (
-            <>
-              <FontAwesomeIcon icon={faTimes} className="text-red-500" />
-              <span className="text-red-500">未完了</span>
-            </>
+          {/* コメントセクション */}
+          <div>
+            <h3 className="text-lg font-semibold mb-2">コメント</h3>
+            <div className="max-h-36 overflow-y-auto space-y-2 mb-4">
+              {comments.map((c) => {
+                const isOwn = c.author.id === currentUserId;
+                return (
+                  <div
+                    key={c.id}
+                    role="button"
+                    tabIndex={isOwn ? 0 : undefined}
+                    onClick={isOwn ? () => handleDeleteComment(c.id) : undefined}
+                    onKeyDown={isOwn ? (e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleDeleteComment(c.id);
+                      }
+                    } : undefined}
+                    className="px-3 py-2 text-black rounded-lg shadow inline-block"
+                    style={{
+                      backgroundColor: c.color,
+                      cursor: isOwn ? "pointer" : "default",
+                    }}
+                  >
+                    <span className="font-medium">{c.author.name}</span>: {c.content}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                className="flex-1 bg-gray-700 text-white p-2 rounded"
+                placeholder="コメントを追加"
+              />
+              <button
+                type="button"
+                onClick={handleAddComment}
+                className="p-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded"
+              >
+                投稿
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className="mt-4 flex justify-end space-x-4">
+          {actorRole !== "VIEWER" && !memo.completed && (
+            <button
+              onClick={handleComplete}
+              className="text-green-500 hover:text-green-300 text-2xl"
+            >
+              <FontAwesomeIcon icon={faCheck} />
+            </button>
           )}
-        </p>
-
-        {/* 場所情報 */}
-        {memo.latitude != null && memo.longitude != null && (
-          <p className="text-sm text-gray-300 mb-8">
-            場所: {memo.place || "未設定"}
-          </p>
-        )}
-
-      {actorRole !== "VIEWER" && !memo.completed && (
-        <button
-          onClick={handleComplete}
-          className="absolute bottom-2 right-16 text-green-500 hover:text-green-300 text-2xl"
-        >
-          <FontAwesomeIcon icon={faCheck} />
-        </button>
-      )}
-
-      {actorRole !== "VIEWER" && (
-        <button
-          onClick={handleDelete}
-          className="absolute bottom-2 right-4 text-white-500 hover:text-white-300 text-2xl"
-        >
-          <FontAwesomeIcon icon={faTrash} />
-        </button>
-      )}
+          {actorRole !== "VIEWER" && (
+            <button
+              onClick={handleDelete}
+              className="text-white-500 hover:text-white-300 text-2xl"
+            >
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

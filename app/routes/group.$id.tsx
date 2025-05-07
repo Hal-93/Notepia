@@ -574,6 +574,7 @@ export default function MapPage() {
             setSelectedMemo(null);
           }}
           actorRole={currentUserRole}
+          currentUserId={userId}
         />
       )}
       <Drawer
