@@ -29,7 +29,7 @@ export default function Index() {
           <p className="mb-6 text-lg md:text-xl">場所にメモを置く新感覚アプリ。</p>
           <div className="flex justify-center space-x-4">
             <Link to="/start" className="px-6 py-3 border border-white rounded-lg hover:bg-white hover:text-black">
-              Freeプランを試す
+              無料でアカウント作成
             </Link>
           </div>
         </div>
@@ -62,8 +62,12 @@ export default function Index() {
             <div className="rounded-lg border border-gray-200 p-6 text-center hover:shadow-lg transition">
               <div className="mb-4 inline-flex items-center justify-center rounded-full bg-yellow-100 p-3">
                 {/* tag icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7l1.5 1.5L5.5 12 3 9.5M7 7H3v4h4V7zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 2a10 10 0 100 20 2.5 2.5 0 01-2.5-2.5 2.5 2.5 0 115 0 2.5 2.5 0 01-2.5 2.5h.5a10 10 0 000-20h-.5z"/>
+                  <circle cx="7.5" cy="9.5" r="1.5"/>
+                  <circle cx="12" cy="7" r="1.5"/>
+                  <circle cx="16.5" cy="9.5" r="1.5"/>
+                  <circle cx="12" cy="14.5" r="1.5"/>
                 </svg>
               </div>
               <h3 className="mb-2 text-xl font-semibold">カラーで整理</h3>
@@ -184,11 +188,18 @@ export function Header() {
         </h1>
         <nav className="ml-auto flex items-center space-x-4">
           <Link
+            to="/demo"
+            className="px-3 py-1 text-sm font-medium bg-red-600 text-white rounded hover:bg-red-700 transition-colors duration-200"
+          >
+            デモを試す
+          </Link>
+          <Link
             to="/start"
             className="px-3 py-1 text-sm font-medium bg-cyan-500 text-white rounded hover:bg-cyan-600 transition-colors duration-200"
           >
-            無料で試す
+            無料で始める
           </Link>
+
         </nav>
       </div>
     </header>

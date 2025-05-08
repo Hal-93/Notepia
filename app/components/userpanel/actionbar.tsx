@@ -16,12 +16,14 @@ export default function ActionBar({
   uuid,
   publicKey,
   userId,
+  mode,
 }: {
   username: string;
   initialAvatarUrl: string | null;
   uuid: string;
   publicKey: string;
   userId: string;
+  mode?: string;
 }) {
   useEffect(() => {
     getUsers();
@@ -360,7 +362,7 @@ export default function ActionBar({
 
   return (
     <>
-      <div className="fixed top-4 right-5 z-50">
+      <div className="top-4 right-5 z-50">
         <button onClick={() => setOpen(true)}>
           {imgUrl ? (
             <img
@@ -480,13 +482,25 @@ export default function ActionBar({
                   <div className="pt-4 space-y-3">
                     <Button
                       className="w-full bg-white text-black hover:bg-gray-400"
-                      onClick={() => setIsProfileChange(true)}
+                      onClick={() => {
+                        if (mode === "demo") {
+                          alert("デモ版ではこの機能は使用できません");
+                        } else {
+                          setIsProfileChange(true);
+                        }
+                      }}
                     >
                       プロフィールを編集
                     </Button>
                     <Button
                       className="w-full bg-indigo-500 hover:bg-indigo-700 text-black"
-                      onClick={() => setIsFriend(true)}
+                      onClick={() => {
+                        if (mode === "demo") {
+                          alert("デモ版ではこの機能は使用できません");
+                        } else {
+                          setIsFriend(true);
+                        }
+                      }}
                     >
                       フレンド
                     </Button>
