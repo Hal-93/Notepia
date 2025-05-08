@@ -13,6 +13,7 @@ import {
   faBars,
   faGear,
   faRightFromBracket,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { useFetcher, useLocation, useNavigate } from "@remix-run/react";
 import Avatar from "boring-avatars";
@@ -99,19 +100,29 @@ export function SheetSide({
       <div className="grid grid-cols-2 gap-2">
         <Sheet>
           <SheetTrigger asChild>
-            <Button className="rounded-xl w-12 h-12 flex items-center justify-center shadow-md">
+            {/* hamburgerMenu */}
+            <Button className="bg-[#1F2937] fixed mt-[16px] ml-[16px] rounded-xl w-12 h-12 flex items-center justify-center shadow-md" style={{ zIndex: 1000, pointerEvents: "auto" }}>
               <FontAwesomeIcon icon={faBars}></FontAwesomeIcon>
             </Button>
           </SheetTrigger>
+
           <SheetContent side="left" className="flex flex-col h-full">
             <SheetHeader>
-              <SheetTitle className="text-4xl">マップ</SheetTitle>
+              <SheetTitle className="text-4xl text-[#777777] ml-[16px] mt-[18px] md:mt-[76px]">マップ</SheetTitle>
+              <SheetClose asChild>
+                <button
+                  className="absolute top-[16px] md:top-[76px] right-[24px] md:right-[16px] text-gray-400 hover:text-red-500 transition-colors"
+                  aria-label="Close"
+                >
+                  <FontAwesomeIcon icon={faXmark} className="text-xl" />
+                </button>
+              </SheetClose>
             </SheetHeader>
             <div className="flex-grow overflow-y-auto overflow-x-clip">
               <SheetClose asChild>
                 <div className="flex">
                   <Button
-                    className="flex items-center justify-start mt-3 p-4 rounded-xl hover:bg-gray-800 w-full min-h-20"
+                    className="flex items-center justify-start rounded-xl mx-[16px] hover:bg-gray-800 w-full min-h-20"
                     type="submit"
                     onClick={() => changeGroup(null)}
                   >
@@ -129,17 +140,18 @@ export function SheetSide({
                         className="!w-12 !h-12"
                       />
                     )}
-                    マイマップ
+                    Mymap
                   </Button>
                 </div>
               </SheetClose>
 
+              <SheetTitle className="text-4xl text-[#777777] ml-[16px] md:mt-[12px]">グループ</SheetTitle>
               {groups &&
                 groups.map((group) => (
                   <SheetClose asChild key={group.id}>
                     <div className="flex">
                       <Button
-                        className="flex items-center justify-start mt-3 p-4 rounded-xl hover:bg-gray-800 w-11/12 min-h-20"
+                        className="flex items-center justify-start mt-3 p-4 rounded-xl mx-[16px] hover:bg-gray-800 w-full min-h-20"
                         type="submit"
                         onClick={() => changeGroup(group.id)}
                       >
@@ -168,11 +180,12 @@ export function SheetSide({
                             )}
                           </div>
                         ))}
-                        {group.name}
-                      </Button>
-                      <div className="flex flex-col w-1/12 mt-3 me-1">
+                        <div className="truncate max-w-[104px] sm:max-w-[150px] md:max-w-[200px]">
+                            {group.name}
+                        </div>
+                        <div className="flex flex-col w-1/12 my-3 ml-auto">
                         <Button
-                          className="w-1/12 hover:bg-gray-800"
+                          className="w-1/12 hover:bg-gray-600"
                           variant="ghost"
                           onClick={() =>
                             handleLeaveGroup(
@@ -187,7 +200,7 @@ export function SheetSide({
                         {group.ownerId === userId && (
                           <Button
                             variant="ghost"
-                            className="text-white w-1/12 hover:bg-gray-800"
+                            className="text-white w-1/12 hover:bg-gray-600"
                             onClick={() =>
                               handleOpenEditModal(group.id, group.name)
                             }
@@ -196,21 +209,21 @@ export function SheetSide({
                           </Button>
                         )}
                       </div>
+                      </Button>
                     </div>
                   </SheetClose>
                 ))}
-            </div>
-
-            <SheetFooter className="mt-auto">
+                <SheetFooter className="mt-auto">
               <SheetClose asChild>
                 <Button
-                  className="w-full hover:bg-gray-800"
+                  className="w-full hover:bg-gray-800 mb-[34px] mt-3 mx-[16px] rounded-xl"
                   onClick={handleOpenModal}
                 >
                   +グループを作成
                 </Button>
               </SheetClose>
             </SheetFooter>
+            </div>
           </SheetContent>
         </Sheet>
       </div>

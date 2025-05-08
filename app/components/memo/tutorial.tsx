@@ -55,7 +55,7 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
 
   return (
     <Drawer open={true} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DrawerContent className="mx-auto h-[80vh] w-full max-w-md bg-black text-white rounded-lg shadow-lg p-4 overflow-hidden z-[9999]">
+      <DrawerContent className="mx-auto h-[80vh] w-full max-w-md bg-black text-white rounded-lg shadow-lg p-4 overflow-hidden z-[100]">
         <div
           ref={modalRef}
           className="relative w-full h-full"

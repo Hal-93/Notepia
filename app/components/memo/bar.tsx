@@ -64,7 +64,7 @@ const Bar = ({
     color: '#ffffff',
   }), [buttonColor]);
 
-  const buttonClass = "rounded-[16px] w-12 h-12 flex items-center justify-center shadow-md";
+  const buttonClass = "rounded-[16px] w-[56px] h-[56px] flex items-center justify-center shadow-md";
 
   return (
     <div
@@ -72,7 +72,6 @@ const Bar = ({
         position: 'fixed',
         display: 'flex',
         flexDirection: position === 'bottom' ? 'row' : 'column',
-        padding: '12px',
         gap: '12px',
         borderRadius: '8px',
         zIndex: 10,

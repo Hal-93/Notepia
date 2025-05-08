@@ -9,10 +9,10 @@ export default function TutorialLauncher() {
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-[4] w-[60px] h-[60px] z-[4]">
+      <div className="fixed bottom-[34px] right-[16px] z-[4] w-[48px] h-[48px]">
         <Button
           onClick={() => setShow(true)}
-          className="rounded-full w-12 h-12 flex items-center justify-center shadow-md bg-cyan-500 hover:bg-cyan-600"
+          className="rounded-full w-12 h-12 flex items-center justify-center shadow-md bg-cyan-600 hover:bg-cyan-800"
         >
           <FontAwesomeIcon icon={faInfoCircle} className="text-4xl" />
         </Button>

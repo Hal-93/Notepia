@@ -577,19 +577,17 @@ export default function MapPage() {
 
   return (
     <>
-      <div style={{ position: "relative" }}>
+      <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
         <div
           ref={mapContainerRef}
           style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
+            width: "100%",
+            height: "100%",
+            position: "relative",
           }}
         />
 
-        <div className="fixed top-4 inset-x-5 flex-nowrap flex items-center gap-2 z-50">
+        <div className="fixed">
           <SheetSide
             username={username}
             avatarUrl={avatarUrl}
@@ -597,10 +595,9 @@ export default function MapPage() {
             groups={groups}
             userId={userId}
           />
-          <div className="text-5xl text-primary">
-            {groupName ? groupName : "マイマップ"}
-          </div>
-          <div className="relative flex-1 min-w-0">
+
+          {/* Search bar */}
+          <div className="fixed flex-nowrap flex items-center z-20 w-full">
             <MapBoxSearch
               api={mapboxToken}
               onSelect={(place) => {
@@ -614,7 +611,16 @@ export default function MapPage() {
               }}
             />
           </div>
-          <div className="flex-none flex-shrink-0 w-12 h-12 flex items-center justify-center">
+
+          {/* mapName */}
+          <div className="fixed flex-nowrap flex items-center z-[5]">
+            <h2 className="ml-[76px] mt-[18px] md:mt-[76px] text-4xl text-white h-[48px] font-bold truncate max-w-[60vw] md:max-w-[50vw]">
+            {groupName ? groupName : "Mymap"}
+            </h2>
+          </div>
+
+          {/* Action bar */}
+          <div className="fixed flex-none flex-shrink-0 w-12 h-12 mt-[16px] md:mt-4 right-[16px] flex items-center justify-center" style={{ zIndex: 100, pointerEvents: "auto" }}>
             <ActionBar
               username={username!}
               uuid={uuid!}

@@ -426,8 +426,7 @@ export default function MapPage() {
           height: "100%",
           position: "relative",
         }}
-      >
-      </div>
+      />
       
       {/* searchbar */}
       <div className="fixed flex-nowrap flex items-center z-20 w-full">
