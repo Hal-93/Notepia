@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMapMarkerAlt, faXmark, faLandmark, faPlane, faTrain, faUtensils, faCartShopping, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { v4 as uuidv4 } from "uuid";
@@ -42,6 +42,7 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
   const [showDropdown, setShowDropdown] = useState(false);
 
   const sessionToken = React.useMemo(() => uuidv4(), []);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (query.length < 1) {
@@ -98,6 +99,19 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
 
     return () => clearTimeout(timeoutId);
   }, [query, api, sessionToken]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const getIconForCategory = (types: string[]): IconDefinition => {
     if (types.includes("トラベル>観光名所")) return faLandmark;
@@ -173,7 +187,7 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
 
   // searchbarStyles
   return (
-    <div className="ml-[76px] mt-4 w-[calc(25vw-16px)] min-w-[240px] relative z-30 mx-auto">
+    <div className="mx-[16px] md:ml-[76px] md:mx-0 mt-[72px] md:mt-4 w-full md:w-[calc(25vw-16px)] md:min-w-[240px] relative z-30">
       <div className="relative">
 
         <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
@@ -203,7 +217,7 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
       </div>
   
       {showDropdown && (
-        <div className="absolute mt-1 w-full bg-gray-800 text-white rounded-md shadow-lg z-30">
+        <div ref={dropdownRef} className="absolute mt-1 w-full bg-gray-800 text-white rounded-md shadow-lg z-30">
           {loading ? (
             <div className="p-2 text-gray-400">読み込み中...</div>
           ) : displayedPredictions.length === 0 ? (

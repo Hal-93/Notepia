@@ -36,6 +36,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const uuid = user?.uuid;
   const username = user?.name;
   const avatarUrl = user?.avatar as string | null;
+  const groupName = "";
   return json({
     mapboxToken: process.env.MAPBOX_TOKEN,
     vapidPublicKey: process.env.VAPID_PUBLIC_KEY!,
@@ -44,6 +45,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     username,
     uuid,
     avatarUrl,
+    groupName,
   });
 };
 
@@ -80,6 +82,7 @@ export default function MapPage() {
     uuid,
     avatarUrl,
     vapidPublicKey,
+    groupName,
   } = useLoaderData<typeof loader>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -427,7 +430,7 @@ export default function MapPage() {
       </div>
       
       {/* searchbar */}
-      <div className="fixed flex-nowrap flex items-center z-5">
+      <div className="fixed flex-nowrap flex items-center z-20 w-full">
         <MapBoxSearch
           api={mapboxToken}
           onSelect={(place) => {
@@ -443,11 +446,13 @@ export default function MapPage() {
       </div>
 
       <div className="fixed flex-nowrap flex items-center z-[5]">
-        <h2 className="ml-[76px] mt-[76px] text-5xl text-white h-[48px] font-bold">My map</h2>
+        <h2 className="ml-[76px] mt-[18px] md:mt-[76px] text-4xl text-white h-[48px] font-bold">
+        {groupName || "My map"}
+        </h2>
       </div>
 
       {/* userIcon */}
-      <div className="fixed flex-none flex-shrink-0 w-12 h-12 flex items-center justify-center z-5 top-4 right-[16px]">
+      <div className="fixed flex-none flex-shrink-0 w-12 h-12 mt-[16px] md:mt-4 right-[16px] flex items-center justify-center z-5">
           <ActionBar
             username={username!}
             uuid={uuid!}
