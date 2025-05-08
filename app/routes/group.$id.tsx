@@ -289,11 +289,12 @@ export default function MapPage() {
   useEffect(() => {
     if (!mapRef.current) return;
 
-    const map = mapRef.current;
+    const map = mapRef.current!;
 
-    memoMarkersRef.current.forEach((marker) => {
-      marker.getPopup()?.remove();
-      marker.remove();
+    // Remove existing markers
+    memoMarkersRef.current.forEach((m) => {
+      m.getPopup()?.remove();
+      m.remove();
     });
     memoMarkersRef.current = [];
 
@@ -301,62 +302,64 @@ export default function MapPage() {
 
     memos.forEach((memo: Memo) => {
       if (memo.latitude != null && memo.longitude != null) {
-        const markerEl = document.createElement("div");
-        markerEl.style.width = "20px";
-        markerEl.style.height = "20px";
+        // create styled marker element
+        const el = document.createElement("div");
+        el.style.width = "20px";
+        el.style.height = "20px";
         const bgColor = memo.completed ? "#000000" : memo.color || "#ffffff";
-        markerEl.style.backgroundColor = bgColor;
-        markerEl.style.borderRadius = "50%";
-        markerEl.style.border = "3px solid white";
-        markerEl.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
+        el.style.backgroundColor = bgColor;
+        el.style.borderRadius = "50%";
+        el.style.border = "3px solid white";
+        el.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
 
-        const marker = new mapboxgl.Marker(markerEl)
+        const marker = new mapboxgl.Marker(el)
           .setLngLat([memo.longitude, memo.latitude])
           .addTo(map);
 
+        // clicking the marker opens detail
         marker.getElement().addEventListener("click", (e) => {
           e.stopPropagation();
           setSelectedMemo(memo);
           setShowDetail(true);
         });
 
-        if (!memo.completed) {
-          const popupContent = document.createElement("div");
-          popupContent.style.backgroundColor = bgColor;
-          popupContent.style.padding = "8px";
-          popupContent.style.cursor = "pointer";
-          popupContent.innerHTML = `<b>${memo.title}</b>`;
+        // create styled popup for all memos
+        const popupContent = document.createElement("div");
+        popupContent.style.backgroundColor = bgColor;
+        popupContent.style.padding = "8px";
+        popupContent.style.cursor = "pointer";
+        popupContent.innerHTML = `<b>${memo.title}</b>`;
+        popupContent.addEventListener("click", (e) => {
+          e.stopPropagation();
+          setSelectedMemo(memo);
+          setShowDetail(true);
+        });
 
-          popupContent.addEventListener("click", (e) => {
-            e.stopPropagation();
-            setSelectedMemo(memo);
-            setShowDetail(true);
-          });
+        const popupClass = `popup-color-${(memo.color || "#ffffff").replace(
+          "#",
+          ""
+        )}`;
 
-          const popupClass = `popup-color-${(memo.color || "#ffffff").replace(
-            "#",
-            ""
-          )}`;
+        marker.setPopup(
+          new mapboxgl.Popup({
+            className: popupClass,
+            offset: 25,
+            closeOnClick: false,
+            closeButton: false,
+          }).setDOMContent(popupContent)
+        );
 
-          marker.setPopup(
-            new mapboxgl.Popup({
-              className: popupClass,
-              offset: 25,
-              closeOnClick: false,
-              closeButton: false,
-            }).setDOMContent(popupContent)
-          );
-          if (map.getZoom() >= 10) {
-            marker.togglePopup();
-          }
+        if (map.getZoom() >= 10) {
+          marker.togglePopup();
         }
 
         newMarkers.push(marker);
       }
     });
 
+    // toggle popups on zoom end
     const handleZoomEnd = () => {
-      memoMarkersRef.current.forEach((m) => {
+      newMarkers.forEach((m) => {
         const popup = m.getPopup();
         if (popup) {
           if (map.getZoom() >= 10) {
@@ -367,15 +370,15 @@ export default function MapPage() {
         }
       });
     };
-    map.on('zoomend', handleZoomEnd);
+    map.on("zoomend", handleZoomEnd);
 
     memoMarkersRef.current = newMarkers;
 
     return () => {
-      map.off('zoomend', handleZoomEnd);
-      newMarkers.forEach((marker) => {
-        marker.getPopup()?.remove();
-        marker.remove();
+      map.off("zoomend", handleZoomEnd);
+      newMarkers.forEach((m) => {
+        m.getPopup()?.remove();
+        m.remove();
       });
       memoMarkersRef.current = [];
     };
