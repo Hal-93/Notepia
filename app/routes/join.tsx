@@ -4,8 +4,14 @@ import type {
   MetaFunction,
 } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
-import { useEffect, useRef } from "react";
+import {
+  Form,
+  Link,
+  useActionData,
+  useLoaderData,
+  useSearchParams,
+} from "@remix-run/react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   createUser,
@@ -19,10 +25,15 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 
+import { Turnstile } from "@marsidev/react-turnstile";
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await getUserId(request);
   if (userId) return redirect("/");
-  return json({});
+  const CF_TURNSTILE_SITE_KEY = process.env.CF_TURNSTILE_SITE_KEY;
+  return json({
+    CF_TURNSTILE_SITE_KEY,
+  });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -30,6 +41,33 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const email = formData.get("email");
   const uuid = formData.get("uuid");
   const password = formData.get("password");
+  const token = formData.get("token") as string;
+  const ip = request.headers.get("CF-Connecting-IP") as string;
+
+  const CF_TURNSTILE_SECRET_KEY = process.env.CF_TURNSTILE_SECRET_KEY as string;
+  const url = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+  const tokenForm = new FormData();
+  tokenForm.append("secret", CF_TURNSTILE_SECRET_KEY);
+  tokenForm.append("response", token);
+  tokenForm.append("remoteip", ip);
+
+  const result = await fetch(url, {
+    body: tokenForm,
+    method: "POST",
+  });
+  const outcome = await result.json();
+  if (!outcome.success) {
+    return json(
+      {
+        errors: {
+          uuid: null,
+          email: null,
+          password: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
 
   if (!validateEmail(email)) {
     return json(
@@ -123,10 +161,19 @@ export const meta: MetaFunction = () => [{ title: "Sign Up" }];
 
 export default function Join() {
   const [searchParams] = useSearchParams();
+  const { CF_TURNSTILE_SITE_KEY } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const uuidRef = useRef<HTMLInputElement>(null);
+
+  const [isVerify, setIsVerify] = useState(false);
+  const [token, setToken] = useState<string>("");
+
+  const handleSuccess = (token: string) => {
+    setToken(token);
+    setIsVerify(true);
+  };
 
   useEffect(() => {
     if (actionData?.errors?.email) {
@@ -137,7 +184,7 @@ export default function Join() {
   }, [actionData]);
 
   return (
-    <div className="h-screen h-full grid md:grid-cols-3">
+    <div className="h-screen grid md:grid-cols-3">
       {/* 左カラム */}
       <div className="relative bg-cover bg-center bg-black flex flex-col">
         {/* コンテンツ */}
@@ -224,10 +271,16 @@ export default function Join() {
                   </p>
                 )}
               </div>
-
+              <Turnstile
+                siteKey={CF_TURNSTILE_SITE_KEY!}
+                onSuccess={(token) => handleSuccess(token)}
+                options={{ size: "flexible" }}
+              />
+              <input hidden={true} name="token" value={token} />
               <Button
                 type="submit"
                 className="w-full md:text-[1.2vw] md:h-[2.5vw] px-5 bg-gradient-to-r from-purple-800 to-indigo-600 text-white hover:bg-gradient-to-l hover:from-indigo-900 hover:to-purple-950 hover:text-zinc-400"
+                disabled={!isVerify}
               >
                 アカウント作成
               </Button>
