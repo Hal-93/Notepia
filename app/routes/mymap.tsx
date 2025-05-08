@@ -411,25 +411,43 @@ export default function MapPage() {
     }
   };
 
+  //mymapLayout
+
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
+      {/* sidebar */}
+      <div
+        style={{
+          width: "25%",
+          backgroundColor: "#141920",
+          color: "white",
+          padding: "1rem",
+          overflowY: "auto",
+        }}
+      >
+        <h2 className="text-xl font-bold">Sidebar</h2>
+        <p>ここにメニューなどを追加できます。</p>
+      </div>
+
+      {/* mapContainer */}
       <div
         ref={mapContainerRef}
         style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
+          width: "75%",
+          height: "100%",
+          position: "relative",
         }}
-      />
-      <div className="fixed top-4 inset-x-5 flex-nowrap flex items-center gap-2 z-50">
-        <Form action="/home" className="flex-none">
+      >
+      </div>
+      
+      <div className="fixed flex-nowrap flex items-center z-5">
+        {/* <Form action="/home" className="flex-none">
           <Button className="rounded-full w-12 h-12 flex items-center justify-center shadow-md">
             <FontAwesomeIcon icon={faHome}></FontAwesomeIcon>
           </Button>
-        </Form>
-        <div className="relative flex-1 min-w-0">
+        </Form> */}
+
+        <div className="">
           <MapBoxSearch
             api={mapboxToken}
             onSelect={(place) => {
@@ -443,6 +461,7 @@ export default function MapPage() {
             }}
           />
         </div>
+        
         <div className="flex-none flex-shrink-0 w-12 h-12 flex items-center justify-center">
           <ActionBar
             username={username!}
@@ -453,6 +472,7 @@ export default function MapPage() {
           />
         </div>
       </div>
+
       <Bar
         handleSearchMemo={handleSearchMemo}
         handleGoToCurrentLocation={handleGoToCurrentLocation}
@@ -502,3 +522,115 @@ export default function MapPage() {
     </div>
   );
 }
+
+
+
+// return (
+//   <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
+//     {/* sidebar */}
+//     <div
+//       style={{
+//         width: "25%",
+//         backgroundColor: "#141920",
+//         color: "white",
+//         padding: "1rem",
+//         overflowY: "auto",
+//       }}
+//     >
+//       <h2 className="text-xl font-bold">Sidebar</h2>
+//       <p>ここにメニューなどを追加できます。</p>
+//     </div>
+
+//     {/* mapContainer */}
+//     <div
+//       ref={mapContainerRef}
+//       style={{
+//         width: "75%",
+//         height: "100%",
+//         position: "relative",
+//       }}
+//     >
+//     </div>
+    
+    
+//     <div className="fixed top-4 inset-x-5 flex-nowrap flex items-center gap-2 z-50">
+//       {/* <Form action="/home" className="flex-none">
+//         <Button className="rounded-full w-12 h-12 flex items-center justify-center shadow-md">
+//           <FontAwesomeIcon icon={faHome}></FontAwesomeIcon>
+//         </Button>
+//       </Form> */}
+
+//       <div className="relative flex-1 min-w-0">
+//         <MapBoxSearch
+//           api={mapboxToken}
+//           onSelect={(place) => {
+//             if (mapRef.current) {
+//               mapRef.current.flyTo({
+//                 center: place.center,
+//                 zoom: 16,
+//                 essential: true,
+//               });
+//             }
+//           }}
+//         />
+//       </div>
+      
+//       <div className="flex-none flex-shrink-0 w-12 h-12 flex items-center justify-center">
+//         <ActionBar
+//           username={username!}
+//           uuid={uuid!}
+//           initialAvatarUrl={avatarUrl}
+//           publicKey={vapidPublicKey}
+//           userId={userId}
+//         />
+//       </div>
+//     </div>
+
+//     <Bar
+//       handleSearchMemo={handleSearchMemo}
+//       handleGoToCurrentLocation={handleGoToCurrentLocation}
+//       userId={userId}
+//       groupeId="defaultGroupId"
+//       groupeName="defaultGroupName"
+//     />
+
+//     <Compass map={mapRef.current} />
+
+//     <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
+//       <DrawerContent
+//         className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px]"
+//         style={{ zIndex: 99999 }}
+//       >
+//         <DrawerHeader>
+//           <DrawerTitle>メモを検索</DrawerTitle>
+//         </DrawerHeader>
+//         <MemoList
+//           searchQuery={searchQuery}
+//           onSearchQueryChange={setSearchQuery}
+//           filteredMemos={filteredMemos}
+//           jumpToMemo={jumpToMemo}
+//         />
+//       </DrawerContent>
+//     </Drawer>
+
+//     {showModal && (
+//       <MemoCreateModal
+//         lat={modalLat}
+//         lng={modalLng}
+//         mapboxToken={mapboxToken}
+//         onClose={handleCloseModal}
+//         onSubmit={handleSubmitMemo}
+//       />
+//     )}
+//     {showDetail && selectedMemo && (
+//       <MemoDetailModal
+//         memo={selectedMemo}
+//         onClose={() => {
+//           setShowDetail(false);
+//           setSelectedMemo(null);
+//         }}
+//         currentUserId={userId}
+//       />
+//     )}
+//   </div>
+// );
