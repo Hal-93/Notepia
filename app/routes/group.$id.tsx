@@ -55,6 +55,7 @@ import {
   zoomAtom,
 } from "~/atoms/locationAtom";
 import MemoDetailModal from "~/components/memo/detail";
+import TutorialLauncher from "~/components/memo/tutorial-launcher";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const userId = await getUserId(request);
@@ -594,6 +595,7 @@ export default function MapPage() {
         />
 
         <Compass map={mapRef.current} />
+        <TutorialLauncher />
 
         <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
           <DrawerContent className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px] z-[1100]">

@@ -72,6 +72,7 @@ const Bar = ({
         position: 'fixed',
         display: 'flex',
         flexDirection: position === 'bottom' ? 'row' : 'column',
+        padding: '12px',
         gap: '12px',
         borderRadius: '8px',
         zIndex: 10,

@@ -1,9 +1,7 @@
-import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { Link } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { getUserId } from "~/session.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -22,7 +20,7 @@ export default function Index() {
           className="absolute inset-0 md:hidden"
           style={{
             backgroundImage:
-              "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0, 0, 0, 0.85) 100%), url('/backGroundMobile250506.jpeg')",
+              "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0, 0, 0, 0.85) 100%), url('/backimage.png')",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -72,7 +70,7 @@ export default function Index() {
       {/* 右カラム */}
       <div
         className="hidden md:block col-span-2 bg-cover bg-center"
-        style={{ backgroundImage: "url('/backGround250506.jpeg')" }}
+        style={{ backgroundImage: "url('/backimage.png')" }}
       ></div>
     </div>
   );
