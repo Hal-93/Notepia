@@ -51,7 +51,7 @@ export default function Compass({ map }: CompassProps) {
 
   return (
     <div
-      className={`fixed top-20 right-4 z-5 w-[48px] h-[48px] rounded-[16px] bg-black flex items-center justify-center cursor-pointer transition-opacity duration-500 ${
+      className={`fixed mt-[164px] md:mt-[76px] right-4 z-5 w-[48px] h-[48px] rounded-[16px] bg-black flex items-center justify-center cursor-pointer transition-opacity duration-500 ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
       onClick={resetNorth}

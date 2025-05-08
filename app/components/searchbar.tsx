@@ -173,7 +173,7 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
 
   // searchbarStyles
   return (
-    <div className="ml-[calc(25vw+16px)] mt-4 w-[calc(25vw-16px)] min-w-[240px] relative z-50 mx-auto">
+    <div className="ml-[76px] mt-4 w-[calc(25vw-16px)] min-w-[240px] relative z-30 mx-auto">
       <div className="relative">
 
         <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
@@ -203,7 +203,7 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
       </div>
   
       {showDropdown && (
-        <div className="absolute mt-1 w-full bg-gray-800 text-white rounded-md shadow-lg">
+        <div className="absolute mt-1 w-full bg-gray-800 text-white rounded-md shadow-lg z-30">
           {loading ? (
             <div className="p-2 text-gray-400">読み込み中...</div>
           ) : displayedPredictions.length === 0 ? (
