@@ -14,7 +14,7 @@ export default function Index() {
   return (
     <div className="h-screen grid md:grid-cols-3">
       {/* 左カラム */}
-      <div className="relative bg-cover bg-center md:bg-black flex flex-col justify-end">
+      <div className="relative bg-cover bg-center md:bg-[#141920] flex flex-col justify-end">
         {/* スマホ時だけのグラデーション背景 */}
         <div
           className="absolute inset-0 md:hidden"

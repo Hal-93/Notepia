@@ -362,7 +362,7 @@ export default function ActionBar({
 
   return (
     <>
-      <div className="top-4 right-5 z-50">
+      <div className="top-4 right-5 z-5">
         <button onClick={() => setOpen(true)}>
           {imgUrl ? (
             <img

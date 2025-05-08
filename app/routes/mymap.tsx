@@ -36,6 +36,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const uuid = user?.uuid;
   const username = user?.name;
   const avatarUrl = user?.avatar as string | null;
+  const groupName = "";
   return json({
     mapboxToken: process.env.MAPBOX_TOKEN,
     vapidPublicKey: process.env.VAPID_PUBLIC_KEY!,
@@ -44,6 +45,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     username,
     uuid,
     avatarUrl,
+    groupName,
   });
 };
 
@@ -80,6 +82,7 @@ export default function MapPage() {
     uuid,
     avatarUrl,
     vapidPublicKey,
+    groupName,
   } = useLoaderData<typeof loader>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -411,29 +414,27 @@ export default function MapPage() {
     }
   };
 
+  //mymapLayout
+
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
+      {/* mapContainer */}
       <div
         ref={mapContainerRef}
         style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
+          width: "100%",
+          height: "100%",
+          position: "relative",
         }}
-      />
-      <div className="fixed top-4 inset-x-5 flex-nowrap flex items-center gap-2 z-50">
-        <Form action="/home" className="flex-none">
-          <Button className="rounded-full w-12 h-12 flex items-center justify-center shadow-md">
-            <FontAwesomeIcon icon={faHome}></FontAwesomeIcon>
-          </Button>
-        </Form>
-        <div className="relative flex-1 min-w-0">
-          <MapBoxSearch
-            api={mapboxToken}
-            onSelect={(place) => {
-              if (mapRef.current) {
+      >
+      </div>
+      
+      {/* searchbar */}
+      <div className="fixed flex-nowrap flex items-center z-20 w-full">
+        <MapBoxSearch
+          api={mapboxToken}
+          onSelect={(place) => {
+            if (mapRef.current) {
                 mapRef.current.flyTo({
                   center: place.center,
                   zoom: 16,
@@ -442,8 +443,16 @@ export default function MapPage() {
               }
             }}
           />
-        </div>
-        <div className="flex-none flex-shrink-0 w-12 h-12 flex items-center justify-center">
+      </div>
+
+      <div className="fixed flex-nowrap flex items-center z-[5]">
+        <h2 className="ml-[76px] mt-[18px] md:mt-[76px] text-4xl text-white h-[48px] font-bold">
+        {groupName || "My map"}
+        </h2>
+      </div>
+
+      {/* userIcon */}
+      <div className="fixed flex-none flex-shrink-0 w-12 h-12 mt-[16px] md:mt-4 right-[16px] flex items-center justify-center z-5">
           <ActionBar
             username={username!}
             uuid={uuid!}
@@ -452,7 +461,8 @@ export default function MapPage() {
             userId={userId}
           />
         </div>
-      </div>
+
+      {/* createGroup/Memo&currentlocation bar*/}
       <Bar
         handleSearchMemo={handleSearchMemo}
         handleGoToCurrentLocation={handleGoToCurrentLocation}
@@ -461,8 +471,10 @@ export default function MapPage() {
         groupeName="defaultGroupName"
       />
 
+      {/* compass */}
       <Compass map={mapRef.current} />
 
+      {/* Drawer */}
       <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
         <DrawerContent
           className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px]"
