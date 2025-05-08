@@ -440,18 +440,12 @@ export default function MapPage() {
       >
       </div>
       
+      {/* searchbar */}
       <div className="fixed flex-nowrap flex items-center z-5">
-        {/* <Form action="/home" className="flex-none">
-          <Button className="rounded-full w-12 h-12 flex items-center justify-center shadow-md">
-            <FontAwesomeIcon icon={faHome}></FontAwesomeIcon>
-          </Button>
-        </Form> */}
-
-        <div className="">
-          <MapBoxSearch
-            api={mapboxToken}
-            onSelect={(place) => {
-              if (mapRef.current) {
+        <MapBoxSearch
+          api={mapboxToken}
+          onSelect={(place) => {
+            if (mapRef.current) {
                 mapRef.current.flyTo({
                   center: place.center,
                   zoom: 16,
@@ -460,9 +454,10 @@ export default function MapPage() {
               }
             }}
           />
-        </div>
-        
-        <div className="flex-none flex-shrink-0 w-12 h-12 flex items-center justify-center">
+      </div>
+
+      {/* actionbar */}
+      <div className="fixed flex-none flex-shrink-0 w-12 h-12 flex items-center justify-center z-5 top-4 right-[16px]">
           <ActionBar
             username={username!}
             uuid={uuid!}
@@ -471,7 +466,6 @@ export default function MapPage() {
             userId={userId}
           />
         </div>
-      </div>
 
       <Bar
         handleSearchMemo={handleSearchMemo}

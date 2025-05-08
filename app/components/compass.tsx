@@ -51,7 +51,7 @@ export default function Compass({ map }: CompassProps) {
 
   return (
     <div
-      className={`fixed bottom-4 right-4 z-[4] w-[60px] h-[60px] rounded-[16px] bg-black flex items-center justify-center cursor-pointer transition-opacity duration-500 ${
+      className={`fixed top-20 right-4 z-5 w-[48px] h-[48px] rounded-[16px] bg-black flex items-center justify-center cursor-pointer transition-opacity duration-500 ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
       onClick={resetNorth}
@@ -60,7 +60,7 @@ export default function Compass({ map }: CompassProps) {
         ref={compassRef}
         src="/compass.svg"
         alt="Compass"
-        className="w-10 h-10 transition-transform duration-200"
+        className="w-8 h-8 transition-transform duration-200"
         style={{ transform: `rotate(${-bearing}deg)` }}
       />
     </div>
