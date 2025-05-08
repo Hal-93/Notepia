@@ -60,7 +60,7 @@ export default function GroupEditModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60">
       <div className="relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white">
         <div className="flex justify-between mb-4">
           <h2 className="text-white text-lg font-bold">グループの編集</h2>

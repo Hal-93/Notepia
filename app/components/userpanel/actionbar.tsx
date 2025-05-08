@@ -407,7 +407,7 @@ export default function ActionBar({
               ) : (
                 <button
                   onClick={() => setOpen(false)}
-                  className="absolute top-4 left-4 text-white text-5xl hover:text-red-400"
+                  className="absolute top-4 right-4 text-white text-5xl hover:text-red-400"
                   aria-label="閉じる"
                 >
                   &times;
@@ -493,7 +493,7 @@ export default function ActionBar({
                       プロフィールを編集
                     </Button>
                     <Button
-                      className="w-full bg-indigo-500 hover:bg-indigo-700 text-black"
+                      className="w-full bg-[#1F2937] hover:bg-[#141920] text-white"
                       onClick={() => {
                         if (mode === "demo") {
                           alert("デモ版ではこの機能は使用できません");
@@ -502,10 +502,10 @@ export default function ActionBar({
                         }
                       }}
                     >
-                      フレンド
+                      フレンド一覧
                     </Button>
                     <Button
-                      className="w-full bg-indigo-500 hover:bg-indigo-700 text-black"
+                      className="w-full bg-[#1F2937] hover:bg-[#141920] text-white"
                       onClick={() => setIsSetting(true)}
                     >
                       設定

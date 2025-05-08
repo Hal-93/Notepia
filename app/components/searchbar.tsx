@@ -190,7 +190,7 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
     <div className="mx-[16px] md:ml-[76px] md:mx-0 mt-[72px] md:mt-4 w-full md:w-[calc(25vw-16px)] md:min-w-[240px] relative z-30">
       <div className="relative">
 
-        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">
 
         <FontAwesomeIcon icon={faSearch} />
         </div>
@@ -201,14 +201,14 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
           value={query}
           onChange={(e) => { setQuery(e.target.value); setShowDropdown(true); }}
           placeholder="建物名で検索"
-          className="w-full h-[48px] bg-gray-800 px-10 text-white rounded-[16px] shadow-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          className="w-full h-[48px] bg-gray-800 px-11 text-white rounded-[16px] shadow-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
         />
 
         
         {query && (
           <button
             onClick={clearQuery}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
             aria-label="検索クリア"
           >
             <FontAwesomeIcon icon={faXmark}/>
