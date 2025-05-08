@@ -23,7 +23,7 @@ const Bar = ({
 }: BarProps) => {
 
   const [position, setPosition] = useState<'left' | 'right' | 'bottom'>('bottom');
-  const [buttonColor, setButtonColor] = useState<string>('#4F46E5');
+  const [buttonColor, setButtonColor] = useState<string>('#1F2937');
   useEffect(() => {
     async function loadSettings() {
       const res = await fetch("/api/user-settings");
@@ -51,12 +51,12 @@ const Bar = ({
   const positionStyle: React.CSSProperties = React.useMemo(() => {
     switch (position) {
       case 'left':
-        return { bottom: '50%', left: '20px', transform: 'translateY(50%)' };
+        return { bottom: '50%', left: '16px', transform: 'translateY(50%)' };
       case 'right':
-        return { bottom: '50%', right: '20px', transform: 'translateY(50%)' };
+        return { bottom: '50%', right: '16px', transform: 'translateY(50%)' };
       case 'bottom':
       default:
-        return { bottom: '20px', left: '50%', transform: 'translateX(-50%)' };
+        return { bottom: '34px', left: '50%', transform: 'translateX(-50%)' };
     }
   }, [position]);
   const buttonStyle: React.CSSProperties = React.useMemo(() => ({
@@ -64,7 +64,7 @@ const Bar = ({
     color: '#ffffff',
   }), [buttonColor]);
 
-  const buttonClass = "rounded-full w-12 h-12 flex items-center justify-center shadow-md";
+  const buttonClass = "rounded-[16px] w-12 h-12 flex items-center justify-center shadow-md";
 
   return (
     <div
@@ -72,11 +72,9 @@ const Bar = ({
         position: 'fixed',
         display: 'flex',
         flexDirection: position === 'bottom' ? 'row' : 'column',
-        gap: '10px',
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        padding: '12px',
+        gap: '12px',
         borderRadius: '8px',
-        zIndex: 1000,
+        zIndex: 10,
         ...positionStyle,
       }}
     >

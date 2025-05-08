@@ -119,7 +119,7 @@ export default function LoginPage() {
   return (
     <div className="h-screen grid md:grid-cols-3">
       {/* 左カラム */}
-      <div className="relative bg-cover bg-center bg-black flex flex-col">
+      <div className="relative bg-cover bg-center bg-[#141920] flex flex-col">
         {/* コンテンツ */}
         <nav className="relative flex flex-col px-8 z-10">
           <div className="h-screen justify-center">

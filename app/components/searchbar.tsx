@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMapMarkerAlt, faXmark, faLandmark, faPlane, faTrain, faUtensils, faCartShopping } from "@fortawesome/free-solid-svg-icons";
+import { faMapMarkerAlt, faXmark, faLandmark, faPlane, faTrain, faUtensils, faCartShopping, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { v4 as uuidv4 } from "uuid";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
@@ -42,6 +42,7 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
   const [showDropdown, setShowDropdown] = useState(false);
 
   const sessionToken = React.useMemo(() => uuidv4(), []);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (query.length < 1) {
@@ -98,6 +99,19 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
 
     return () => clearTimeout(timeoutId);
   }, [query, api, sessionToken]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const getIconForCategory = (types: string[]): IconDefinition => {
     if (types.includes("トラベル>観光名所")) return faLandmark;
@@ -171,16 +185,26 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
 
   const displayedPredictions = predictions.slice(0, 8);
 
+  // searchbarStyles
   return (
-    <div className="w-full max-w-md relative z-50 mx-auto">
+    <div className="mx-[16px] md:ml-[76px] md:mx-0 mt-[72px] md:mt-4 w-full md:w-[calc(25vw-16px)] md:min-w-[240px] relative z-30">
       <div className="relative">
+
+        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+
+        <FontAwesomeIcon icon={faSearch} />
+        </div>
+
+        {/* Search input */}
         <input
           type="text"
           value={query}
           onChange={(e) => { setQuery(e.target.value); setShowDropdown(true); }}
           placeholder="建物名で検索"
-          className="w-full px-6 py-2 pr-16 bg-white text-black border border-gray-300 rounded-full shadow-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          className="w-full h-[48px] bg-gray-800 px-10 text-white rounded-[16px] shadow-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
         />
+
+        
         {query && (
           <button
             onClick={clearQuery}
@@ -193,16 +217,16 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
       </div>
   
       {showDropdown && (
-        <div className="absolute mt-1 w-full bg-white text-black border border-gray-200 rounded-md shadow-lg">
+        <div ref={dropdownRef} className="absolute mt-1 w-full bg-gray-800 text-white rounded-md shadow-lg z-30">
           {loading ? (
-            <div className="p-2 text-black">読み込み中...</div>
+            <div className="p-2 text-gray-400">読み込み中...</div>
           ) : displayedPredictions.length === 0 ? (
-            <div className="p-2 text-gray-400">検索結果が見つかりませんでした</div>
+            <div className="p-2 text-gray-300">検索結果が見つかりませんでした</div>
           ) : (
             displayedPredictions.map((place) => (
               <button
                 key={place.id}
-                className="w-full text-left p-2 text-black hover:bg-gray-100 cursor-pointer flex items-center"
+                className="w-full text-left p-2 text-gray-300 hover:bg-[#4F46E5] cursor-pointer flex items-center"
                 onClick={() => handleSelect(place)}
               >
                 <FontAwesomeIcon icon={getIconForCategory(place.place_type)} className="mr-2" />
