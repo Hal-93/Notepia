@@ -31,6 +31,7 @@ import { ScrollArea } from "~/components/ui/scroll-area";
 import UserProfile from "~/components/group/userprofile";
 import MemoList from "~/components/memo/memolist";
 import toastr from "toastr";
+import TutorialLauncher from "~/components/memo/tutorial-launcher";
 import "toastr/build/toastr.css";
 import { useAtom } from "jotai/react";
 import {
@@ -634,6 +635,7 @@ export default function MapPage() {
         />
 
         <Compass map={mapRef.current} />
+        <TutorialLauncher />
 
         <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
           <DrawerContent className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px] z-[1100]">

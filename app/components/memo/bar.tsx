@@ -73,7 +73,6 @@ const Bar = ({
         display: 'flex',
         flexDirection: position === 'bottom' ? 'row' : 'column',
         gap: '10px',
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
         padding: '12px',
         borderRadius: '8px',
         zIndex: 1000,
