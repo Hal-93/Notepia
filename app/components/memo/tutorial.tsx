@@ -77,18 +77,8 @@ const pages = [
 export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const touchStartXRef = useRef<number>(0);
 
-  const handleScroll = () => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    const pageWidth = el.clientWidth;
-    const idx = Math.round(el.scrollLeft / pageWidth);
-    setCurrentIndex(idx);
-  };
-
-  useEffect(() => {
-    handleScroll();
-  }, []);
 
   const modalRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -108,6 +98,7 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
     const pageWidth = el.clientWidth;
     const next = Math.min(currentIndex + 1, pages.length - 1);
     el.scrollTo({ left: next * pageWidth, behavior: "smooth" });
+    setCurrentIndex(next);
   };
 
   // Navigate to previous page
@@ -117,6 +108,7 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
     const pageWidth = el.clientWidth;
     const prev = Math.max(currentIndex - 1, 0);
     el.scrollTo({ left: prev * pageWidth, behavior: "smooth" });
+    setCurrentIndex(prev);
   };
 
   useEffect(() => {
@@ -128,6 +120,58 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
     return () => document.removeEventListener("keydown", onKeydown);
   }, [currentIndex]);
 
+  // Handle swipe gesture: only one page per swipe
+  const handleTouchStart = (e: TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: TouchEvent) => {
+    const deltaX = e.changedTouches[0].clientX - touchStartXRef.current;
+    const threshold = 50; // min px to count as swipe
+    if (deltaX < -threshold) {
+      goNext();
+    } else if (deltaX > threshold) {
+      goPrev();
+    }
+  };
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.addEventListener("touchstart", handleTouchStart);
+    el.addEventListener("touchend", handleTouchEnd);
+    return () => {
+      el.removeEventListener("touchstart", handleTouchStart);
+      el.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [currentIndex]);
+
+  // On mount, bind loadeddata event to all videos for autoplay
+  useEffect(() => {
+    if (!modalRef.current) return;
+    const videos = modalRef.current.querySelectorAll('video');
+    videos.forEach((video) => {
+      video.muted = true;
+      video.playsInline = true;
+      video.loop = true;
+      video.autoplay = true;
+      video.setAttribute('webkit-playsinline', 'true');
+      const onLoaded = () => {
+        video.play().catch(() => {});
+        video.removeEventListener('loadeddata', onLoaded);
+      };
+      video.addEventListener('loadeddata', onLoaded);
+    });
+  }, []);
+
+  // Play the video on the current page when it becomes active
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const videos = Array.from(el.querySelectorAll('video'));
+    const video = videos[currentIndex];
+    if (video) {
+      video.play().catch(() => {});
+    }
+  }, [currentIndex]);
 
   const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const el = scrollContainerRef.current;
@@ -150,7 +194,6 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
         >
           <div
             ref={scrollContainerRef}
-            onScroll={handleScroll}
             onClick={handleContainerClick}
             onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
               if (e.key === "Enter" || e.key === " ") {
@@ -159,12 +202,12 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
             }}
             role="button"
             tabIndex={0}
-            aria-label="チュートリアル ナビゲーション: 左側で前のページ、右側で次のページ"
-            className="h-full flex overflow-x-auto snap-x snap-mandatory no-scrollbar"
+            aria-label="チュートリアル ナビゲーション"
+            className="h-full flex overflow-hidden no-scrollbar"
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
-              touchAction: 'pan-x',
+              touchAction: 'pan-y',
               overscrollBehavior: 'contain',
             }}
           >
@@ -183,7 +226,6 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
                 )}
                 {page.media?.type === "video" && (
                   <video
-                    src={page.media.src}
                     autoPlay
                     muted
                     playsInline
@@ -192,6 +234,7 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
                     className="w-full object-contain mb-4 rounded"
                     style={{ width: page.media.width || "100%", height: "200px" }}
                   >
+                    <source src={page.media.src} type="video/mp4" />
                     <track
                       kind="captions"
                       srcLang="ja"
