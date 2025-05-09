@@ -23,6 +23,7 @@ import {
 } from "~/components/ui/drawer";
 import MemoList from "~/components/memo/memolist";
 import DemoDetailModal from "~/components/memo/demodetail";
+import TutorialLauncher from "~/components/memo/tutorial-launcher";
 
 type Role = "OWNER" | "ADMIN" | "EDITOR" | "VIEWER";
 
@@ -291,22 +292,78 @@ useEffect(() => {
   return (
     <>
 
-    <div className="pt-10">
-      <div className="fixed top-0 inset-x-0 flex flex-col md:flex-row items-center justify-between py-4 px-5 gap-x-4 gap-y-2 z-[2000]">
-        <div className="flex-1 bg-red-800 text-white py-2 px-4 rounded-md text-center md:text-left text-sm md:text-base">
+    <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
+
+
+      {/* search bar */}
+        <div className="fixed flex-nowrap flex items-center z-20 w-full">
+          <MapBoxSearch
+            api={mapboxToken}
+            onSelect={p =>
+              jumpToMemo({
+                id: Date.now().toString(),
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                title: p.place_name,
+                color: "#ffffff",
+                content: "",
+                completed: false,
+                place: null,
+                latitude: p.center[1],
+                longitude: p.center[0],
+                createdById: "demo",
+                groupId: null,
+              })
+            }
+          />
+          <h2
+              className={`hidden md:flex ml-[76px] md:ml-[0px] mt-[16px] text-4xl h-[48px] items-center font-bold truncate max-w-[60vw] md:max-w-[50vw] ${
+                (() => {
+                  const hours = new Date().getHours();
+                  return hours >= 20 || hours < 4 ? "text-white" : "text-black";
+                })()
+              }`}
+            >
+            Demo
+            </h2>
+        </div>
+
+        <div className="fixed flex-nowrap flex items-center z-[5]">
+            <h2
+              className={`md:hidden ml-[76px] mt-[18px] text-4xl h-[48px] font-bold truncate max-w-[60vw] ${
+                (() => {
+                  const hours = new Date().getHours();
+                  return hours >= 20 || hours < 4 ? "text-white" : "text-black";
+                })()
+              }`}
+            >
+            Demo
+          </h2>
+        </div>
+
+        {/* action bar */}
+        <div className="fixed flex-none flex-shrink-0 w-12 h-12 mt-[16px] md:mt-4 right-[16px] flex items-center justify-center" style={{ zIndex: 100, pointerEvents: "auto" }}>
+          <ActionBar mode="demo" username="Demo" uuid="demo" initialAvatarUrl={null} publicKey="" userId="demo" />
+        </div>
+
+        <Compass map={mapRef.current} />
+        <TutorialLauncher />
+
+        <div className="w-[80vw] items-center mt-[76px] md:ml-[16px]">
+        <div className="fixed flex-1 bg-red-800 text-white py-2 px-4 rounded-md text-center md:text-left text-sm md:text-base z-[50]">
           デモ版ではNotepiaのごく一部の機能を試すことができます。全ての機能を使うには{" "}
           <Link to="/join">
             <Button className="bg-cyan-500 hover:bg-cyan-600">無料でアカウント作成</Button>
           </Link>
         </div>
-        <div className="flex items-center gap-2 mt-2 md:mt-0">
-          <MapBoxSearch api={mapboxToken} onSelect={p => jumpToMemo({ latitude: p.center[1], longitude: p.center[0], title: p.place_name, id: Date.now().toString(), content: "" })} />
-          <ActionBar mode="demo" username="Demo" uuid="demo" initialAvatarUrl={null} publicKey="" userId="demo" />
-        </div>
+      </div>
+
+
+
       </div>
       <div ref={mapContainerRef} style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh" }} />
+
       <Bar handleGroupDetail={handleGroupDetail} handleSearchMemo={handleSearchMemo} handleGoToCurrentLocation={() => {}} userId="demo" groupeId="demo" groupeName="Demo" />
-      <Compass map={mapRef.current} />
       {newMemoPos && (
         <DemoCreateModal
           lat={newMemoPos.lat}
@@ -389,7 +446,7 @@ useEffect(() => {
           </ScrollArea>
         </DrawerContent>
       </Drawer>
-    </div>
+    
     </>
   );
 }
