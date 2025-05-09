@@ -190,6 +190,8 @@ export default function ActionBar({
     "bottom"
   );
   const [barColor, setBarColor] = useState<string>("#4F46E5");
+  const [tutorialEnabled, setTutorialEnabled] = useState<boolean>(false);
+  const [mapQuality, setMapQuality] = useState<"low" | "high">("high");
   // Track when initial settings load completes
   const [settingsLoaded, setSettingsLoaded] = useState(false);
 
@@ -201,6 +203,8 @@ export default function ActionBar({
         const data = await res.json();
         if (data.bar) setBarPosition(data.bar);
         if (data.theme) setBarColor(data.theme);
+        if (data.tutorial != null) setTutorialEnabled(data.tutorial === "true");
+        if (data.map != null) setMapQuality(data.map);
         setSettingsLoaded(true);
       }
     }
@@ -226,7 +230,12 @@ export default function ActionBar({
       await fetch("/api/user-settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bar: barPosition, theme: barColor }),
+        body: JSON.stringify({
+          bar: barPosition,
+          theme: barColor,
+          tutorial: tutorialEnabled.toString(),
+          map: mapQuality,
+        }),
       });
       // Notify Bar component to update immediately
       window.dispatchEvent(
@@ -236,7 +245,7 @@ export default function ActionBar({
       );
     }
     saveSettings();
-  }, [barPosition, barColor, settingsLoaded]);
+  }, [barPosition, barColor, tutorialEnabled, mapQuality, settingsLoaded]);
 
   async function checkSubscription() {
     const endpoint = await getPushEndpoint();
@@ -447,6 +456,10 @@ export default function ActionBar({
                       setBarPosition={setBarPosition}
                       barColor={barColor}
                       setBarColor={setBarColor}
+                      tutorialEnabled={tutorialEnabled}
+                      toggleTutorial={() => setTutorialEnabled(x => !x)}
+                      mapQuality={mapQuality}
+                      setMapQuality={(v) => setMapQuality(v)}
                     />
                   ) : (
                     <ProfileSection

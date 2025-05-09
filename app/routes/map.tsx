@@ -10,9 +10,11 @@ import {
   getGroupsAndMemberShips,
   GroupWithMembershipsAndUsers,
 } from "~/models/group.server";
+import { getUserTutorial, getUserMap } from "~/models/user.server";
 import { useRevalidator } from "@remix-run/react";
 import mapboxgl, { Marker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import ActionBar from "~/components/userpanel/actionbar";
 import MemoCreateModal from "~/components/memo/create";
 import { MapBoxSearch } from "~/components/searchbar";
@@ -31,7 +33,7 @@ import { ScrollArea } from "~/components/ui/scroll-area";
 import UserProfile from "~/components/group/userprofile";
 import MemoList from "~/components/memo/memolist";
 import toastr from "toastr";
-import TutorialLauncher from "~/components/memo/tutorial-launcher";
+import TutorialCarousel from "~/components/memo/tutorial";
 import "toastr/build/toastr.css";
 import { useAtom } from "jotai/react";
 import {
@@ -54,6 +56,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "~/components/ui/drawer";
+import TutorialLauncher from "~/components/memo/tutorial-launcher";
 
 type LoaderData = {
   vapidPublicKey: string;
@@ -68,6 +71,8 @@ type LoaderData = {
   currentUserRole: Role | null;
   groupName: string | null;
   groups: GroupWithMembershipsAndUsers[];
+  tutorialFlag: string | null;
+  mapQuality: string | null;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -102,6 +107,8 @@ export const loader: LoaderFunction = async ({ request }) => {
   }
 
   const groups = await getGroupsAndMemberShips(userId);
+  const tutorialFlag = await getUserTutorial(userId);
+  const mapQuality = await getUserMap(userId);
 
   const mapboxToken = process.env.MAPBOX_TOKEN;
   if (!mapboxToken) throw new Response("サーバー設定エラー", { status: 500 });
@@ -119,6 +126,8 @@ export const loader: LoaderFunction = async ({ request }) => {
     currentUserRole,
     groupName,
     groups,
+    tutorialFlag,
+    mapQuality,
   });
 };
 
@@ -168,6 +177,8 @@ export default function MapPage() {
     currentUserRole,
     groupName,
     groups,
+    tutorialFlag,
+    mapQuality,
   } = useLoaderData<LoaderData>();
   const roleOrder: Record<string, number> = {
     OWNER: 0,
@@ -188,6 +199,19 @@ export default function MapPage() {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const tempMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const fetcher = useFetcher();
+  const [forceTutorial, setForceTutorial] = useState(false);
+
+  useEffect(() => {
+    if (tutorialFlag === "false") {
+      // mark tutorial as completed
+      fetcher.submit(
+        { tutorial: "true" },
+        { method: "post", action: "/api/user-settings" }
+      );
+      // force tutorial display
+      setForceTutorial(true);
+    }
+  }, []);
 
   const [selectedMemo, setSelectedMemo] = useState<Memo | null>(null);
   const [showDetail, setShowDetail] = useState(false);
@@ -239,7 +263,6 @@ export default function MapPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showProfileModal]);
 
-  // Click outside to close group modal
   useEffect(() => {
     if (!showGroupDetailModal) return;
     function handleClickOutside(event: MouseEvent) {
@@ -277,8 +300,12 @@ export default function MapPage() {
 
     //Design マップのスタイル
     const getMapStyle = () => {
+      // Low-quality map uses default streets style
+      if (mapQuality === "low") {
+        return "mapbox://styles/mapbox/streets-v11";
+      }
+      // High-quality map: use time-based styles
       const hours = new Date().getHours();
-
       if (hours >= 20 || hours < 4) {
         return "mapbox://styles/so03jp/cmacqbau900le01sn1i4t3fze"; // Night
       } else if (hours >= 4 && hours < 8) {
@@ -303,13 +330,18 @@ export default function MapPage() {
       attributionControl: false,
     });
 
-    // map.addControl(new MapboxLanguage({ defaultLanguage: "ja" }));
     map.doubleClickZoom.disable();
 
     map.on("load", () => {
       if (map.getTerrain()) {
         map.setTerrain(null);
       }
+      map.addControl(
+        new MapboxLanguage({
+          defaultLanguage: "ja",
+          onlyAlphabet: false,
+        })
+      );
     });
 
     map.on("moveend", () => {
@@ -325,7 +357,35 @@ export default function MapPage() {
 
     mapRef.current = map;
     return () => map.remove();
-  }, [mapboxToken]);
+  }, [mapboxToken, mapQuality]);
+
+  useEffect(() => {
+    const onSettingsUpdated = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (!detail.map || !mapRef.current) return;
+      const newQuality: string = detail.map;
+      let newStyle: string;
+      if (newQuality === "low") {
+        newStyle = "mapbox://styles/mapbox/streets-v11";
+      } else {
+        const hours = new Date().getHours();
+        if (hours >= 20 || hours < 4) {
+          newStyle = "mapbox://styles/so03jp/cmacqbau900le01sn1i4t3fze";
+        } else if (hours >= 4 && hours < 8) {
+          newStyle = "mapbox://styles/so03jp/cmacq38zn00j701rf2uzp8yqa";
+        } else if (hours >= 8 && hours < 16) {
+          newStyle = "mapbox://styles/so03jp/cmacq6ily00l501rf5j67an3w";
+        } else {
+          newStyle = "mapbox://styles/so03jp/cmacpyy7d00j501rf8zq45x3w";
+        }
+      }
+      mapRef.current.setStyle(newStyle);
+    };
+    window.addEventListener("user-settings-updated", onSettingsUpdated);
+    return () => {
+      window.removeEventListener("user-settings-updated", onSettingsUpdated);
+    };
+  }, []);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -655,6 +715,21 @@ export default function MapPage() {
           <Compass map={mapRef.current} />
           <TutorialLauncher />
         </div>
+
+        <Bar
+          {...(groupId ? { handleGroupDetail } : {})}
+          handleSearchMemo={handleSearchMemo}
+          handleGoToCurrentLocation={handleGoToCurrentLocation}
+          userId={userId}
+          groupeId={groupId!}
+          groupeName={"Group Name"}
+        />
+
+        <Compass map={mapRef.current} />
+        {forceTutorial && (
+          <TutorialCarousel onClose={() => setForceTutorial(false)} />
+        )}
+        <TutorialLauncher/>
 
         <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
           <DrawerContent className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px] z-[1100]">
