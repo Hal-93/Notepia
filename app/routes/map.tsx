@@ -613,12 +613,19 @@ export default function MapPage() {
                 }
               }}
             />
+            <h2
+              className={`hidden md:flex ml-[76px] md:ml-[0px] mt-[18px] text-4xl h-[48px] font-bold truncate max-w-[60vw] md:max-w-[50vw] ${
+                isNight ? "text-white" : "text-black"
+              }`}
+            >
+            {groupName ? groupName : "Mymap"}
+            </h2>
           </div>
 
           {/* mapName */}
           <div className="fixed flex-nowrap flex items-center z-[5]">
             <h2
-              className={`ml-[76px] mt-[18px] md:mt-[76px] text-4xl h-[48px] font-bold truncate max-w-[60vw] md:max-w-[50vw] ${
+              className={`md:hidden ml-[76px] md:ml-[calc(32vw+70px)] mt-[18px] text-4xl h-[48px] font-bold truncate max-w-[60vw] md:max-w-[50vw] ${
                 isNight ? "text-white" : "text-black"
               }`}
             >
