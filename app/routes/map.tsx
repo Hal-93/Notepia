@@ -210,8 +210,10 @@ export default function MapPage() {
       );
       // force tutorial display
       setForceTutorial(true);
+      // re-fetch loader to update tutorialFlag
+      revalidator.revalidate();
     }
-  }, []);
+  }, [tutorialFlag, fetcher, revalidator]);
 
   const [selectedMemo, setSelectedMemo] = useState<Memo | null>(null);
   const [showDetail, setShowDetail] = useState(false);
