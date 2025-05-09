@@ -301,7 +301,7 @@ export default function MapPage() {
     const getMapStyle = () => {
       // Low-quality map uses default streets style
       if (mapQuality === "low") {
-        return "mapbox://styles/mapbox/streets-v11";
+        return "mapbox://styles/so03jp/cmagwu5xn00v601si6v9r68p9";
       }
       // High-quality map: use time-based styles
       const hours = new Date().getHours();
@@ -365,7 +365,7 @@ export default function MapPage() {
       const newQuality: string = detail.map;
       let newStyle: string;
       if (newQuality === "low") {
-        newStyle = "mapbox://styles/mapbox/streets-v11";
+        newStyle = "mapbox://styles/so03jp/cmagwu5xn00v601si6v9r68p9";
       } else {
         const hours = new Date().getHours();
         if (hours >= 20 || hours < 4) {
@@ -672,7 +672,7 @@ export default function MapPage() {
               }}
             />
             <h2
-              className={`hidden md:flex ml-[76px] md:ml-[0px] mt-[16px] text-5xl h-[48px] font-bold truncate max-w-[60vw] md:max-w-[50vw] ${
+              className={`hidden md:flex ml-[76px] md:ml-[0px] mt-[16px] text-4xl h-[48px] items-center font-bold truncate max-w-[60vw] md:max-w-[50vw] ${
                 isNight ? "text-white" : "text-black"
               }`}
             >
