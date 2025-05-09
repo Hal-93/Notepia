@@ -243,7 +243,6 @@ export default function Join() {
                     type="text"
                     autoComplete="username"
                     required
-                    autoFocus
                     ref={uuidRef}
                     className="flex-1 text-white rounded-none rounded-r-md"
                     aria-invalid={actionData?.errors?.uuid ? true : undefined}
