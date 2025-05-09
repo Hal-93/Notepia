@@ -27,6 +27,8 @@ model User {
   Subscription  Subscription[]
   from          Friend[]       @relation("From")
   to            Friend[]       @relation("To")
+  tutorial      String         @default("false")
+  map           String         @default("high")
 }
 
 model Memo {

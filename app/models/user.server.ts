@@ -96,6 +96,42 @@ export async function updateUserBar(
   });
 }
 
+export async function getUserTutorial(id: User["id"]): Promise<User["tutorial"] | null> {
+  const record = await prisma.user.findUnique({
+    where: { id },
+    select: { tutorial: true },
+  });
+  return record?.tutorial ?? null;
+}
+
+export async function updateUserTutorial(
+  id: User["id"],
+  tutorial: User["tutorial"]
+): Promise<User> {
+  return prisma.user.update({
+    where: { id },
+    data: { tutorial },
+  });
+}
+
+export async function getUserMap(id: User["id"]): Promise<User["map"] | null> {
+  const record = await prisma.user.findUnique({
+    where: { id },
+    select: { map: true },
+  });
+  return record?.map ?? null;
+}
+
+export async function updateUserMap(
+  id: User["id"],
+  map: User["map"]
+): Promise<User> {
+  return prisma.user.update({
+    where: { id },
+    data: { map },
+  });
+}
+
 export async function deleteUserByEmail(email: User["email"]) {
   return prisma.user.delete({ where: { email } });
 }

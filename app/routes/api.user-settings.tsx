@@ -1,5 +1,3 @@
-
-
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { getUserId, requireUserId } from "~/session.server";
@@ -8,6 +6,10 @@ import {
   getUserBar,
   updateUserTheme,
   updateUserBar,
+  getUserTutorial,
+  updateUserTutorial,
+  getUserMap,
+  updateUserMap,
 } from "~/models/user.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -17,17 +19,28 @@ export const loader: LoaderFunction = async ({ request }) => {
   }
   const theme = await getUserTheme(userId);
   const bar = await getUserBar(userId);
-  return json({ theme, bar });
+  const tutorial = await getUserTutorial(userId);
+  const map = await getUserMap(userId);
+  return json({ theme, bar, tutorial, map });
 };
 
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
-  const body = await request.json();
-  const { theme, bar } = body as {
+  let body: Record<string, any> = {};
+  const contentType = request.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    body = await request.json();
+  } else {
+    const formData = await request.formData();
+    body = Object.fromEntries(formData) as Record<string, any>;
+  }
+  const { theme, bar, tutorial, map } = body as {
     theme?: string;
     bar?: "left" | "right" | "bottom";
+    tutorial?: string;
+    map?: string;
   };
-  const responseData: { theme?: string; bar?: string } = {};
+  const responseData: { theme?: string; bar?: string; tutorial?: string; map?: string } = {};
 
   if (typeof theme === "string") {
     await updateUserTheme(userId, theme);
@@ -37,6 +50,14 @@ export const action: ActionFunction = async ({ request }) => {
     await updateUserBar(userId, bar);
     responseData.bar = bar;
   }
+  if (typeof tutorial === "string") {
+    await updateUserTutorial(userId, tutorial);
+    responseData.tutorial = tutorial;
+  }
+  if (typeof map === "string") {
+    await updateUserMap(userId, map);
+    responseData.map = map;
+  }
 
   return json(responseData);
 };
@@ -44,4 +65,6 @@ export const action: ActionFunction = async ({ request }) => {
 export type UserSettingsResponse = {
   theme: string | null;
   bar: "left" | "right" | "bottom" | null;
+  tutorial: string | null;
+  map: string | null;
 };
