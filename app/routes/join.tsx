@@ -147,7 +147,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   const user = await createUser(email, password, uuid);
-  const redirectTo = "/home";
+  const redirectTo = "/map";
 
   return createUserSession({
     redirectTo,

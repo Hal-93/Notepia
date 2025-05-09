@@ -21,7 +21,7 @@ import Bar from "~/components/memo/bar";
 import Compass from "~/components/compass";
 import { Button } from "~/components/ui/button";
 import { Memo } from "@prisma/client";
-// Client-side role type
+
 type Role = "OWNER" | "ADMIN" | "EDITOR" | "VIEWER";
 import type { User } from "@prisma/client";
 import UserSearch from "~/components/usersearch";
@@ -169,7 +169,6 @@ export default function MapPage() {
     groupName,
     groups,
   } = useLoaderData<LoaderData>();
-  // 権限順にソート: OWNER, ADMIN, EDITOR, VIEWER
   const roleOrder: Record<string, number> = {
     OWNER: 0,
     ADMIN: 1,

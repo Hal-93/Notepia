@@ -94,7 +94,7 @@ export const meta: MetaFunction = () => [{ title: "Login" }];
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/home";
+  const redirectTo = searchParams.get("redirectTo") || "/map";
   const actionData = useActionData<typeof action>();
   const { CF_TURNSTILE_SITE_KEY } = useLoaderData<typeof loader>();
   const emailRef = useRef<HTMLInputElement>(null);
