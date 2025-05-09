@@ -82,7 +82,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return json(
       {
         errors: {
-          uuid: "Invalid Username: Username must be a non-empty string",
+          uuid: "ユーザー名を入力してください",
           email: null,
           password: null,
         },
@@ -91,12 +91,39 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   }
 
-  const uuidRegex = /^[0-9a-zA-Z-_]+$/;
+  const uuidRegex = /^[A-Za-z0-9_-]+$/;
   if (!uuidRegex.test(uuid)) {
     return json(
       {
         errors: {
-          uuid: "Invalid Username: Username contains invalid characters",
+          uuid: "ユーザー名には英数字および「-」「 _ 」のみ使用できます",
+          email: null,
+          password: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  if (uuid.length < 4 || uuid.length > 10) {
+    return json(
+      {
+        errors: {
+          uuid: "ユーザー名は4文字以上10文字以内である必要があります",
+          email: null,
+          password: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  const lowerUuid = uuid.toLowerCase();
+  if (lowerUuid.includes("notepia") || lowerUuid.includes("official")) {
+    return json(
+      {
+        errors: {
+          uuid: "そのユーザー名は使用できません",
           email: null,
           password: null,
         },
@@ -110,7 +137,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return json(
       {
         errors: {
-          uuid: "A user already exists with this Username",
+          uuid: "ユーザー名がすでに使われています",
           email: null,
           password: null,
         },
@@ -125,7 +152,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         errors: {
           uuid: null,
           email: null,
-          password: "Password must be at least 8 characters",
+          password: "パスワードは8文字以上である必要があります",
         },
       },
       { status: 400 }
@@ -138,7 +165,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       {
         errors: {
           uuid: null,
-          email: "A user already exists with this email",
+          email: "入力されたメールアドレスはすでに使用されています",
           password: null,
         },
       },
@@ -206,19 +233,23 @@ export default function Join() {
                 <Label htmlFor="uuid" className="text-white">
                   ユーザーID
                 </Label>
-                <Input
-                  id="uuid"
-                  name="uuid"
-                  type="text"
-                  autoComplete="username"
-                  required
-                  // eslint-disable-next-line jsx-a11y/no-autofocus
-                  autoFocus
-                  ref={uuidRef}
-                  className="w-full text-white"
-                  aria-invalid={actionData?.errors?.uuid ? true : undefined}
-                  aria-describedby="uuid-error"
-                />
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 border border-gray-600 bg-gray-800 text-gray-300 rounded-l-md">
+                    @
+                  </span>
+                  <Input
+                    id="uuid"
+                    name="uuid"
+                    type="text"
+                    autoComplete="username"
+                    required
+                    autoFocus
+                    ref={uuidRef}
+                    className="flex-1 text-white rounded-none rounded-r-md"
+                    aria-invalid={actionData?.errors?.uuid ? true : undefined}
+                    aria-describedby="uuid-error"
+                  />
+                </div>
                 {actionData?.errors?.uuid && (
                   <p className="text-red-600 text-sm" id="uuid-error">
                     {actionData.errors.uuid}
