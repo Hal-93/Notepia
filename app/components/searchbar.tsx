@@ -187,7 +187,7 @@ export const MapBoxSearch: React.FC<MapBoxSearchProps> = ({ api, onSelect }) => 
 
   // searchbarStyles
   return (
-    <div className="mx-[16px] md:ml-[76px] md:mx-0 mt-[72px] md:mt-4 w-full md:w-[calc(25vw-16px)] md:min-w-[240px] relative z-30">
+    <div className="mx-[16px] md:ml-[76px] md:mr-[16px] md:mx-0 mt-[72px] md:mt-4 w-full md:w-[calc(25vw-16px)] md:min-w-[240px] relative z-30">
       <div className="relative">
 
         <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">

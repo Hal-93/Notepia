@@ -220,6 +220,9 @@ export default function MapPage() {
     setLocation([center.lng, center.lat]);
     setBearing(bearing);
   };
+  const now = new Date();
+  const hour = now.getHours();
+  const isNight = hour >= 16 || hour < 4;
 
   // Click outside to close profile modal
   useEffect(() => {
@@ -609,11 +612,22 @@ export default function MapPage() {
                 }
               }}
             />
+            <h2
+              className={`hidden md:flex ml-[76px] md:ml-[0px] mt-[18px] text-4xl h-[48px] font-bold truncate max-w-[60vw] md:max-w-[50vw] ${
+                isNight ? "text-white" : "text-black"
+              }`}
+            >
+            {groupName ? groupName : "Mymap"}
+            </h2>
           </div>
 
           {/* mapName */}
           <div className="fixed flex-nowrap flex items-center z-[5]">
-            <h2 className="ml-[76px] mt-[18px] md:mt-[76px] text-4xl text-white h-[48px] font-bold truncate max-w-[60vw] md:max-w-[50vw]">
+            <h2
+              className={`md:hidden ml-[76px] md:ml-[calc(32vw+70px)] mt-[18px] text-4xl h-[48px] font-bold truncate max-w-[60vw] md:max-w-[50vw] ${
+                isNight ? "text-white" : "text-black"
+              }`}
+            >
             {groupName ? groupName : "Mymap"}
             </h2>
           </div>
@@ -628,19 +642,19 @@ export default function MapPage() {
               userId={userId}
             />
           </div>
+
+            <Bar
+            {...(groupId ? { handleGroupDetail } : {})}
+            handleSearchMemo={handleSearchMemo}
+            handleGoToCurrentLocation={handleGoToCurrentLocation}
+            userId={userId}
+            groupeId={groupId!}
+            groupeName={"Group Name"}
+          />
+
+          <Compass map={mapRef.current} />
+          <TutorialLauncher />
         </div>
-
-        <Bar
-          {...(groupId ? { handleGroupDetail } : {})}
-          handleSearchMemo={handleSearchMemo}
-          handleGoToCurrentLocation={handleGoToCurrentLocation}
-          userId={userId}
-          groupeId={groupId!}
-          groupeName={"Group Name"}
-        />
-
-        <Compass map={mapRef.current} />
-        <TutorialLauncher />
 
         <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
           <DrawerContent className="mx-auto h-[70vh] bg-black text-white w-full max-w-[768px] z-[1100]">
@@ -685,7 +699,7 @@ export default function MapPage() {
             }
           }}
         >
-          <DrawerContent className="mx-auto h-[70vh] w-full max-w-[768px] bg-black text-white px-4 pb-4 z-[1100]">
+          <DrawerContent className="mx-auto h-[70vh] w-full max-w-[768px] bg-black text-white px-4 pb-4 z-[500]">
             <DrawerHeader>
               <DrawerTitle>メンバーリスト</DrawerTitle>
             </DrawerHeader>
