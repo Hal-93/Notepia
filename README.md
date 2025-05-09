@@ -1,74 +1,65 @@
-# Notepia
+## 🧭 Notepia v1.5.0「Wanderer’s Guide」パッチノート
 
-## 初期設定
+リリース日：2025年5月9日
 
-```sh
-cp .env.example .env
-docker compose up -d
-npm i
-npx web-push generate-vapid-keys
-npm run setup
-```
+探検家の皆さん、こんにちは！🗺✨  
+我々はコードの荒野を突き進み、無限のバグとの戦いに打ち勝ち、ついにあなたの旅路をより良くするアップデートを召喚しました。今回のパッチではUIの新生と、冒険者向けのチュートリアルが登場。地図を広げ、コーヒーを手に、パッチノートの旅へ出発しましょう！
 
-npx web-push generate-vapid-keysで生成したキーを.envに入力する。
-localhost:9001 にアクセスし、アクセスキー、シークレットキーを発行して .env に入力する。
+---
 
-## 開発サーバーの起動
+### ✨ 新機能＆強化ポイント
 
-Run the dev server:
+**🖥 UIの全面刷新**  
+古のUIを焚き火に投げ入れ、モバイル＆PCを問わず直感的なデザインへ。  
+- グループ移動は左上のハンバーガー（食べられないよ）から  
+- 設定やフレンドは右上のプロフィールからアクセスできます  
+「簡潔で迷わないUI」という伝説をついに現実にしました。
 
-```sh
-docker compose up -d
-npm run dev
-```
+**🏠 HOMEとMyMapの廃止**  
+「HOME」という名の無限ロードを削除しました。  
+MyMapの名はあなた自身に引き継がれ、ログイン後は即、あなたの冒険の地図が開かれます。  
+もう迷いません、なぜなら最初から目的地にいるから。
 
-## Prisma
+**🗺️ チュートリアル**  
+迷える子羊のために、魔法の動画と導きの矢印を用意しました。  
+- 初回マップ起動時に自動で開きます（逃げられません）  
+- その後は右下からいつでも再訪問可能  
 
-マイグレーションの実行
+**⚙️ 設定パネル強化**  
+使用するデバイスへの負荷と表示速度を考慮して、マップの表示品質を選べるようにしました。
+- **High**：超美麗で時間帯ごとに表情を変えるマップ（PCが熱くなります）  
+- **Low**：最軽量スタイル。あなたの祖父のスマホでも動くかも？  
 
-```sh
-npx prisma migrate dev
-```
+---
 
-マイグレーションの適用
+## 🔧 バグ修正＆改善
 
-```sh
-npx prisma migrate deploy
-```
+**👥 グループ管理の制限追加**  
+- 最大参加数：**3つ**（それ以上は嫉妬が発生します）  
+- 既に3つ参加済みのユーザーは新グループに追加できません。UIが静かに拒否します。  
 
-Prisma Clientの生成
+**🆔 ユーザー名のバリデーション強化**  
+- 使用可能：**A-Z, a-z, 0-9, -, _**
+- 長さ：4～10文字  
+- 禁止ワード：「notepia」「official」など、運営を名乗る魔術は禁止されました  
+- 入力欄には**固定の@**が出現しました。これがあなたの冒険のしるしです。
 
-```sh
-npx prisma generate
-```
+**🧼 UIクリーンアップ**  
+- スクロールバーを封印し、画面はより神聖で清らかに  
+- 保留中のユーザーはスタイリッシュな**バッジ**に姿を変えました
+- アクションバーとプロフィールは左右中央に均衡を保ちました
 
+---
 
-## Deployment
+## 🧳 今後のロードマップ
 
-First, build your app for production:
+- UIデザインのさらなる鍛錬  
+- パフォーマンスの強化  
+- そして、新たな機能の開放（古代のGitHub Issueより召喚予定）
 
-```sh
-npm run build
-```
+---
 
-Then run the app in production mode:
+ご意見・バグ報告は [GitHub Issues](https://github.com/Hal-93/Notepia/issues) に書き込んでください📝  
+それではまた、マップのどこかでお会いしましょう！🌿🚀
 
-```sh
-docker compose up -d
-npm start
-```
-
-Now you'll need to pick a host to deploy it to.
-
-### DIY
-
-If you're familiar with deploying Node applications, the built-in Remix app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-- `build/server`
-- `build/client`
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever css framework you prefer. See the [Vite docs on css](https://vitejs.dev/guide/features.html#css) for more information.
+— Notepia 開発チーム Haru
