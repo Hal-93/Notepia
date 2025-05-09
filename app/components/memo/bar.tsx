@@ -51,9 +51,9 @@ const Bar = ({
   const positionStyle: React.CSSProperties = React.useMemo(() => {
     switch (position) {
       case 'left':
-        return { bottom: '50%', left: '16px', transform: 'translateY(-50%)' };
+        return { top: '50%', left: '16px', transform: 'translateY(-50%)' };
       case 'right':
-        return { bottom: '50%', right: '16px', transform: 'translateY(-50%)' };
+        return { top: '50%', right: '16px', transform: 'translateY(-50%)' };
       case 'bottom':
       default:
         return { bottom: '34px', left: '50%', transform: 'translateX(-50%)' };
