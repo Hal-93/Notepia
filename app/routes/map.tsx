@@ -203,14 +203,11 @@ export default function MapPage() {
 
   useEffect(() => {
     if (tutorialFlag === "false") {
-      // mark tutorial as completed
       fetcher.submit(
         { tutorial: "true" },
         { method: "post", action: "/api/user-settings" }
       );
-      // force tutorial display
       setForceTutorial(true);
-      // re-fetch loader to update tutorialFlag
       revalidator.revalidate();
     }
   }, [tutorialFlag, fetcher, revalidator]);
@@ -679,7 +676,7 @@ export default function MapPage() {
                 isNight ? "text-white" : "text-black"
               }`}
             >
-            {groupName ? groupName : "Mymap"}
+            {groupName ? groupName : username}
             </h2>
           </div>
 
@@ -690,7 +687,7 @@ export default function MapPage() {
                 isNight ? "text-white" : "text-black"
               }`}
             >
-            {groupName ? groupName : "Mymap"}
+            {groupName ? groupName : username}
             </h2>
           </div>
 

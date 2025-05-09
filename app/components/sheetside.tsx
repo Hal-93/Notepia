@@ -108,7 +108,7 @@ export function SheetSide({
 
           <SheetContent side="left" className="flex flex-col h-full">
             <SheetHeader>
-              <SheetTitle className="text-4xl text-[#777777] ml-[16px] mt-[18px] md:mt-[76px]">マップ</SheetTitle>
+              <SheetTitle className="text-3xl text-[#777777] ml-[16px] mt-[18px] md:mt-[76px]">マップ</SheetTitle>
               <SheetClose asChild>
                 <button
                   className="absolute top-[16px] md:top-[76px] right-[24px] md:right-[16px] text-gray-400 hover:text-red-500 transition-colors"
@@ -140,12 +140,12 @@ export function SheetSide({
                         className="!w-12 !h-12"
                       />
                     )}
-                    Mymap
+                    {username}
                   </Button>
                 </div>
               </SheetClose>
 
-              <SheetTitle className="text-4xl text-[#777777] ml-[16px] md:mt-[12px]">グループ</SheetTitle>
+              <SheetTitle className="text-3xl text-[#777777] ml-[16px] md:mt-[12px]">グループ</SheetTitle>
               {groups &&
                 groups.map((group) => (
                   <SheetClose asChild key={group.id}>
