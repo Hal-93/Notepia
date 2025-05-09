@@ -524,15 +524,15 @@ export default function ActionBar({
                     </Button>
                     <Button
                       className="w-full bg-[#1F2937] hover:bg-[#141920] text-white"
-                      onClick={() => setIsSetting(true)}
-                    >
-                      設定
-                    </Button>
-                    <Button
-                      className="w-full bg-[#1F2937] hover:bg-[#141920] text-white"
                       onClick={() => setIsNote(true)}
                     >
                       リリースノート
+                    </Button>
+                    <Button
+                      className="w-full bg-[#1F2937] hover:bg-[#141920] text-white"
+                      onClick={() => setIsSetting(true)}
+                    >
+                      設定
                     </Button>
                     <Form method="post" action="/logout" className="w-full">
                       <Button
