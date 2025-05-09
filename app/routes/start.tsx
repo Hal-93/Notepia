@@ -20,7 +20,7 @@ export default function Index() {
           className="absolute inset-0 md:hidden"
           style={{
             backgroundImage:
-              "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0, 0, 0, 0.85) 100%), url('/backimage.png')",
+              "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0, 0, 0, 0.85) 100%), url('/backGroundMobile250506.jpeg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -70,7 +70,7 @@ export default function Index() {
       {/* 右カラム */}
       <div
         className="hidden md:block col-span-2 bg-cover bg-center"
-        style={{ backgroundImage: "url('/backimage.png')" }}
+        style={{ backgroundImage: "url('/backGround250506.jpeg')" }}
       ></div>
     </div>
   );

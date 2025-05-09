@@ -118,7 +118,7 @@ export function SheetSide({
                 </button>
               </SheetClose>
             </SheetHeader>
-            <div className="flex-grow overflow-y-auto overflow-x-clip">
+            <div className="flex-grow overflow-y-auto overflow-x-clip flex flex-col">
               <SheetClose asChild>
                 <div className="flex">
                   <Button
@@ -213,16 +213,14 @@ export function SheetSide({
                     </div>
                   </SheetClose>
                 ))}
-                <SheetFooter className="mt-auto">
-              <SheetClose asChild>
+            <SheetClose asChild className="w-full">
                 <Button
-                  className="w-full hover:bg-gray-800 mb-[34px] mt-3 mx-[16px] rounded-xl"
+                  className="w-[calc(100%-32px)] hover:bg-gray-800 mb-[34px] mt-3 mx-[16px] rounded-xl"
                   onClick={handleOpenModal}
                 >
                   +グループを作成
                 </Button>
               </SheetClose>
-            </SheetFooter>
             </div>
           </SheetContent>
         </Sheet>
