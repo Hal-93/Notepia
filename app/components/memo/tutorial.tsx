@@ -31,7 +31,7 @@ const pages = [
   {
     title: "メモリスト",
     content:
-      "アクションバーからマップ上に設置されているメモの一覧を表示でき、メモのタイトルや色で検索をかけて絞り込むことができます。\nマップ上で操作することなく完了や削除・復元もここから行えます。\n完了したメモは「完了済み」タブに表示されます。",
+      "アクションバーからマップ上に設置されているメモの一覧を表示でき、メモのタイトルや色で検索をかけて絞り込むことができます。メモをクリックすればその場所へ飛ぶこともできます。\nマップ上で操作することなく完了や削除・復元もここから行えます。\n完了したメモは「完了済み」タブに表示されます。",
     media: { type: "video", src: "/tutorial/detail.mp4" },
   },
   {
@@ -134,19 +134,13 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
     if (!modalRef.current) return;
     const videos = modalRef.current.querySelectorAll('video');
     videos.forEach((video) => {
-      // Ensure video properties
-      video.muted = true;
-      video.defaultMuted = true;
-      video.playsInline = true;
+      // Force muted and inline attributes at DOM level
+      video.setAttribute('muted', '');
+      video.setAttribute('playsinline', '');
       video.setAttribute('webkit-playsinline', 'true');
-      // Reload and play on loadeddata
-      video.load();
-      video.addEventListener('loadeddata', () => {
-        video.play().catch(() => {/* ignore */});
-      });
-      // Fallback: play on next animation frame
-      requestAnimationFrame(() => {
-        video.play().catch(() => {/* ignore */});
+      // Attempt to play
+      video.play().catch(() => {
+        // swallow errors (e.g. low power mode)
       });
     });
   }, [currentIndex]);
