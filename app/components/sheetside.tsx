@@ -232,6 +232,7 @@ export function SheetSide({
           currentUserId={userId}
           onClose={handleCloseModal}
           changeGroup={changeGroup}
+          directGroupCount={groups.length}
         />
       )}
       {editingGroup && (

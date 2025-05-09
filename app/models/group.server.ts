@@ -244,3 +244,10 @@ const groupWithMembershipsAndUsers = Prisma.validator<Prisma.GroupDefaultArgs>()
 });
 
 export type GroupWithMembershipsAndUsers = Prisma.GroupGetPayload<typeof groupWithMembershipsAndUsers>;
+
+// ユーザーが参加しているグループの個数を返す関数
+export async function getUserGroupCount(userId: string): Promise<number> {
+  return prisma.groupMember.count({
+    where: { userId },
+  });
+}

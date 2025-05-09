@@ -30,11 +30,22 @@ export default function GroupEditModal({
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const fetcher = useFetcher();
 
-  const handleUserAdd = (user: User) => {
+  const handleUserAdd = async (user: User) => {
     if (
       user.id === currentUserId ||
       selectedUsers.some((u) => u.id === user.id)
     ) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/user-group-count?userId=${user.id}`);
+      const data = await res.json();
+      if (data.count >= 3) {
+        alert("このユーザーはすでに3つのグループに参加しています。追加できません。");
+        return;
+      }
+    } catch {
+      alert("グループ参加数の取得に失敗しました");
       return;
     }
     setSelectedUsers((prev) => [...prev, user]);

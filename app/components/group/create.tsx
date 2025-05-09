@@ -5,18 +5,24 @@ type GroupCreateProps = {
   currentUserId: string;
   onClose: () => void;
   changeGroup?: (groupId: string) => void;
+  directGroupCount: number;
 };
 type GroupCreateResponse = { groupId: string };
 
 export default function GroupCreateModal({
   onClose,
   changeGroup,
+  directGroupCount,
 }: GroupCreateProps) {
   const [name, setName] = useState("");
   const [agreed, setAgreed] = useState(false);
   const fetcher = useFetcher<GroupCreateResponse>();
 
   const handleSubmit = () => {
+    if (directGroupCount >= 3) {
+      alert("これ以上グループを作成できません。最大3つまでです。");
+      return;
+    }
     if (!agreed) {
       alert("グループ作成前にチェックボックスを承認してください");
       return;
@@ -76,12 +82,18 @@ export default function GroupCreateModal({
           </span>
         </label>
 
+        {directGroupCount >= 3 && (
+          <p className="text-red-500 text-sm mb-4">
+            すでに3つのグループに参加済みです。これ以上作成できません。
+          </p>
+        )}
+
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={!agreed}
+          disabled={!agreed || directGroupCount >= 3}
           className={`w-full mt-6 py-2 rounded text-white ${
-            agreed
+            agreed && directGroupCount < 3
               ? "bg-indigo-500 hover:bg-indigo-700"
               : "bg-gray-400 cursor-not-allowed"
           }`}
