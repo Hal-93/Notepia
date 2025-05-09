@@ -1,6 +1,7 @@
 import Avatar from "boring-avatars";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
 import { Label } from "~/components/ui/label";
 import {
   Popover,
@@ -43,7 +44,7 @@ export default function FriendSection({
       <div className="w-full p-2 rounded-lg text-white">
         {isAdd && (
           <>
-            <h2 className="text-2xl text-center mb-4">フレンド追加</h2>
+            <h2 className="text-2xl mb-4">フレンド追加</h2>
 
             <Label htmlFor="username" className="text-white text-lg">
               ユーザーID
@@ -53,10 +54,11 @@ export default function FriendSection({
               name="username"
               type="text"
               autoComplete="username"
+              placeholder="@から先のユーザーID"
               required
               value={toId}
               onChange={(e) => setToId(e.target.value)}
-              className="w-full text-white h-14 bg-gray-800 p-2 text-xl rounded-md"
+              className="w-full text-white h-14 bg-gray-800 p-2 rounded-md"
             />
 
             {follwingUser && (
@@ -84,7 +86,7 @@ export default function FriendSection({
 
             <Button
               onClick={() => handleGetUser(toId)}
-              className="w-full mt-4 p-3 bg-indigo-500 text-white rounded-md text-lg"
+              className="w-full mt-4 p-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md text-lg"
             >
               検索
             </Button>
@@ -96,7 +98,7 @@ export default function FriendSection({
             {friendRequests.map((user) => (
               <div
                 key={user.uuid}
-                className="p-3 mt-3 flex items-center justify-between border rounded-md bg-gray-800"
+                className="p-3 mt-3 flex items-center justify-between rounded-md bg-gray-800"
               >
                 <div className="flex items-center">
                   {user.avatar ? (
@@ -130,13 +132,13 @@ export default function FriendSection({
           </>
         )}
 
-        <h3 className="text-2xl text-center mt-6">フレンド一覧</h3>
-        <div className=" max-h-96">
+        <h3 className="text-2xl mt-6">フレンド一覧</h3>
+        <div className="max-h-96 overflow-y-auto no-scrollbar">
           {follwingUsers.length > 0 ? (
             follwingUsers.map((user) => (
               <div
                 key={user.uuid}
-                className="p-3 mt-3 flex items-center justify-between border rounded-md bg-gray-800"
+                className="p-3 mt-3 flex items-center justify-between rounded-md bg-gray-800"
               >
                 <div className="flex items-center">
                   {user.avatar ? (
@@ -154,7 +156,9 @@ export default function FriendSection({
                   </div>
                 </div>
                 <div className="ml-auto pr-1">
-                  {user.status === "PENDING" && "承認待ち"}
+                  {user.status === "PENDING" && (
+                    <Badge variant="destructive">承認待ち</Badge>
+                  )}
                 </div>
                 <Popover >
                   <PopoverTrigger className="hover:text-red-400">
