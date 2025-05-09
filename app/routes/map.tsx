@@ -620,7 +620,7 @@ export default function MapPage() {
     formData.append("color", memoData.color);
     fetcher.submit(formData, {
       method: "post",
-      action: `/group/${groupId}`,
+      action: `/map?group=${groupId}`,
       preventScrollReset: true,
     });
     if (tempMarkerRef.current) {
