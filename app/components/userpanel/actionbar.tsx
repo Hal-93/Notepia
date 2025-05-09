@@ -7,9 +7,9 @@ import { getPushEndpoint, handleSubscribe } from "~/utils/pushNotification";
 import { Form } from "@remix-run/react";
 import Setting from "./Setting";
 import ProfileSection from "./ProfileSection";
-import FriendSection from "./note";
 import NoteSection from "./note";
 import ReactDOM from "react-dom";
+import FriendSection from "./FriendSection";
 
 export default function ActionBar({
   username,
