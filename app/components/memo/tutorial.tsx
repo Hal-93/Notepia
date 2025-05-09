@@ -134,13 +134,19 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
     if (!modalRef.current) return;
     const videos = modalRef.current.querySelectorAll('video');
     videos.forEach((video) => {
-      // Force muted and inline attributes at DOM level
-      video.setAttribute('muted', '');
-      video.setAttribute('playsinline', '');
+      // Ensure video properties
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
       video.setAttribute('webkit-playsinline', 'true');
-      // Attempt to play
-      video.play().catch(() => {
-        // swallow errors (e.g. low power mode)
+      // Reload and play on loadeddata
+      video.load();
+      video.addEventListener('loadeddata', () => {
+        video.play().catch(() => {/* ignore */});
+      });
+      // Fallback: play on next animation frame
+      requestAnimationFrame(() => {
+        video.play().catch(() => {/* ignore */});
       });
     });
   }, [currentIndex]);
