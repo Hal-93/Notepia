@@ -60,7 +60,7 @@ export default function GroupEditModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60">
       <div className="relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white">
         <div className="flex justify-between mb-4">
           <h2 className="text-white text-lg font-bold">グループの編集</h2>
@@ -125,7 +125,7 @@ export default function GroupEditModal({
         <button
           type="button"
           onClick={handleSubmit}
-          className="w-full mt-6 py-2 bg-indigo-500 rounded text-white hover:bg-indigo-700"
+          className="w-full mt-6 py-2 bg-[#4F46E5] rounded text-white hover:bg-[#141920]"
         >
           更新
         </button>

@@ -6,7 +6,7 @@ const pages = [
     title: "ようこそ Notepia へ",
     content:
       "Notepiaの操作方法のチュートリアルです。マップ上での操作方法をスワイプして確認しましょう。\n \nNotepiaではユーザーの位置情報を使用しますが、これは現在地を表示する目的のみで使用し、Notepiaがこの情報を保存することはありません。",
-    media: { type: "image", src: "/Notepia-light.svg", width: "90%" },
+    media: { type: "image", src: "/Notepia-light.svg", width: "100%" },
   },
   {
     title: "メモの作成",
