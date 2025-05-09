@@ -119,7 +119,6 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
     el.scrollTo({ left: prev * pageWidth, behavior: "smooth" });
   };
 
-  // Keyboard navigation
   useEffect(() => {
     const onKeydown = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") goNext();
@@ -129,23 +128,7 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
     return () => document.removeEventListener("keydown", onKeydown);
   }, [currentIndex]);
 
-  // Ensure videos play automatically on mobile (iOS) when page changes
-  useEffect(() => {
-    if (!modalRef.current) return;
-    const videos = modalRef.current.querySelectorAll('video');
-    videos.forEach((video) => {
-      // Force muted and inline attributes at DOM level
-      video.setAttribute('muted', '');
-      video.setAttribute('playsinline', '');
-      video.setAttribute('webkit-playsinline', 'true');
-      // Attempt to play
-      video.play().catch(() => {
-        // swallow errors (e.g. low power mode)
-      });
-    });
-  }, [currentIndex]);
 
-  // Handle click on container: left half = prev, right half = next
   const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const el = scrollContainerRef.current;
     if (!el) return;
@@ -169,8 +152,21 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
             ref={scrollContainerRef}
             onScroll={handleScroll}
             onClick={handleContainerClick}
+            onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
+              if (e.key === "Enter" || e.key === " ") {
+                handleContainerClick(e as unknown as React.MouseEvent<HTMLDivElement>);
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="チュートリアル ナビゲーション: 左側で前のページ、右側で次のページ"
             className="h-full flex overflow-x-auto snap-x snap-mandatory no-scrollbar"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            style={{
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              touchAction: 'pan-x',
+              overscrollBehavior: 'contain',
+            }}
           >
             {pages.map((page, idx) => (
               <div
@@ -188,10 +184,11 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
                 {page.media?.type === "video" && (
                   <video
                     src={page.media.src}
-                    playsInline
+                    autoPlay
                     muted
+                    playsInline
                     loop
-                    preload="none"
+                    preload="auto"
                     className="w-full object-contain mb-4 rounded"
                     style={{ width: page.media.width || "100%", height: "200px" }}
                   >
