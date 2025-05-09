@@ -7,7 +7,8 @@ import { getPushEndpoint, handleSubscribe } from "~/utils/pushNotification";
 import { Form } from "@remix-run/react";
 import Setting from "./Setting";
 import ProfileSection from "./ProfileSection";
-import FriendSection from "./FriendSection";
+import FriendSection from "./note";
+import NoteSection from "./note";
 import ReactDOM from "react-dom";
 
 export default function ActionBar({
@@ -176,6 +177,7 @@ export default function ActionBar({
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
   const [isProfileChange, setIsProfileChange] = useState(false);
   const [isSetting, setIsSetting] = useState<boolean>(false);
+  const [isNote, setIsNote] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [copied, setCopied] = useState(false);
   const [uname, setUname] = useState(username);
@@ -395,12 +397,13 @@ export default function ActionBar({
               className="relative w-full max-w-md h-[36em] bg-black rounded-lg shadow-lg p-6 text-white flex flex-col"
               style={{ zIndex: 3000 }}
             >
-              {isProfileChange || isFriend || isSetting ? (
+              {isProfileChange || isFriend || isSetting || isNote ? (
                 <button
                   onClick={() => {
                     setIsProfileChange(false);
                     setIsFriend(false);
                     setIsSetting(false);
+                    setIsNote(false);
                     setPreviewUrl(null);
                     setSelectedFile(null);
                     setIsAdd(false);
@@ -433,7 +436,7 @@ export default function ActionBar({
               )}
 
               <div className="flex flex-col justify-between h-full pt-10">
-                <div className="overflow-y-auto pb-4">
+                <div className="overflow-hidden pb-4 no-scrollbar">
                   {isFriend ? (
                     <FriendSection
                       toId={toId}
@@ -461,6 +464,8 @@ export default function ActionBar({
                       mapQuality={mapQuality}
                       setMapQuality={(v) => setMapQuality(v)}
                     />
+                  ) : isNote ? (
+                    <NoteSection />
                   ) : (
                     <ProfileSection
                       uuid={uuid}
@@ -491,7 +496,7 @@ export default function ActionBar({
                   </div>
                 )}
 
-                {!isProfileChange && !isFriend && !isSetting && (
+                {!isProfileChange && !isFriend && !isSetting && !isNote && (
                   <div className="pt-4 space-y-3">
                     <Button
                       className="w-full bg-white text-black hover:bg-gray-400"
@@ -522,6 +527,12 @@ export default function ActionBar({
                       onClick={() => setIsSetting(true)}
                     >
                       設定
+                    </Button>
+                    <Button
+                      className="w-full bg-[#1F2937] hover:bg-[#141920] text-white"
+                      onClick={() => setIsNote(true)}
+                    >
+                      リリースノート
                     </Button>
                     <Form method="post" action="/logout" className="w-full">
                       <Button
