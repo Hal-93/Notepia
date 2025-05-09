@@ -26,7 +26,7 @@ const pages = [
     title: "メモ",
     content:
       "地図上でダブルクリックするとその地点にメモを作成できます。タイトル・内容を入力し、色を選択して保存してください。\nメモのポップアップをクリックすると、詳細を表示することができます。付箋の追加もここから行います。",
-    media: { type: "video", src: "/tutorial/create.mp4" },
+    media: { type: "video", src: "https://www.apple.com/105/media/us/mac/family/2025/59856fc1-d007-421a-90ee-734ddf3fd25d/anim/welcome/small_2x.mp4" },
   },
   {
     title: "メモリスト",
