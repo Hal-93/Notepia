@@ -1,14 +1,25 @@
 import React, { useEffect, useRef, useState, Fragment } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { faExclamationTriangle, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "~/components/ui/button";
 import { Drawer, DrawerContent } from "~/components/ui/drawer";
 
 const pages = [
   {
     title: "ようこそ Notepia へ",
-    content:
-      "Notepiaの操作方法のチュートリアルです。マップ上での操作方法をスワイプして確認しましょう。\n \nNotepiaではユーザーの位置情報を使用しますが、これは現在地を表示する目的のみで使用し、Notepiaがこの情報を収集することはありません。",
+    content: (
+      <>
+        Notepiaをはじめる前に、いくつか重要な操作方法を学んでおきましょう。<br/><br />
+        <div className="bg-yellow-700 rounded p-4">
+        <FontAwesomeIcon icon={faExclamationTriangle} />{" "}
+        Notepiaではユーザーの現在地を表示するために位置情報を利用しますが、Notepiaがユーザーの位置情報を収集し、これを他の目的で利用することはありません。
+        位置情報の許可は任意ですが、拒否した場合には現在地への機能が使用できません。
+        </div>
+        <br/>
+        <br />
+        <br />
+      </>
+    ),
     media: { type: "image", src: "/Notepia-light.svg", width: "90%" },
   },
   {
@@ -24,6 +35,12 @@ const pages = [
     media: { type: "video", src: "/tutorial/detail.mp4" },
   },
   {
+    title: "プロフィールを作る",
+    content:
+      "まずはプロフィールを編集しましょう！\n他のNotepiaユーザーが分かるように、あなたの名前とアバターを追加してください！",
+      media: { type: "image", src: "/tutorial/friend.png", width: "90%" },
+  },
+  {
     title: "フレンドを追加する",
     content:
       "プロフィール > フレンド一覧 > + でフレンドを追加しましょう。\n\nNotepiaでは知らないユーザーからの申請を防ぐために、ユーザーIDの完全一致でのみ検索結果がヒットします。フレンドにユーザーID(@から下の部分)を教えてもらい、検索でフレンドを見つけたら、申請を送りましょう！",
@@ -32,7 +49,7 @@ const pages = [
   {
     title: "グループを作る/参加する",
     content:
-      "左上のハンバーガーメニューからグループ移動が可能です。グループを作ったり、フレンドからグループに追加してもらいましょう。\n\nグループには「OWNER」「ADMIN」「EDITOR」「VIEWER」の4つの権限があります。VIEWER(初期状態)はグループ内のメモを閲覧することができ、編集はできません。EDITORはメモの編集が可能になります。ADMINはグループのメンバーを管理することができます。\nOWNERは全ての権限を持ちますが、グループを脱退した場合はグループが削除されます。",
+      "左上のハンバーガーメニューからグループ移動が可能です。グループを作ったり、フレンドからグループに追加してもらいましょう。\n\nグループには「OWNER」「ADMIN」「EDITOR」「VIEWER」の4つの権限があります。VIEWER(初期状態)はグループ内のメモを閲覧することができ、編集はできません。EDITORはメモの編集が可能になります。ADMINはグループのメンバーを管理することができます。OWNERは全ての権限を持ちますが、グループを脱退した場合はグループが削除されます。",
       media: { type: "image", src: "/tutorial/group.png", width: "90%" },
   },
   {
@@ -112,6 +129,22 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
     return () => document.removeEventListener("keydown", onKeydown);
   }, [currentIndex]);
 
+  // Ensure videos play automatically on mobile (iOS) when page changes
+  useEffect(() => {
+    if (!modalRef.current) return;
+    const videos = modalRef.current.querySelectorAll('video');
+    videos.forEach((video) => {
+      // Force muted and inline attributes at DOM level
+      video.setAttribute('muted', '');
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', 'true');
+      // Attempt to play
+      video.play().catch(() => {
+        // swallow errors (e.g. low power mode)
+      });
+    });
+  }, [currentIndex]);
+
   // Handle click on container: left half = prev, right half = next
   const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const el = scrollContainerRef.current;
@@ -155,12 +188,10 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
                 {page.media?.type === "video" && (
                   <video
                     src={page.media.src}
-                    loop
+                    playsInline
                     autoPlay
                     muted
-                    playsInline
-                    webkitPlaysinline="true"
-                    x5Playsinline="true"
+                    loop
                     preload="auto"
                     className="w-full object-contain mb-4 rounded"
                     style={{ width: page.media.width || "100%", height: "200px" }}
