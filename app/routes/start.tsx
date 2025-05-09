@@ -6,7 +6,7 @@ import { getUserId } from "~/session.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await getUserId(request);
-  if (userId) return redirect("/home");
+  if (userId) return redirect("/map");
   return null;
 };
 

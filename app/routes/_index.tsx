@@ -108,8 +108,7 @@ export default function Index() {
               <h3 className="text-xl font-semibold mb-4">Free</h3>
               <p className="text-4xl font-bold mb-4">¥0</p>
               <ul className="mb-6 list-disc list-inside text-gray-600">
-                <li>最大2グループへのアクセス</li>
-                <li>1マップにつき最大3つのメモ作成</li>
+                <li>最大3グループへのアクセス</li>
               </ul>
               <Link
                 to="/start"

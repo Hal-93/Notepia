@@ -7,6 +7,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 type User = { uuid: string; username: string; avatar: string };
 
 type Props = {
@@ -156,7 +158,7 @@ export default function FriendSection({
                 </div>
                 <Popover >
                   <PopoverTrigger className="hover:text-red-400">
-                    ・・・
+                    <FontAwesomeIcon icon={faXmark}></FontAwesomeIcon>
                   </PopoverTrigger>
                   <PopoverContent className="z-[9999] w-auto pointer-events-auto bg-black border-black">
                     <Button
