@@ -13,7 +13,7 @@ const pages = [
         <p>Notepiaで探検を始める前に、いくつかの基本操作を伝授します！<br/><br/></p>
         <div className="bg-yellow-700 rounded p-4">
           <FontAwesomeIcon icon={faExclamationTriangle} />{" "}
-          <strong>秘密のヒミツ：</strong> Notepiaは位置情報を使ってあなたを助けますが、現在地を表示するためだけにこれを使用し、勝手に他の妖精に渡したりはしないので安心してくださいね！  
+          <strong>秘密のヒミツ：</strong> Notepiaは位置情報を使ってあなたを助けますが、現在地を表示するためだけにこれを使用し、勝手に他の妖精にこっそり渡したりはしないので安心してください！  
         </div>
         <p className="mt-4">恐れを捨てて、冒険の第一歩を踏み出しましょう！</p>
       </>

@@ -140,11 +140,11 @@ export default function LoginPage() {
                 className="pt-0 mt-[10vh] md:mt-[5vh] w-[30vw] md:w-32 h-auto"
               />
             </Link>
-            <h2 className="text-white text-[3vh] md:text-[2.5vw] font-bold pt-[6vh]">
+            <h2 className="text-white text-[3vh] md:text-[2.5vw] font-bold pt-[4vh]">
               ログイン
             </h2>
 
-            <Form method="post" className="space-y-6 pt-10">
+            <Form method="post" className="space-y-6 pt-[16px]">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-white">
                   メールアドレス

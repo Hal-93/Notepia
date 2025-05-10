@@ -489,7 +489,7 @@ export default function ActionBar({
                   <div className="pt-4">
                     <Button
                       onClick={handleUpload}
-                      className="w-full bg-indigo-500 hover:bg-indigo-700 text-black"
+                      className="w-full bg-[#1F2937] hover:bg-[#141920] text-white"
                     >
                       保存
                     </Button>

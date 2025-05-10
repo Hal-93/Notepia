@@ -240,12 +240,12 @@ export default function Join() {
                 className="pt-0 mt-[10vh] md:mt-[5vh] w-[30vw] md:w-32 h-auto"
               />
             </Link>
-            <h2 className="text-white text-[3vh] md:text-[2.5vw] font-bold pt-[6vh]">
+            <h2 className="text-white text-[3vh] md:text-[2.5vw] font-bold mt-[4vh]">
               新規登録
             </h2>
 
-            <Form method="post" className="space-y-6 pt-10">
-              <div className="space-y-2">
+            <Form method="post" className="mt-[16px]">
+              <div className="mt-[8px]">
                 <Label htmlFor="uuid" className="text-white">
                   ユーザーID
                 </Label>
@@ -272,7 +272,7 @@ export default function Join() {
                 )}
               </div>
 
-              <div className="space-y-2">
+              <div className="mt-[16px]">
                 <Label htmlFor="email" className="text-white">
                   メールアドレス
                 </Label>
@@ -296,7 +296,7 @@ export default function Join() {
                 )}
               </div>
 
-              <div className="space-y-2 pb-[2vh]">
+              <div className="mt-[16px]">
                 <Label htmlFor="password" className="text-white">
                   パスワード
                 </Label>
@@ -317,7 +317,7 @@ export default function Join() {
                   </p>
                 )}
               </div>
-              <div className="pb-[2vh]">
+              <div className="my-[16px]">
                 <Label htmlFor="confirm" className="text-white">パスワード（確認）</Label>
                 <Input
                   id="confirm"
@@ -344,13 +344,13 @@ export default function Join() {
               <input hidden={true} name="token" value={token} />
               <Button
                 type="submit"
-                className="w-full md:text-[1.2vw] md:h-[2.5vw] px-5 bg-gradient-to-r from-purple-800 to-indigo-600 text-white hover:bg-gradient-to-l hover:from-indigo-900 hover:to-purple-950 hover:text-zinc-400"
+                className="w-full md:text-[1.2vw] md:h-[2.5vw] mt-[16px] px-5 bg-gradient-to-r from-purple-800 to-indigo-600 text-white hover:bg-gradient-to-l hover:from-indigo-900 hover:to-purple-950 hover:text-zinc-400"
                 disabled={!isVerify}
               >
                 アカウント作成
               </Button>
             </Form>
-            <p className="text-white text-xs text-center md:text-[1vw] pt-[2.5vh] font-md">
+            <p className="text-white text-xs text-center md:text-[1vw] pt-[16px] font-md">
               すでに Notepia のアカウントをお持ちですか？{" "}
               <Link
                 to={{
