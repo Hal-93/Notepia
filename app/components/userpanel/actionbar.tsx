@@ -534,7 +534,7 @@ export default function ActionBar({
                         if (mode === "demo") {
                           alert("デモ版ではこの機能は使用できません");
                         } else {
-                          setIsFriend(true);
+                          setIsSetting(true);
                         }
                       }}
                     >
