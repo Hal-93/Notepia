@@ -57,7 +57,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   if (!validateEmail(email)) {
     return json(
-      { errors: { email: "Invalid email address", password: null } },
+      { errors: { email: "メールアドレスまたはパスワードが違います", password: null } },
       { status: 400 }
     );
   }
@@ -67,7 +67,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       {
         errors: {
           email: null,
-          password: "Password must be at least 8 characters",
+          password: "メールアドレスまたはパスワードが違います",
         },
       },
       { status: 400 }
@@ -77,7 +77,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await verifyLogin(email, password);
   if (!user) {
     return json(
-      { errors: { email: "Invalid email or password", password: null } },
+      { errors: { email: "メールアドレスまたはパスワードが違います", password: null } },
       { status: 400 }
     );
   }
