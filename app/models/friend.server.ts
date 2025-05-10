@@ -61,14 +61,13 @@ export async function rejectFriendRequestById(
   fromId: string,
   toId: string
 ): Promise<Friend> {
-  return await prisma.friend.update({
+  return await prisma.friend.delete({
     where: {
       fromId_toId: {
         fromId: fromId,
         toId: toId,
       },
     },
-    data: { status: "REJECTED" },
   });
 }
 
