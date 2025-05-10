@@ -41,6 +41,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const email = formData.get("email");
   const uuid = formData.get("uuid");
   const password = formData.get("password");
+  const confirm = formData.get("confirm");
   const token = formData.get("token") as string;
   const ip = request.headers.get("CF-Connecting-IP") as string;
 
@@ -158,6 +159,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       { status: 400 }
     );
   }
+  if (typeof confirm !== "string" || password !== confirm) {
+    return json(
+      {
+        errors: {
+          uuid: null,
+          email: null,
+          password: "パスワードが一致しません",
+        },
+      },
+      { status: 400 }
+    );
+  }
 
   const existingUser = await getUserByEmail(email);
   if (existingUser) {
@@ -193,6 +206,7 @@ export default function Join() {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const uuidRef = useRef<HTMLInputElement>(null);
+  const confirmRef = useRef<HTMLInputElement>(null);
 
   const [isVerify, setIsVerify] = useState(false);
   const [token, setToken] = useState<string>("");
@@ -207,6 +221,8 @@ export default function Join() {
       emailRef.current?.focus();
     } else if (actionData?.errors?.password) {
       passwordRef.current?.focus();
+    } else if (actionData?.errors?.password === "パスワードが一致しません") {
+      confirmRef.current?.focus();
     }
   }, [actionData]);
 
@@ -297,6 +313,25 @@ export default function Join() {
                 />
                 {actionData?.errors?.password && (
                   <p className="text-red-600 text-sm" id="password-error">
+                    {actionData.errors.password}
+                  </p>
+                )}
+              </div>
+              <div className="pb-[2vh]">
+                <Label htmlFor="confirm" className="text-white">パスワード（確認）</Label>
+                <Input
+                  id="confirm"
+                  name="confirm"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  ref={confirmRef}
+                  className="w-full text-white"
+                  aria-invalid={actionData?.errors?.password ? true : undefined}
+                  aria-describedby="confirm-error"
+                />
+                {actionData?.errors?.password && actionData.errors.password === "パスワードが一致しません" && (
+                  <p className="text-red-600 text-sm" id="confirm-error">
                     {actionData.errors.password}
                   </p>
                 )}
