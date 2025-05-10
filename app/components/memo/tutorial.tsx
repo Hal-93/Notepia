@@ -80,6 +80,7 @@ const pages = [
 export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const currentIndexRef = useRef<number>(0);
   const touchStartXRef = useRef<number>(0);
 
 
@@ -129,11 +130,19 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
   };
   const handleTouchEnd = (e: TouchEvent) => {
     const deltaX = e.changedTouches[0].clientX - touchStartXRef.current;
-    const threshold = 50; // min px to count as swipe
+    const threshold = 50;
+    const idx = currentIndexRef.current;
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const pageWidth = el.clientWidth;
     if (deltaX < -threshold) {
-      goNext();
+      const next = Math.min(idx + 1, pages.length - 1);
+      el.scrollTo({ left: next * pageWidth, behavior: "smooth" });
+      setCurrentIndex(next);
     } else if (deltaX > threshold) {
-      goPrev();
+      const prev = Math.max(idx - 1, 0);
+      el.scrollTo({ left: prev * pageWidth, behavior: "smooth" });
+      setCurrentIndex(prev);
     }
   };
   useEffect(() => {
@@ -145,7 +154,7 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
       el.removeEventListener("touchstart", handleTouchStart);
       el.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [currentIndex]);
+  }, []);
 
   // On mount, bind loadeddata event to all videos for autoplay
   useEffect(() => {
@@ -174,6 +183,10 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
     if (video) {
       video.play().catch(() => {});
     }
+  }, [currentIndex]);
+
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
   }, [currentIndex]);
 
   const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
