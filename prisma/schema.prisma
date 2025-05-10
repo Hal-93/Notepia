@@ -32,32 +32,32 @@ model User {
 }
 
 model Memo {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
-  color       String   @default("white")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  color       String    @default("white")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   content     String?
-  completed   Boolean  @default(false)
+  completed   Boolean   @default(false)
   place       String?
   latitude    Float?
   longitude   Float?
-  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdBy   User      @relation(fields: [createdById], references: [id])
   createdById String
-  group       Group?   @relation(fields: [groupId], references: [id])
+  group       Group?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId     String?
   comments    Comment[]
 }
 
 model Comment {
-  id          String   @id @default(cuid())
-  content     String
-  color       String   @default("")
-  createdAt   DateTime @default(now())
-  memo        Memo     @relation(fields: [memoId], references: [id], onDelete: Cascade)
-  memoId      String
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId    String
+  id        String   @id @default(cuid())
+  content   String
+  color     String   @default("")
+  createdAt DateTime @default(now())
+  memo      Memo     @relation(fields: [memoId], references: [id], onDelete: Cascade)
+  memoId    String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
 }
 
 model Group {
@@ -93,15 +93,15 @@ model GroupRequest {
 }
 
 model GroupMember {
-  id         String    @id @default(cuid())
-  userId     String
-  groupId    String
-  role       Role      @default(VIEWER)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  userId    String
+  groupId   String
+  role      Role     @default(VIEWER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  group      Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@unique([userId, groupId])
 }
