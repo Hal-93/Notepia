@@ -124,7 +124,7 @@ export default function ActionBar({
     }
 
     const data = await response.json();
-    if (data.status === "REJECTED") {
+    if (data) {
       setFriendRequests((prev) =>
         prev.filter((request) => request.id !== data.id)
       );

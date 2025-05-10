@@ -31,7 +31,9 @@ export default function UserProfile({
 }: UserProfileProps) {
   const [currentRole, setCurrentRole] = useState<Role | undefined>(role);
   const [isFriendState, setIsFriendState] = useState<boolean>(false);
+  const [isPending, setIdPending] = useState(false);
   useEffect(() => {
+    getUsers();
     fetch("/api/friends")
       .then((res) => res.json())
       .then((data) => {
@@ -39,12 +41,35 @@ export default function UserProfile({
       });
   }, [userId]);
 
-  const handleSendFriend = async () => {
-    /*
-     *
-     *    ここを実装
-     *
-     */
+  async function getUsers() {
+    const response = await fetch("/api/friend", {
+      method: "GET",
+    });
+    if (!response.ok) {
+      throw new Error("Failed to check subscription status");
+    }
+    const data = await response.json();
+    setIdPending(
+      data.users.some((user) => user.uuid === uuid && user.status === "PENDING")
+    );
+  }
+
+  const handleSendFriend = async (toUUID: string) => {
+    console.log(userId, actorId);
+    const formData = new FormData();
+    formData.append("toUUID", toUUID);
+    formData.append("_action", "submitFriend");
+    formData.append("fromId", actorId);
+
+    const response = await fetch("/api/friend", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to send friend request");
+    }
+    getUsers();
   };
 
   const canChangeRole =
@@ -254,10 +279,12 @@ export default function UserProfile({
             {userId !== actorId &&
               (isFriendState ? (
                 <Button className="text-gray-400">フレンド登録済み</Button>
+              ) : isPending ? (
+                <Button className="text-gray-400">承認待ち</Button>
               ) : (
                 <Button
                   className="bg-indigo-500 hover:bg-indigo-600"
-                  onClick={handleSendFriend}
+                  onClick={() => handleSendFriend(uuid)}
                 >
                   フレンド申請
                 </Button>
