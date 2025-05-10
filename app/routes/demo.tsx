@@ -23,6 +23,7 @@ import {
 } from "~/components/ui/drawer";
 import MemoList from "~/components/memo/memolist";
 import DemoDetailModal from "~/components/memo/demodetail";
+import TutorialLauncher from "~/components/memo/tutorial-launcher";
 
 type Role = "OWNER" | "ADMIN" | "EDITOR" | "VIEWER";
 
@@ -121,6 +122,8 @@ export default function DemoMapPage() {
   );
 
 useEffect(() => {
+  let isMounted = true;
+
   const defaultMemos: Memo[] = [
     {
       id: "1746680490853",
@@ -149,7 +152,14 @@ useEffect(() => {
   const hasDefault = storedMemos.some(m => m.id === defaultMemos[0].id);
   const combined = hasDefault ? storedMemos : [...defaultMemos, ...storedMemos];
   localStorage.setItem("demo-memos", JSON.stringify(combined));
-  setMemos(combined);
+
+  if (isMounted) { 
+    setMemos(combined);
+  }
+
+  return () => {
+    isMounted = false;
+  };
 }, []);
   useEffect(() => {
     localStorage.setItem("demo-memos", JSON.stringify(memos));
@@ -291,22 +301,97 @@ useEffect(() => {
   return (
     <>
 
-    <div className="pt-10">
-      <div className="fixed top-0 inset-x-0 flex flex-col md:flex-row items-center justify-between py-4 px-5 gap-x-4 gap-y-2 z-[2000]">
-        <div className="flex-1 bg-red-800 text-white py-2 px-4 rounded-md text-center md:text-left text-sm md:text-base">
+    <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
+
+
+      {/* search bar */}
+        <div className="fixed flex-nowrap flex items-center z-20 w-full md:ml-[-64px]">
+          <MapBoxSearch
+            api={mapboxToken}
+            onSelect={p =>
+              jumpToMemo({
+                id: Date.now().toString(),
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                title: p.place_name,
+                color: "#ffffff",
+                content: "",
+                completed: false,
+                place: null,
+                latitude: p.center[1],
+                longitude: p.center[0],
+                createdById: "demo",
+                groupId: null,
+              })
+            }
+          />
+          <h2
+              className={`hidden md:flex ml-[76px] md:ml-[0px] mt-[16px] text-4xl h-[48px] items-center font-bold truncate max-w-[60vw] md:max-w-[50vw] ${
+                (() => {
+                  const hours = new Date().getHours();
+                  return hours >= 20 || hours < 4 ? "text-white" : "text-black";
+                })()
+              }`}
+            >
+            Demo
+          </h2> 
+        </div> 
+
+        <div className="fixed flex-nowrap flex items-center z-[5]">
+            <h2
+              className={`md:hidden ml-[16px] mt-[18px] text-4xl h-[48px] font-bold truncate max-w-[60vw] ${
+                (() => {
+                  const hours = new Date().getHours();
+                  return hours >= 20 || hours < 4 ? "text-white" : "text-black";
+                })()
+              }`}
+            >
+            Demo
+          </h2>
+        </div>
+
+        <div className="mx-[16px] items-center mt-[128px] md:ml-[16px]">
+        <div className="md:hidden w-[calc(100%-32px)] fixed flex-1 bg-red-800 text-white py-2 px-4 rounded-md text-center md:text-left text-sm md:text-base z-[50]">
           デモ版ではNotepiaのごく一部の機能を試すことができます。全ての機能を使うには{" "}
-          <Link to="/join">
+          <Link to="/start">
             <Button className="bg-cyan-500 hover:bg-cyan-600">無料でアカウント作成</Button>
           </Link>
         </div>
-        <div className="flex items-center gap-2 mt-2 md:mt-0">
-          <MapBoxSearch api={mapboxToken} onSelect={p => jumpToMemo({ latitude: p.center[1], longitude: p.center[0], title: p.place_name, id: Date.now().toString(), content: "" })} />
-          <ActionBar mode="demo" username="Demo" uuid="demo" initialAvatarUrl={null} publicKey="" userId="demo" />
+      </div>
+
+        {/* ActionBar: 常に右上 */}
+        <div className="fixed top-4 right-4 z-30 w-12 h-12 items-center justify-center" style={{ pointerEvents: "auto" }}>
+          <ActionBar
+            mode="demo"
+            username="Demo"
+            uuid="demo"
+            initialAvatarUrl={null}
+            publicKey=""
+            userId="demo"
+          />
         </div>
+
+        {/* 1150px以下で左寄せ */}
+        <div className="hidden md:flex fixed z-20 top-4 right-0 mr-[80px] md-max:top-[72px] md-max:left-[16px] md-max:right-auto">
+          <div className="h-[48px] bg-red-800 text-white py-2 px-4 rounded-md flex items-center text-sm md:text-base whitespace-nowrap">
+            デモ版では一部機能のみ体験できます。全機能を使うには：
+            <Link to="/start" className="ml-2">
+              <Button className="bg-cyan-500 hover:bg-cyan-600">無料でアカウント作成</Button>
+            </Link>
+          </div>
+        </div>
+
+
+        {/* Compass */}
+        <div className="mt-[76px] md:mt-[0px]">
+        <Compass map={mapRef.current} />
+        </div>
+        <TutorialLauncher />
+
       </div>
       <div ref={mapContainerRef} style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh" }} />
+
       <Bar handleGroupDetail={handleGroupDetail} handleSearchMemo={handleSearchMemo} handleGoToCurrentLocation={() => {}} userId="demo" groupeId="demo" groupeName="Demo" />
-      <Compass map={mapRef.current} />
       {newMemoPos && (
         <DemoCreateModal
           lat={newMemoPos.lat}
@@ -358,7 +443,7 @@ useEffect(() => {
                       />
                     ) : (
                       <div className="flex-shrink-0">
-                        <Avatar size={64} name={user.uuid} variant="beam" />
+                        <Avatar size={64} name={String(user.uuid)} variant="beam" />
                       </div>
                     )}
                     <div className="flex flex-col text-left">
@@ -389,7 +474,7 @@ useEffect(() => {
           </ScrollArea>
         </DrawerContent>
       </Drawer>
-    </div>
+    
     </>
   );
 }

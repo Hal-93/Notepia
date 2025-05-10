@@ -530,7 +530,13 @@ export default function ActionBar({
                     </Button>
                     <Button
                       className="w-full bg-[#1F2937] hover:bg-[#141920] text-white"
-                      onClick={() => setIsSetting(true)}
+                      onClick={() => {
+                        if (mode === "demo") {
+                          alert("デモ版ではこの機能は使用できません");
+                        } else {
+                          setIsFriend(true);
+                        }
+                      }}
                     >
                       設定
                     </Button>

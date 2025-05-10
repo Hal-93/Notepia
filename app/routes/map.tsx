@@ -338,7 +338,6 @@ export default function MapPage() {
       map.addControl(
         new MapboxLanguage({
           defaultLanguage: "ja",
-          onlyAlphabet: false,
         })
       );
     });
@@ -673,7 +672,7 @@ export default function MapPage() {
             />
             <h2
               className={`hidden md:flex ml-[76px] md:ml-[0px] mt-[16px] text-4xl h-[48px] items-center font-bold truncate max-w-[60vw] md:max-w-[50vw] ${
-                isNight ? "text-white" : "text-black"
+                mapQuality === "low" ? "text-black" : isNight ? "text-white" : "text-black"
               }`}
             >
             {groupName ? groupName : username}
@@ -684,14 +683,14 @@ export default function MapPage() {
           <div className="fixed flex-nowrap flex items-center z-[5]">
             <h2
               className={`md:hidden ml-[76px] mt-[18px] text-4xl h-[48px] font-bold truncate max-w-[60vw] ${
-                isNight ? "text-white" : "text-black"
+                mapQuality === "low" ? "text-black" : isNight ? "text-white" : "text-black"
               }`}
             >
             {groupName ? groupName : username}
             </h2>
           </div>
 
-          {/* Action bar */}
+          {/* action bar */}
           <div className="fixed flex-none flex-shrink-0 w-12 h-12 mt-[16px] md:mt-4 right-[16px] flex items-center justify-center" style={{ zIndex: 100, pointerEvents: "auto" }}>
             <ActionBar
               username={username!}
