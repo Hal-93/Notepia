@@ -103,6 +103,8 @@ export default function LoginPage() {
   const [isVerify, setIsVerify] = useState(false);
   const [token, setToken] = useState<string>("");
 
+  const turnstileRef = useRef<any>(null);
+
   const handleSuccess = (token: string) => {
     setToken(token);
     setIsVerify(true);
@@ -113,6 +115,14 @@ export default function LoginPage() {
       emailRef.current?.focus();
     } else if (actionData?.errors?.password) {
       passwordRef.current?.focus();
+    }
+  }, [actionData]);
+
+  useEffect(() => {
+    if (actionData?.errors) {
+      setIsVerify(false);
+      setToken("");
+      turnstileRef.current?.reset();
     }
   }, [actionData]);
 
@@ -194,8 +204,20 @@ export default function LoginPage() {
                 </Label>
               </div>
               <Turnstile
+                ref={turnstileRef}
                 siteKey={CF_TURNSTILE_SITE_KEY!}
-                onSuccess={(token) => handleSuccess(token)}
+                onSuccess={(token) => {
+                  handleSuccess(token);
+                }}
+                onError={() => {
+                  setIsVerify(false);
+                  setToken("");
+                }}
+                onExpire={() => {
+                  setIsVerify(false);
+                  setToken("");
+                  turnstileRef.current?.reset();
+                }}
                 options={{ size: "flexible" }}
               />
               <input hidden={true} name="token" value={token} />
