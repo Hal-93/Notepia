@@ -94,7 +94,7 @@ export default function GroupCreateModal({
           disabled={!agreed || directGroupCount >= 3}
           className={`w-full mt-6 py-2 rounded text-white ${
             agreed && directGroupCount < 3
-              ? "bg-indigo-500 hover:bg-indigo-700"
+              ? "bg-[#4F46E5] hover:bg-[#1F2937] transition duration-200"
               : "bg-gray-400 cursor-not-allowed"
           }`}
         >

@@ -383,7 +383,7 @@ useEffect(() => {
 
 
           {/* Compass */}
-          <div className="xs:mt-[96px] mt-[76px] md:mt-[0px]">
+          <div className="hidden md:flex md:mt-[0px]">
           <Compass map={mapRef.current} />
           </div>
         <TutorialLauncher />
