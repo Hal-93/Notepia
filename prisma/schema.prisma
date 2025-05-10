@@ -10,7 +10,7 @@ generator client {
 model User {
   id            String         @id @default(cuid())
   uuid          String         @unique
-  name          String         @default("名称未設定")
+  name          String         @default("名無しの旅人")
   email         String         @unique
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt

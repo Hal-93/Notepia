@@ -49,17 +49,22 @@ export default function FriendSection({
             <Label htmlFor="username" className="text-white text-lg">
               ユーザーID
             </Label>
+
+            <div className="flex">
+            <span className="inline-flex items-center px-3 border border-gray-600 bg-gray-800 text-gray-300 rounded-l-md">
+                    @
+            </span>
             <Input
               id="username"
               name="username"
               type="text"
               autoComplete="username"
-              placeholder="@から先のユーザーID"
               required
               value={toId}
               onChange={(e) => setToId(e.target.value)}
-              className="w-full text-white h-14 bg-gray-800 p-2 rounded-md"
+              className="w-full text-white h-10 bg-gray-800 p-2 rounded"
             />
+            </div>
 
             {follwingUser && (
               <div className="p-2 mt-3 flex border rounded-md items-center bg-gray-800">
