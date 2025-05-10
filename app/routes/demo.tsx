@@ -122,6 +122,8 @@ export default function DemoMapPage() {
   );
 
 useEffect(() => {
+  let isMounted = true;
+
   const defaultMemos: Memo[] = [
     {
       id: "1746680490853",
@@ -150,7 +152,14 @@ useEffect(() => {
   const hasDefault = storedMemos.some(m => m.id === defaultMemos[0].id);
   const combined = hasDefault ? storedMemos : [...defaultMemos, ...storedMemos];
   localStorage.setItem("demo-memos", JSON.stringify(combined));
-  setMemos(combined);
+
+  if (isMounted) { 
+    setMemos(combined);
+  }
+
+  return () => {
+    isMounted = false;
+  };
 }, []);
   useEffect(() => {
     localStorage.setItem("demo-memos", JSON.stringify(memos));
@@ -296,7 +305,7 @@ useEffect(() => {
 
 
       {/* search bar */}
-        <div className="fixed flex-nowrap flex items-center z-20 w-full">
+        <div className="fixed flex-nowrap flex items-center z-20 w-full md:ml-[-64px]">
           <MapBoxSearch
             api={mapboxToken}
             onSelect={p =>
@@ -325,12 +334,12 @@ useEffect(() => {
               }`}
             >
             Demo
-            </h2>
-        </div>
+          </h2> 
+        </div> 
 
         <div className="fixed flex-nowrap flex items-center z-[5]">
             <h2
-              className={`md:hidden ml-[76px] mt-[18px] text-4xl h-[48px] font-bold truncate max-w-[60vw] ${
+              className={`md:hidden ml-[16px] mt-[18px] text-4xl h-[48px] font-bold truncate max-w-[60vw] ${
                 (() => {
                   const hours = new Date().getHours();
                   return hours >= 20 || hours < 4 ? "text-white" : "text-black";
@@ -341,24 +350,43 @@ useEffect(() => {
           </h2>
         </div>
 
-        {/* action bar */}
-        <div className="fixed flex-none flex-shrink-0 w-12 h-12 mt-[16px] md:mt-4 right-[16px] flex items-center justify-center" style={{ zIndex: 100, pointerEvents: "auto" }}>
-          <ActionBar mode="demo" username="Demo" uuid="demo" initialAvatarUrl={null} publicKey="" userId="demo" />
-        </div>
-
-        <Compass map={mapRef.current} />
-        <TutorialLauncher />
-
-        <div className="w-[80vw] items-center mt-[76px] md:ml-[16px]">
-        <div className="fixed flex-1 bg-red-800 text-white py-2 px-4 rounded-md text-center md:text-left text-sm md:text-base z-[50]">
+        <div className="mx-[16px] items-center mt-[128px] md:ml-[16px]">
+        <div className="md:hidden w-[calc(100%-32px)] fixed flex-1 bg-red-800 text-white py-2 px-4 rounded-md text-center md:text-left text-sm md:text-base z-[50]">
           デモ版ではNotepiaのごく一部の機能を試すことができます。全ての機能を使うには{" "}
-          <Link to="/join">
+          <Link to="/start">
             <Button className="bg-cyan-500 hover:bg-cyan-600">無料でアカウント作成</Button>
           </Link>
         </div>
       </div>
 
+        {/* ActionBar: 常に右上 */}
+        <div className="fixed top-4 right-4 z-30 w-12 h-12 items-center justify-center" style={{ pointerEvents: "auto" }}>
+          <ActionBar
+            mode="demo"
+            username="Demo"
+            uuid="demo"
+            initialAvatarUrl={null}
+            publicKey=""
+            userId="demo"
+          />
+        </div>
 
+        {/* 1150px以下で左寄せ */}
+        <div className="hidden md:flex fixed z-20 top-4 right-0 mr-[80px] md-max:top-[72px] md-max:left-[16px] md-max:right-auto">
+          <div className="h-[48px] bg-red-800 text-white py-2 px-4 rounded-md flex items-center text-sm md:text-base whitespace-nowrap">
+            デモ版では一部機能のみ体験できます。全機能を使うには：
+            <Link to="/start" className="ml-2">
+              <Button className="bg-cyan-500 hover:bg-cyan-600">無料でアカウント作成</Button>
+            </Link>
+          </div>
+        </div>
+
+
+        {/* Compass */}
+        <div className="mt-[76px] md:mt-[0px]">
+        <Compass map={mapRef.current} />
+        </div>
+        <TutorialLauncher />
 
       </div>
       <div ref={mapContainerRef} style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh" }} />
@@ -415,7 +443,7 @@ useEffect(() => {
                       />
                     ) : (
                       <div className="flex-shrink-0">
-                        <Avatar size={64} name={user.uuid} variant="beam" />
+                        <Avatar size={64} name={String(user.uuid)} variant="beam" />
                       </div>
                     )}
                     <div className="flex flex-col text-left">

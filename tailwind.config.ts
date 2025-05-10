@@ -5,6 +5,9 @@ export default {
     content: ["./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}"],
   theme: {
   	extend: {
+			screens: {
+        'md-max': { raw: '(min-width: 768px) and (max-width: 1150px)' },
+      },
   		fontFamily: {
   			sans: [
   				'Inter',
