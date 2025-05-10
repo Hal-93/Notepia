@@ -136,7 +136,7 @@ export default function GroupEditModal({
         <button
           type="button"
           onClick={handleSubmit}
-          className="w-full mt-6 py-2 bg-[#4F46E5] rounded text-white hover:bg-[#141920]"
+          className="w-full mt-6 py-2 rounded text-white bg-[#4F46E5] hover:bg-[#1F2937] transition duration-200"
         >
           更新
         </button>
