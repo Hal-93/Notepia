@@ -10,12 +10,12 @@ const pages = [
     content: (
       <>
         <p>ようこそ、勇敢なる探検家！🗺️</p>
-        <p>探検を始める前に、いくつかの基本操作を伝授します！<br/><br/></p>
+        <p>Notepiaで探検を始める前に、いくつかの基本操作を伝授します！<br/><br/></p>
         <div className="bg-yellow-700 rounded p-4">
           <FontAwesomeIcon icon={faExclamationTriangle} />{" "}
-          <strong>秘密のヒミツ：</strong> Notepiaは位置情報を使ってあなたを助けますが、現在地を表示するためだけにこれを使用し、他の妖精に売り飛ばしたりはしないので安心してくださいね！  
+          <strong>秘密のヒミツ：</strong> Notepiaは位置情報を使ってあなたを助けますが、現在地を表示するためだけにこれを使用し、勝手に他の妖精に渡したりはしないので安心してくださいね！  
         </div>
-        <p className="mt-4">恐れを捨て、冒険の第一歩を踏み出しましょう！</p>
+        <p className="mt-4">恐れを捨てて、冒険の第一歩を踏み出しましょう！</p>
       </>
     ),
     media: { type: "image", src: "/Notepia-light.svg", width: "90%" },
@@ -24,7 +24,7 @@ const pages = [
     title: "メモを作成",
     content:
       "🖋️ 地図はあなたの魔法のキャンバス！ダブルクリックで落書き開始！\n\nクリック後にタイトルと内容を記入し、好きな色でペタリ。完了したらマップ上にメモが出現します！",
-    media: { type: "video", src: "/tutorial/create.mp4" },
+    media: { type: "video", src: "/tutorial/memo.mp4" },
   },
   {
     title: "付箋の追加",
@@ -66,7 +66,7 @@ const pages = [
     title: "さぁ、始めましょう！",
     content: (
       <>
-        <p>🎉 チュートリアル完了！お疲れさまです。</p>
+        <p>🎉 チュートリアルはこれで完了です！</p>
         <p>操作方法を見たくなったら、いつでも右下の{" "}
           <FontAwesomeIcon icon={faInfoCircle} />{" "}
           をタップしてここへ舞い戻れます。</p>
@@ -210,7 +210,7 @@ export default function TutorialCarousel({ onClose }: { onClose: () => void }) {
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
-              touchAction: 'pan-y',
+              touchAction: 'none',
               overscrollBehavior: 'contain',
             }}
           >
