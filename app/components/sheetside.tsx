@@ -101,7 +101,7 @@ export function SheetSide({
         <Sheet>
           <SheetTrigger asChild>
             {/* hamburgerMenu */}
-            <Button className="bg-[#1F2937] fixed mt-[16px] ml-[16px] rounded-xl w-12 h-12 flex items-center justify-center shadow-md" style={{ zIndex: 1000, pointerEvents: "auto" }}>
+            <Button className="bg-[#1F2937] fixed mt-[16px] ml-[16px] rounded-xl w-12 h-12 flex items-center justify-center" style={{ zIndex: 1000, pointerEvents: "auto" }}>
               <FontAwesomeIcon icon={faBars}></FontAwesomeIcon>
             </Button>
           </SheetTrigger>
@@ -145,7 +145,7 @@ export function SheetSide({
                 </div>
               </SheetClose>
 
-              <SheetTitle className="text-3xl text-[#777777] ml-[16px] md:mt-[12px]">グループ</SheetTitle>
+              <SheetTitle className="text-3xl text-[#777777] ml-[16px] mt-[8px] md:mt-[12px]">グループ</SheetTitle>
               {groups &&
                 groups.map((group) => (
                   <SheetClose asChild key={group.id}>

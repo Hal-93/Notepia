@@ -41,7 +41,7 @@ export default function ProfileSection({
     : null;
   return (
     <>
-      <div className="flex flex-col items-center justify-center mb-6">
+      <div className="flex flex-col items-center justify-center">
         <div className="p-4 relative inline-block">
           {isProfileChange && (
             <input
@@ -82,7 +82,7 @@ export default function ProfileSection({
         </div>
 
         {isProfileChange ? (
-          <div className="flex flex-col">
+          <div className="flex flex-col w-full items-center mb-[8px]">
             <Input
               id="username"
               name="username"

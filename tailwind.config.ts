@@ -6,6 +6,7 @@ export default {
   theme: {
   	extend: {
 			screens: {
+				'xs': { raw: '(min-width: 0px) and (max-width: 368px)' },
         'md-max': { raw: '(min-width: 768px) and (max-width: 1150px)' },
       },
   		fontFamily: {

@@ -351,13 +351,13 @@ useEffect(() => {
         </div>
 
         <div className="mx-[16px] items-center mt-[128px] md:ml-[16px]">
-        <div className="md:hidden w-[calc(100%-32px)] fixed flex-1 bg-red-800 text-white py-2 px-4 rounded-md text-center md:text-left text-sm md:text-base z-[50]">
-          デモ版ではNotepiaのごく一部の機能を試すことができます。全ての機能を使うには{" "}
-          <Link to="/start">
-            <Button className="bg-cyan-500 hover:bg-cyan-600">無料でアカウント作成</Button>
-          </Link>
+          <div className="md:hidden w-[calc(100%-32px)] fixed flex-1 bg-red-800 text-white py-2 px-4 rounded-md text-center md:text-left text-sm md:text-base z-[50]">
+            デモ版ではNotepiaのごく一部の機能を試すことができます。全ての機能を使うには{" "}
+            <Link to="/start">
+              <Button className="bg-cyan-500 hover:bg-cyan-600">無料でアカウント作成</Button>
+            </Link>
+          </div>
         </div>
-      </div>
 
         {/* ActionBar: 常に右上 */}
         <div className="fixed top-4 right-4 z-30 w-12 h-12 items-center justify-center" style={{ pointerEvents: "auto" }}>
@@ -372,20 +372,20 @@ useEffect(() => {
         </div>
 
         {/* 1150px以下で左寄せ */}
-        <div className="hidden md:flex fixed z-20 top-4 right-0 mr-[80px] md-max:top-[72px] md-max:left-[16px] md-max:right-auto">
-          <div className="h-[48px] bg-red-800 text-white py-2 px-4 rounded-md flex items-center text-sm md:text-base whitespace-nowrap">
-            デモ版では一部機能のみ体験できます。全機能を使うには：
-            <Link to="/start" className="ml-2">
-              <Button className="bg-cyan-500 hover:bg-cyan-600">無料でアカウント作成</Button>
-            </Link>
+          <div className="hidden md:flex fixed z-20 top-4 right-0 mr-[80px] md-max:top-[72px] md-max:left-[16px] md-max:right-auto">
+            <div className="max-h-[48px] bg-red-800 text-white py-2 px-4 rounded-md flex items-center text-sm md:text-base whitespace-nowrap">
+              デモ版では一部機能のみ体験できます。全機能を使うには：
+              <Link to="/start" className="ml-2">
+                <Button className="bg-cyan-500 hover:bg-cyan-600">無料でアカウント作成</Button>
+              </Link>
+            </div>
           </div>
-        </div>
 
 
-        {/* Compass */}
-        <div className="mt-[76px] md:mt-[0px]">
-        <Compass map={mapRef.current} />
-        </div>
+          {/* Compass */}
+          <div className="xs:mt-[96px] mt-[76px] md:mt-[0px]">
+          <Compass map={mapRef.current} />
+          </div>
         <TutorialLauncher />
 
       </div>

@@ -28,7 +28,7 @@ export default function Index() {
           <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">記憶と場所を結ぶ</h1>
           <p className="mb-6 text-lg md:text-xl">場所にメモを置く新感覚アプリ。</p>
           <div className="flex justify-center space-x-4">
-            <Link to="/start" className="px-6 py-3 border border-white rounded-lg hover:bg-white hover:text-black">
+            <Link to="/start" className="px-6 py-3 border border-white rounded-lg font-bold hover:bg-white hover:text-black">
               無料でアカウント作成
             </Link>
           </div>
@@ -86,7 +86,7 @@ export default function Index() {
               viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <img src="/demo1.png" alt="デモ画面1" className="w-full" />
+              <img src="/demo1-250211.png" alt="デモ画面1" className="w-full" />
             </motion.div>
             <motion.div
               className="rounded-lg overflow-hidden shadow-lg"
@@ -95,7 +95,7 @@ export default function Index() {
               viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <img src="/demo2.png" alt="デモ画面2" className="w-full" />
+              <img src="/demo2-250511.png" alt="デモ画面2" className="w-full" />
             </motion.div>
           </div>
         </div>
@@ -150,14 +150,14 @@ export default function Index() {
           </div>
         </div>
       </section>
-      <section className="bg-gradient-to-r from-primary to-primary/80 px-4 py-20 text-primary-foreground md:px-6 lg:px-8">
+      <section className="bg-[#141920] from-primary to-primary/80 px-4 py-20 text-primary-foreground md:px-6 lg:px-8">
       <div className="container mx-auto max-w-5xl text-center">
         <h2 className="text-4xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent flex items-center justify-center">
           あなたの生活に
           <img src="/Notepia-light.svg" alt="Notepia logo" className="h-8 mx-2 inline-block" />
         </h2>
-        <p className="mx-auto mb-8 max-w-2xl text-lg text-primary-foreground/80">買い物のリマインド、友人との旅行の計画、使い方は無限大。</p><a className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-11 rounded-md px-8 gap-2 bg-background text-foreground hover:bg-background/90" href="/start">無料で始める </a></div></section>
-      <footer className="bg-gray-900 text-gray-300 py-6 mt-auto">
+        <p className="mx-auto mb-8 max-w-2xl text-lg text-primary-foreground/80">買い物のリマインド、友人との旅行の計画、使い方は無限大。</p><a className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-11 rounded-md px-8 gap-2 bg-background text-foreground hover:bg-background/70" href="/start">無料で始める </a></div></section>
+      <footer className="bg-[#1F2937] text-gray-300 py-6 mt-auto">
         <div className="container mx-auto px-4 text-center">
           <p>© {new Date().getFullYear()} Notepia. All rights reserved.</p>
         </div>
@@ -176,11 +176,10 @@ export function Header() {
   return (
     <header className={`
       fixed top-0 left-0 w-full h-16
-      ${isScrolled ? 'bg-black/50 backdrop-blur-sm' : 'bg-black'}
-      border-b border-gray-200
+      ${isScrolled ? 'bg-[#141920]/50 backdrop-blur-sm' : 'bg-[#141920]'}
       z-50
       transition-colors duration-300
-    `}>
+    `} style={{ borderBottom: '0.5px solid rgb(104, 104, 104)' }}>
       <div className="container mx-auto h-full flex items-center px-4">
         <h1 className="text-xl font-bold">
           <img src="/Notepia-light.svg" alt="Notepia logo" className="h-8" />

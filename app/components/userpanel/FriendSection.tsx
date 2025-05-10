@@ -186,7 +186,7 @@ export default function FriendSection({
               </div>
             ))
           ) : (
-            <div className="text-center mt-3">フレンドがまだいません。</div>
+            <div className="text-center mt-3">フレンドがまだいません</div>
           )}
         </div>
       </div>
