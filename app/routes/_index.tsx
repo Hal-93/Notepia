@@ -2,6 +2,9 @@ import { Link } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import type { MetaFunction } from "@remix-run/node";
+import { Button } from "react-day-picker";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
 
 export const meta: MetaFunction = () => {
   return [
@@ -127,8 +130,7 @@ export default function Index() {
                 <ul className="mb-6 list-disc list-inside text-gray-600">
                   <li>最大10グループへのアクセス</li>
                   <li>無制限のメモ作成</li>
-                  <li>メモへの画像登録機能</li>
-                  <li>テーマのカスタマイズ</li>
+                  <li>高度なテーマのカスタマイズ</li>
                 </ul>
               </div>
             </div>
@@ -185,6 +187,12 @@ export function Header() {
           <img src="/Notepia-light.svg" alt="Notepia logo" className="h-8" />
         </h1>
         <nav className="ml-auto flex items-center space-x-4">
+          <Link
+            to="https://github.com/Hal-93/Notepia"
+          >
+            <FontAwesomeIcon icon={faGithub} className="mr-2 text-white" />
+          </Link>
+          
           <Link
             to="/demo"
             className="px-3 py-1 text-sm font-medium bg-red-600 text-white rounded hover:bg-red-700 transition-colors duration-200"
