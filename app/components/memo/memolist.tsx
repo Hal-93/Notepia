@@ -167,7 +167,7 @@ export default function MemoList({
 
         <TabsContent value="complete">
           <div className="overflow-y-auto h-[50vh] pr-2 mt-2" style={{ WebkitOverflowScrolling: "touch" }}>
-            <ul className="space-y-2">
+            <ul className="space-y-2 pb-[50px]">
               {displayedMemos.filter((memo) => memo.completed).length === 0 ? (
                 <div className="text-gray-500 text-sm">
                   条件に合うメモがありません。
