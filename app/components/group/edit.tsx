@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useFetcher } from "@remix-run/react";
 import Avatar from "boring-avatars";
 import UserSearch from "../usersearch";
@@ -29,6 +29,18 @@ export default function GroupEditModal({
   const [name, setName] = useState(currentName);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const fetcher = useFetcher();
+
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   const handleUserAdd = async (user: User) => {
     if (
@@ -72,13 +84,16 @@ export default function GroupEditModal({
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60">
-      <div className="relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white">
+      <div
+        ref={modalRef}
+        className="relative w-full max-w-md bg-black rounded-lg shadow-lg p-4 text-white overflow-hidden"
+      >
         <div className="flex justify-between mb-4">
           <h2 className="text-white text-lg font-bold">グループの編集</h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-white hover:text-red-400"
+            className="text-white hover:text-red-400 w-8 h-8 flex items-center justify-center rounded-full text-4xl"
           >
             ×
           </button>
