@@ -7,10 +7,11 @@ const bucket = "notepia";
 
 const minioClient = new Minio.Client({
   endPoint: minio_url,
-  port: 9000,
-  useSSL: false,
+  port: 443,
+  useSSL: true,
   accessKey: accessKey,
   secretKey: secretKey,
+  region: "auto",
 });
 
 //ファイルアップロード関数
